@@ -18,7 +18,7 @@ export const AddCreaturePage = () => {
   const [formData, setFormData] = useState<Partial<Creature> & {
     tagsInput: string;
     specialAttributesInput: string;
-    regionsInput: string;
+    // regionsInput: string; // Removed
     depthMin: string;
     depthMax: string;
     waterTempMin: string;
@@ -34,7 +34,7 @@ export const AddCreaturePage = () => {
     imageUrl: '/images/reef_fish.png',
     tagsInput: '',
     specialAttributesInput: '',
-    regionsInput: '',
+    // regionsInput: '',
     depthMin: '',
     depthMax: '',
     size: '',
@@ -70,7 +70,7 @@ export const AddCreaturePage = () => {
       // Process inputs
       const tags = formData.tagsInput.split(',').map(t => t.trim()).filter(Boolean);
       const specialAttributes = formData.specialAttributesInput.split(',').map(t => t.trim()).filter(Boolean);
-      const regions = formData.regionsInput.split(',').map(t => t.trim()).filter(Boolean);
+      // const regions = formData.regionsInput.split(',').map(t => t.trim()).filter(Boolean);
 
       // Explicitly type the creature data
       const creatureData: Omit<Creature, 'id'> = {
@@ -82,7 +82,7 @@ export const AddCreaturePage = () => {
         imageUrl: formData.imageUrl!,
         tags,
         specialAttributes,
-        regions,
+        // regions,
         size: formData.size,
         season: formData.season,
         locationIds: formData.locationIds,
@@ -353,6 +353,8 @@ export const AddCreaturePage = () => {
                 </div>
               </div>
 
+              {/* Regions Input Removed */}
+              {/*
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">広域エリア (カンマ区切り)</label>
                 <input
@@ -364,6 +366,7 @@ export const AddCreaturePage = () => {
                   placeholder="例: 慶良間, 伊豆, 沖縄本島"
                 />
               </div>
+              */}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">発見可能ポイント</label>

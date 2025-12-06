@@ -109,10 +109,27 @@ def main():
         en_keyword = creature.get("imageKeyword", "")
         print(f"[{i+1}/{len(creatures)}] 🔍 Searching: {name}...", end="", flush=True)
 
-        # 画像検索実行
-        image_data = fetch_wiki_image(name, 'ja')
-        if not image_data and en_keyword:
-            print(f" (JA failed, trying EN: {en_keyword})...", end="", flush=True)
+        # 優先順位: 学名(en) -> 和名(ja) -> 英名(en) -> キーワード(en)
+        scientific_name = creature.get("scientificName")
+        english_name = creature.get("englishName")
+
+        # 1. 学名で検索 (最も確実)
+        if scientific_name:
+            # print(f" (Scientific: {scientific_name})...", end="", flush=True)
+            image_data = fetch_wiki_image(scientific_name, 'en') # 学名は英語Wikipediaでヒットしやすい
+
+        # 2. 和名で検索
+        if not image_data:
+            image_data = fetch_wiki_image(name, 'ja')
+
+        # 3. 英名で検索 (スペースありの正式名)
+        if not image_data and english_name:
+             # print(f" (English: {english_name})...", end="", flush=True)
+             image_data = fetch_wiki_image(english_name, 'en')
+
+        # 4. キーワードで検索 (最後の手段)
+        if not image_data and en_keyword and en_keyword != english_name:
+            print(f" (Keyword: {en_keyword})...", end="", flush=True)
             image_data = fetch_wiki_image(en_keyword, 'en')
 
         if image_data:

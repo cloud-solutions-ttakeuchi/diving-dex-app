@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { User, Log, Rarity, Creature, Point } from '../types';
+import type { User, Log, Rarity, Creature, Point, PointCreature } from '../types';
 import { INITIAL_DATA, TRUST_RANKS } from '../data/mockData';
 import { auth, googleProvider, db as firestore } from '../lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
@@ -27,6 +27,8 @@ interface AppContextType {
   toggleBookmarkPoint: (pointId: string) => void;
 
   areas: typeof INITIAL_DATA.areas;
+  addPointCreature: (pointId: string, creatureId: string, localRarity: Rarity) => Promise<void>;
+  removePointCreature: (pointId: string, creatureId: string) => Promise<void>;
   addCreatureProposal: (creatureData: Omit<Creature, 'id' | 'status' | 'submitterId'>) => Promise<void>;
   addPointProposal: (pointData: Omit<Point, 'id' | 'status' | 'submitterId' | 'createdAt' | 'areaId'>) => Promise<void>;
   approveProposal: (type: 'creature' | 'point', id: string, data: any, submitterId: string) => Promise<void>;
@@ -35,6 +37,7 @@ interface AppContextType {
   // Expose data directly
   creatures: Creature[];
   points: Point[];
+  pointCreatures: PointCreature[]; // New relationship collection
   logs: Log[];
   proposalCreatures: (Creature & { proposalType?: string, diffData?: any, targetId?: string })[];
   proposalPoints: (Point & { proposalType?: string, diffData?: any, targetId?: string })[];
@@ -54,8 +57,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Data State
-  const [creatures, setCreatures] = useState<Creature[]>([]);
-  const [points, setPoints] = useState<Point[]>([]);
+  const [creatures, setCreatures] = useState<Creature[]>(INITIAL_DATA.creatures);
+  const [points, setPoints] = useState<Point[]>(INITIAL_DATA.points);
+  const [pointCreatures, setPointCreatures] = useState<PointCreature[]>(INITIAL_DATA.pointCreatures);
   const [proposalCreatures, setProposalCreatures] = useState<Creature[]>([]);
   const [proposalPoints, setProposalPoints] = useState<Point[]>([]);
   const [allLogs, setAllLogs] = useState<Log[]>([]);
@@ -186,7 +190,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     // Check Rank Up
     let newRole = userData.role;
-    const currentRank = TRUST_RANKS.slice().reverse().find(r => currentScore >= r.minScore); // Current rank by old score
+    // const currentRank = TRUST_RANKS.slice().reverse().find(r => currentScore >= r.minScore);
     const nextRank = TRUST_RANKS.slice().reverse().find(r => newScore >= r.minScore);     // Potential new rank
 
     // If reached a rank that upgrades role AND user is 'user' role currently
@@ -223,9 +227,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setPoints(data);
     });
 
+    const unsubPointCreatures = onSnapshot(collection(firestore, 'point_creatures'), (snapshot) => {
+      const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as PointCreature));
+      setPointCreatures(data);
+    });
+
     return () => {
       unsubCreatures();
       unsubPoints();
+      unsubPointCreatures();
     };
   }, []);
 
@@ -396,6 +406,75 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       }
     }
     return newPoint;
+  };
+
+  const addPointCreature = async (pointId: string, creatureId: string, localRarity: Rarity) => {
+    console.log(`[CTX-ADD] addPointCreature: ${pointId}, ${creatureId}, ${localRarity}`);
+    if (!isAuthenticated) return;
+
+    // ID generation
+    const relId = `${pointId}_${creatureId}`;
+    const pointCreatureData: PointCreature = {
+      id: relId,
+      pointId,
+      creatureId,
+      localRarity,
+      status: (currentUser.role === 'admin' || currentUser.role === 'moderator') ? 'approved' : 'pending' // Pending for users
+    };
+
+    // Optimistic Update
+    setPointCreatures(prev => {
+      console.log(`[CTX-ADD] Updating state...`);
+      const existing = prev.find(p => p.id === relId);
+      if (existing) return prev.map(p => p.id === relId ? pointCreatureData : p);
+      return [...prev, pointCreatureData];
+    });
+
+    try {
+      await setDoc(doc(firestore, 'point_creatures', relId), pointCreatureData);
+      console.log(`[CTX-ADD] Firestore write success`);
+    } catch (e) {
+      console.error(`[CTX-ADD] Firestore write failed`, e);
+      throw e;
+    }
+  };
+
+  const removePointCreature = async (pointId: string, creatureId: string) => {
+    if (!isAuthenticated) return;
+
+    // DEBUG: Check what we are trying to delete
+    console.log(`[DELETE] Request: Point=${pointId}, Creature=${creatureId}`);
+    const target = pointCreatures.find(pc => pc.pointId === pointId && pc.creatureId === creatureId);
+    console.log(`[DELETE] Found Target in State:`, target);
+
+    // If not found in state, try constructing it, but prefer state
+    const realId = target ? target.id : `${pointId}_${creatureId}`;
+    console.log(`[DELETE] Using ID: ${realId}`);
+
+    // Admin/Mod: Force Delete
+    if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+      console.log(`[DELETE] Action: Force Delete (Admin)`);
+      // Optimistic Delete
+      setPointCreatures(prev => {
+        const exists = prev.find(p => p.id === realId);
+        console.log(`[DELETE] Optimistic remove. Exists in prev?`, !!exists);
+        return prev.filter(p => p.id !== realId);
+      });
+      try {
+        await deleteDoc(doc(firestore, 'point_creatures', realId));
+        console.log(`[DELETE] Firestore delete success`);
+      } catch (e) { console.error(`[DELETE] Firestore error:`, e); }
+    } else {
+      console.log(`[DELETE] Action: Request Deletion (User)`);
+      // User: Request Deletion
+      // Optimistic Update
+      setPointCreatures(prev => prev.map(p => p.id === realId ? { ...p, status: 'deletion_requested' } : p));
+      try {
+        await updateDoc(doc(firestore, 'point_creatures', realId), {
+          status: 'deletion_requested'
+        });
+      } catch (e) { console.error(e); }
+    }
   };
 
   const updateLog = async (logId: string, logData: Partial<Log>) => {
@@ -589,6 +668,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       addLog,
       addCreature,
       addPoint,
+      addPointCreature,
+      removePointCreature,
       updateLog,
       updateCreature,
       updatePoint,
@@ -600,6 +681,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       // Expose Data
       creatures,
       points,
+      pointCreatures, // New
       logs: allLogs,
       proposalCreatures,
       proposalPoints,

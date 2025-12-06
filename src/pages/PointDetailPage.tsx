@@ -1,27 +1,44 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { MapPin, Droplets, Wind, Mountain, ArrowLeft, Plus, Search, X, Check, Anchor, AlertCircle, Bookmark, Star } from 'lucide-react';
 import clsx from 'clsx';
-import type { Creature } from '../types';
+import type { Creature, Rarity } from '../types';
 
 export const PointDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { points, creatures, currentUser, toggleBookmarkPoint, isAuthenticated } = useApp();
+  // Use pointCreatures from context
+  const { points, creatures, pointCreatures, currentUser, toggleBookmarkPoint, isAuthenticated, removePointCreature } = useApp();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // Local state to track creatures added in this session (to show "Pending" status)
-  const [pendingCreatureIds, setPendingCreatureIds] = useState<string[]>([]);
+  // Store as object to keep track of rarity too for optimistic display
+  const [pendingCreatures, setPendingCreatures] = useState<{ id: string, rarity: Rarity }[]>([]);
+  const pendingCreatureIds = pendingCreatures.map(p => p.id);
 
   const point = points.find(p => p.id === id);
 
-  // Inhabitants Logic
+  // Inhabitants Logic (Updated for PointCreature model)
   const inhabitants = useMemo(() => {
     if (!point) return [];
-    return point.creatures
-      .map(cId => creatures.find(c => c.id === cId))
-      .filter((c): c is Creature => c !== undefined);
-  }, [point, creatures]);
+
+    // 1. Find relationships for this point (approved, pending, deletion_requested)
+    const links = pointCreatures.filter(pc => pc.pointId === point.id && pc.status !== undefined); // All relevant links
+
+    // 2. Map to Creature objects with overridden Local Rarity and Status
+    const validCreatures = links.map(link => {
+      const creature = creatures.find(c => c.id === link.creatureId);
+      if (!creature) return null;
+      return {
+        ...creature,
+        rarity: link.localRarity,
+        // Helper prop for UI
+        _status: link.status as 'approved' | 'pending' | 'deletion_requested'
+      };
+    }).filter((c): c is Creature & { _status: 'approved' | 'pending' | 'deletion_requested' } => c !== null);
+
+    return validCreatures;
+  }, [point, creatures, pointCreatures]); // Removed pendingCreatures usage as we now rely on Context State
 
   if (!point) {
     return <div className="p-8 text-center">Point not found</div>;
@@ -134,7 +151,6 @@ export const PointDetailPage = () => {
               </button>
 
               {inhabitants.map(creature => {
-                const isPending = pendingCreatureIds.includes(creature.id);
                 return (
                   <Link
                     key={creature.id}
@@ -148,7 +164,30 @@ export const PointDetailPage = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-deepBlue-900 via-transparent to-transparent opacity-90" />
 
-                    {/* Rarity Badge */}
+                    {/* Delete Button (Top Left) - Only for Approved items */}
+                    {isAuthenticated && creature._status === 'approved' && (
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          if (window.confirm('この生物の関連付けを削除（または削除申請）しますか？')) {
+                            // Debugging
+                            const link = pointCreatures.find(pc => pc.pointId === point.id && pc.creatureId === creature.id);
+                            // alert(`Debug: Role=${currentUser.role}, LinkID=${link?.id}, Point=${point.id}, Creature=${creature.id}`);
+
+                            // Call context remove
+                            removePointCreature(point.id, creature.id);
+
+                            // Optimistic UI handled by Context
+                            // alert('削除/申請リクエストを送信しました');
+                          }
+                        }}
+                        className="absolute top-2 left-2 p-1.5 bg-black/40 hover:bg-red-500/80 rounded-full text-white/70 hover:text-white transition-colors z-20 backdrop-blur-sm"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+
+                    {/* Rarity Badge (Local Rarity) */}
                     <div className={clsx(
                       "absolute top-2 right-2 px-3 py-1 rounded-full text-xs font-bold shadow-sm z-10",
                       creature.rarity === 'Common' ? "bg-gray-100 text-gray-600 border border-gray-200" :
@@ -159,14 +198,22 @@ export const PointDetailPage = () => {
                       {creature.rarity}
                     </div>
 
-                    {/* Pending Badge */}
-                    {isPending && (
-                      <div className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg z-10">
-                        <AlertCircle size={12} /> 審査中
+
+                    {/* Status Badge */}
+                    {creature._status === 'pending' && (
+                      <div className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg z-30">
+                        <AlertCircle size={12} /> 追加申請中
+                      </div>
+                    )}
+                    {creature._status === 'deletion_requested' && (
+                      <div className="absolute top-2 left-2 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-lg z-30">
+                        <X size={12} /> 削除申請中
                       </div>
                     )}
 
-                    <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <div className={clsx("absolute bottom-0 left-0 right-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300",
+                      creature._status === 'deletion_requested' && "opacity-50"
+                    )}>
                       <h3 className="font-bold text-white text-lg leading-tight drop-shadow-md mb-1 truncate">{creature.name}</h3>
                       <div className="flex gap-0.5">
                         {Array.from({ length: 4 }).map((_, i) => {
@@ -218,17 +265,15 @@ export const PointDetailPage = () => {
         </div>
       </div >
 
-      {/* Add Creature Modal */}
-      {
-        isAddModalOpen && (
-          <AddCreatureModal
-            pointId={point.id}
-            currentCreatureIds={point.creatures}
-            onClose={() => setIsAddModalOpen(false)}
-            onAdd={(id) => setPendingCreatureIds(prev => [...prev, id])}
-          />
-        )
-      }
+      {/* Add Creature Modal - Pass calculated inhabitants ids */}
+      {isAddModalOpen && (
+        <AddCreatureModal
+          pointId={point.id}
+          currentCreatureIds={inhabitants.map(c => c.id)}
+          onClose={() => setIsAddModalOpen(false)}
+          onAdd={(id, rarity) => setPendingCreatures(prev => [...prev, { id, rarity }])}
+        />
+      )}
     </div >
   );
 };
@@ -251,11 +296,21 @@ const AddCreatureModal = ({
   pointId: string,
   currentCreatureIds: string[],
   onClose: () => void,
-  onAdd: (id: string) => void
+  onAdd: (id: string, rarity: Rarity) => void
 }) => {
-  const { creatures, points, updatePoint, currentUser, addPointProposal } = useApp();
+  const { creatures, points, currentUser, addPointCreature } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [addedIds, setAddedIds] = useState<string[]>([]);
+  const [selectedRarity, setSelectedRarity] = useState<Rarity>('Common');
+  // State to track which creature is being added (for expanding rarity selector)
+  const [targetCreatureId, setTargetCreatureId] = useState<string | null>(null);
+
+  useEffect(() => {
+    console.log("AddCreatureModal MOUNTED");
+    return () => console.log("AddCreatureModal UNMOUNTED");
+  }, []);
+
+  console.log("AddCreatureModal Render: target=", targetCreatureId);
 
   const filteredCreatures = useMemo(() => {
     if (!searchTerm) return [];
@@ -269,32 +324,34 @@ const AddCreatureModal = ({
   }, [searchTerm, creatures, currentCreatureIds]);
 
   const handleAdd = async (creatureId: string) => {
+    // If rarity not selected yet (or minimal flow), we could default or ask.
+    // Here we use the separate "Confirm" flow if targetCreatureId is set.
+    if (targetCreatureId !== creatureId) {
+      setTargetCreatureId(creatureId);
+      return;
+    }
+
     const point = points.find(p => p.id === pointId);
-    if (!point || point.creatures.includes(creatureId)) return;
+    if (!point || currentCreatureIds.includes(creatureId)) return;
 
     // Optimistic UI update (show as pending immediately)
     setAddedIds(prev => [...prev, creatureId]);
-    onAdd(creatureId);
+    onAdd(creatureId, selectedRarity);
 
-    const updatedCreatures = [...point.creatures, creatureId];
-
-    if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
-      // Direct Update
-      await updatePoint(pointId, { creatures: updatedCreatures });
-      alert('生物を追加しました！');
-    } else {
-      // Proposal Flow
-      const creatureName = creatures.find(c => c.id === creatureId)?.name || 'Unknown';
-      await addPointProposal({
-        targetId: pointId,
-        proposalType: 'update',
-        diffData: { creatures: updatedCreatures }, // NOTE: Arrays overwrite in merge. Ideally use arrayUnion logic in backend or keep this for now.
-        // Meta for UI context if needed
-        description: `生物追加提案: ${creatureName}`,
-        name: point.name,
-        imageUrl: point.imageUrl
-      } as any);
-      alert('生物の追加を提案しました！管理者の承認をお待ちください。');
+    try {
+      if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
+        // Direct Create
+        await addPointCreature(pointId, creatureId, selectedRarity);
+        alert('生物を追加しました！');
+      } else {
+        // Proposal Flow
+        await addPointCreature(pointId, creatureId, selectedRarity);
+        alert('追加申請を送信しました');
+      }
+      setTargetCreatureId(null); // Reset
+    } catch (e) {
+      console.error(e);
+      alert('エラーが発生しました');
     }
   };
 
@@ -340,33 +397,73 @@ const AddCreatureModal = ({
             <div className="space-y-2 p-2">
               {filteredCreatures.map(creature => {
                 const isJustAdded = addedIds.includes(creature.id);
+                const isTarget = targetCreatureId === creature.id;
+
                 return (
-                  <button
-                    key={creature.id}
-                    onClick={() => !isJustAdded && handleAdd(creature.id)}
-                    disabled={isJustAdded}
-                    className={clsx(
-                      "w-full flex items-center gap-3 p-3 rounded-xl transition-all text-left border",
-                      isJustAdded
-                        ? "bg-green-50 border-green-200"
-                        : "bg-white border-gray-100 hover:border-ocean hover:shadow-md"
-                    )}
-                  >
-                    <img src={creature.imageUrl} alt={creature.name} className="w-12 h-12 rounded-lg object-cover bg-gray-200" />
-                    <div className="flex-1 min-w-0">
-                      <div className="font-bold text-gray-900 truncate">{creature.name}</div>
-                      <div className="text-xs text-gray-500 truncate">{creature.category}</div>
-                    </div>
-                    {isJustAdded ? (
-                      <div className="flex items-center gap-1 text-green-600 text-xs font-bold bg-white px-3 py-1.5 rounded-full shadow-sm border border-green-100">
-                        <Check size={12} /> 追加済
+                  <div key={creature.id} className={clsx(
+                    "rounded-xl transition-all border overflow-hidden",
+                    isTarget ? "bg-white border-ocean shadow-md" : "bg-white border-gray-100 hover:border-ocean hover:shadow-md",
+                    isJustAdded && "opacity-70 bg-gray-50"
+                  )}>
+                    <button
+                      onClick={() => !isJustAdded && handleAdd(creature.id)}
+                      disabled={isJustAdded}
+                      className="w-full flex items-center gap-3 p-3 text-left"
+                    >
+                      <img src={creature.imageUrl} alt={creature.name} className="w-12 h-12 rounded-lg object-cover bg-gray-200" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-bold text-gray-900 truncate">{creature.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{creature.category}</div>
                       </div>
-                    ) : (
-                      <div className="w-8 h-8 flex items-center justify-center bg-gray-100 text-gray-400 rounded-full group-hover:bg-ocean group-hover:text-white transition-colors">
-                        <Plus size={16} />
+
+                      {isJustAdded ? (
+                        <div className="flex items-center gap-1 text-green-600 text-xs font-bold bg-white px-3 py-1.5 rounded-full shadow-sm border border-green-100">
+                          <Check size={12} /> 追加済
+                        </div>
+                      ) : (
+                        <div className={clsx(
+                          "w-8 h-8 flex items-center justify-center rounded-full transition-colors",
+                          isTarget ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-400 group-hover:bg-blue-600 group-hover:text-white"
+                        )}>
+                          {isTarget ? <Check size={16} /> : <Plus size={16} />}
+                        </div>
+                      )}
+                    </button>
+
+                    {/* Rarity Selector (Expanded) */}
+                    {isTarget && !isJustAdded && (
+                      <div className="px-3 pb-3 pt-0 animate-fade-in-down">
+                        <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <label className="text-xs font-bold text-gray-500 mb-2 block">このポイントでのレア度を選択:</label>
+                          <div className="flex gap-1 overflow-x-auto pb-1">
+                            {(['Common', 'Rare', 'Epic', 'Legendary'] as Rarity[]).map((r) => (
+                              <button
+                                key={r}
+                                onClick={(e) => { e.stopPropagation(); setSelectedRarity(r); }}
+                                className={clsx(
+                                  "flex-1 px-3 py-1.5 rounded-lg text-xs font-bold border transition-all whitespace-nowrap",
+                                  selectedRarity === r
+                                    ? r === 'Common' ? "bg-gray-100 border-gray-400 text-gray-700" :
+                                      r === 'Rare' ? "bg-blue-100 border-blue-400 text-blue-700" :
+                                        r === 'Epic' ? "bg-orange-100 border-orange-400 text-orange-700" :
+                                          "bg-purple-100 border-purple-400 text-purple-700"
+                                    : "bg-white border-gray-200 text-gray-500 hover:bg-gray-50"
+                                )}
+                              >
+                                {r}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleAdd(creature.id); }}
+                            className="w-full mt-3 bg-blue-600 text-white font-bold py-2 rounded-lg text-sm shadow-sm hover:shadow-md transition-all"
+                          >
+                            確定
+                          </button>
+                        </div>
                       </div>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -379,12 +476,6 @@ const AddCreatureModal = ({
             className="px-6 py-2.5 rounded-xl font-bold text-gray-500 hover:bg-gray-100 transition-colors"
           >
             閉じる
-          </button>
-          <button
-            onClick={onClose}
-            className="bg-gray-800 text-white px-8 py-2.5 rounded-xl font-bold hover:bg-gray-900 transition-colors shadow-md hover:shadow-lg"
-          >
-            完了
           </button>
         </div>
       </div>

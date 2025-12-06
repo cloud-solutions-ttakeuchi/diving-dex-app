@@ -56,13 +56,22 @@ export interface Point {
   imageUrl: string; // Main image (keep for compatibility)
   imageKeyword?: string;
 
-  creatures: string[]; // IDs of creatures found here
+  // creatures: string[]; // Removed in favor of PointCreature relation
   bookmarkCount: number;
 }
 
 export type DivingPoint = Point;
 
 export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Legendary';
+
+export type PointCreature = {
+  id: string; // pointId_creatureId (このIDはFirestoreのドキュメントIDとして使用)
+  pointId: string;
+  creatureId: string;
+  localRarity: 'Common' | 'Rare' | 'Epic' | 'Legendary'; // そのポイントでの出現率
+  lastSighted?: string; // 最終目撃日（任意）
+  status: 'approved' | 'pending' | 'deletion_requested'; // 提案された紐付けの承認ステータス
+};
 
 // --- Master Data Types ---
 export interface CertificationRank {
@@ -129,6 +138,8 @@ export interface Creature {
   id: string;
   name: string;
   scientificName?: string;
+  englishName?: string;
+  family?: string; // 科目 (例: スズメダイ科)
   category: string;
   description: string;
   rarity: Rarity;
@@ -139,7 +150,7 @@ export interface Creature {
   depthRange?: { min: number; max: number };
   specialAttributes?: string[]; // e.g., "毒", "擬態", "夜行性"
   waterTempRange?: { min: number; max: number };
-  regions?: string[]; // Broad regions e.g., "慶良間", "小笠原"
+  // regions?: string[]; // Removed in favor of PointCreature logic
   status: 'pending' | 'approved' | 'rejected';
 
   // Legacy/Optional fields

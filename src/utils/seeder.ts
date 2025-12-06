@@ -26,6 +26,7 @@ export const seedFirestore = async (force: boolean = false) => {
       { name: 'areas', data: INITIAL_DATA.areas },
       { name: 'creatures', data: INITIAL_DATA.creatures },
       { name: 'points', data: INITIAL_DATA.points },
+      { name: 'point_creatures', data: INITIAL_DATA.pointCreatures },
     ];
 
     for (const { name, data } of masterCollections) {

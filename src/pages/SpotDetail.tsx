@@ -6,14 +6,22 @@ import { MapPin, CheckCircle, Star, ChevronLeft } from 'lucide-react';
 
 export const SpotDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { points, areas, creatures, logs, isAuthenticated } = useApp();
+  const { points, areas, creatures, pointCreatures, logs, isAuthenticated } = useApp();
   const { t } = useLanguage();
   const point = points.find(p => p.id === id);
 
   if (!point) return <div className="text-center mt-20 text-gray-500 font-medium">{t('spot.not_found')}</div>;
 
   const area = areas.find(a => a.id === point.areaId);
-  const pointCreatures = point.creatures.map(cId => creatures.find(c => c.id === cId)).filter(Boolean);
+  // Filter pointCreatures from context
+  const inhabitants = pointCreatures
+    .filter(pc => pc.pointId === id)
+    .map(pc => {
+      const creature = creatures.find(c => c.id === pc.creatureId);
+      if (!creature) return null;
+      return { ...creature, rarity: pc.localRarity };
+    })
+    .filter(Boolean);
   const userLogs = isAuthenticated ? logs.filter(l => l.spotId === point.id) : [];
 
   return (
@@ -92,13 +100,13 @@ export const SpotDetail = () => {
               {t('spot.field_guide')}
             </h2>
             <span className="text-sm text-gray-600">
-              {pointCreatures.length} {t('spot.species')}
+              {inhabitants.length} {t('spot.species')}
             </span>
           </div>
 
           {/* Creatures Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {pointCreatures.map((creature) => {
+            {inhabitants.map((creature) => {
               const isDiscovered = userLogs.some(l => l.creatureId === creature!.id);
 
               return (

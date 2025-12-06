@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiveLog } from '../types';
 import { compressImage } from '../utils/imageUtils';
@@ -9,7 +9,7 @@ import { compressImage } from '../utils/imageUtils';
 export const AddLogPage = () => {
   const navigate = useNavigate();
   // Refactor: use points, creatures from context
-  const { addLog, points, creatures, isAuthenticated } = useApp();
+  const { addLog, points, creatures, pointCreatures, isAuthenticated } = useApp();
 
   // Note: points and creatures should be loaded in AppContext
 
@@ -33,10 +33,13 @@ export const AddLogPage = () => {
     date: new Date().toISOString().split('T')[0],
     diveNumber: '',
 
-    // Location
-    pointId: points[0]?.id || '',
+    // Location (Final Point)
+    pointId: '',
     shopName: '',
-    region: '西伊豆', // Mock default
+    // Hierarchical Selection State
+    region: '',
+    zone: '',
+    area: '',
 
     // Team
     buddy: '',
@@ -78,6 +81,58 @@ export const AddLogPage = () => {
     isPrivate: false,
     photos: [] as string[],
   });
+
+  // Derived Selections for Hierarchy
+  // 1. Regions
+  const availableRegions = Array.from(new Set(points.map(p => p.region))).filter(Boolean);
+
+  // 2. Zones (based on Region)
+  const availableZones = Array.from(new Set(
+    points.filter(p => !formData.region || p.region === formData.region).map(p => p.zone)
+  )).filter(Boolean);
+
+  // 3. Areas (based on Zone)
+  const availableAreas = Array.from(new Set(
+    points.filter(p => (!formData.region || p.region === formData.region) && (!formData.zone || p.zone === formData.zone)).map(p => p.area)
+  )).filter(Boolean);
+
+  // 4. Points (based on Area)
+  const availablePoints = points.filter(p =>
+    (!formData.region || p.region === formData.region) &&
+    (!formData.zone || p.zone === formData.zone) &&
+    (!formData.area || p.area === formData.area)
+  );
+
+  // Creature Search State
+  const [creatureSearchTerm, setCreatureSearchTerm] = useState('');
+
+  // Filtered Creatures for "This Area"
+  const areaCreatures = useMemo(() => {
+    // If no location selected, show nothing or all? User said "Area inhabiting creatures".
+    // We aggregate all points in simple match of current filters.
+    if (!formData.pointId && !formData.area) return [];
+
+    // Find all point IDs in the current scope
+    const targetPointIds = formData.pointId ? [formData.pointId] : availablePoints.map(p => p.id);
+
+    // Find all creatures linked to these points
+    const linkedCreatureIds = new Set(
+      pointCreatures
+        .filter(pc => targetPointIds.includes(pc.pointId) && pc.status === 'approved')
+        .map(pc => pc.creatureId)
+    );
+
+    return creatures.filter(c => linkedCreatureIds.has(c.id));
+  }, [formData.pointId, formData.area, availablePoints, pointCreatures, creatures]);
+
+  // Filtered Creatures for Search
+  const searchResults = useMemo(() => {
+    if (!creatureSearchTerm) return [];
+    return creatures.filter(c =>
+      c.name.includes(creatureSearchTerm) || c.scientificName?.includes(creatureSearchTerm) || c.tags?.some(tag => tag.includes(creatureSearchTerm))
+    ).slice(0, 10); // Limit results
+  }, [creatureSearchTerm, creatures]);
+
 
   const handleSightedCreatureToggle = (creatureId: string) => {
     setFormData(prev => {
@@ -169,6 +224,15 @@ export const AddLogPage = () => {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+
+      // Auto-reset lower hierarchy when upper changes (Optional but good UX)
+      if (name === 'region') {
+        setFormData(prev => ({ ...prev, region: value, zone: '', area: '', pointId: '' }));
+      } else if (name === 'zone') {
+        setFormData(prev => ({ ...prev, zone: value, area: '', pointId: '' }));
+      } else if (name === 'area') {
+        setFormData(prev => ({ ...prev, area: value, pointId: '' }));
+      }
     }
   };
 
@@ -281,61 +345,105 @@ export const AddLogPage = () => {
             isOpen={openSections.location}
             onToggle={() => toggleSection('location')}
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ポイント</label>
-                <select
-                  name="pointId"
-                  required
-                  value={formData.pointId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                >
-                  {points.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+            <div className="space-y-4">
+              {/* Hierarchical Location Selector */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">地方 (Region)</label>
+                  <select
+                    name="region"
+                    value={formData.region}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                  >
+                    <option value="">未選択</option>
+                    {availableRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">エリア (Zone)</label>
+                  <select
+                    name="zone"
+                    value={formData.zone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                    disabled={!formData.region}
+                  >
+                    <option value="">未選択</option>
+                    {availableZones.map(z => <option key={z} value={z}>{z}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">詳細エリア (Area)</label>
+                  <select
+                    name="area"
+                    value={formData.area}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                    disabled={!formData.zone}
+                  >
+                    <option value="">未選択</option>
+                    {availableAreas.map(a => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ポイント</label>
+                  <select
+                    name="pointId"
+                    value={formData.pointId}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none font-bold text-gray-900"
+                    required
+                    disabled={!formData.area && availablePoints.length > 20} // Optional guidance
+                  >
+                    <option value="">ポイントを選択</option>
+                    {availablePoints.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                  </select>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ショップ名</label>
-                <input
-                  type="text"
-                  name="shopName"
-                  value={formData.shopName}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">ガイド</label>
-                <input
-                  type="text"
-                  name="guide"
-                  value={formData.guide}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">バディ</label>
-                <input
-                  type="text"
-                  name="buddy"
-                  value={formData.buddy}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">その他のメンバー</label>
-                <input
-                  type="text"
-                  name="members"
-                  value={formData.members}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  placeholder="カンマ区切り (例: Aさん, Bさん)"
-                />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ショップ名</label>
+                  <input
+                    type="text"
+                    name="shopName"
+                    value={formData.shopName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ガイド</label>
+                  <input
+                    type="text"
+                    name="guide"
+                    value={formData.guide}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">バディ</label>
+                  <input
+                    type="text"
+                    name="buddy"
+                    value={formData.buddy}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">その他のメンバー</label>
+                  <input
+                    type="text"
+                    name="members"
+                    value={formData.members}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                    placeholder="カンマ区切り (例: Aさん, Bさん)"
+                  />
+                </div>
               </div>
             </div>
           </AccordionSection>
@@ -391,6 +499,7 @@ export const AddLogPage = () => {
               </div>
             </div>
           </AccordionSection>
+
 
           {/* Conditions */}
           <AccordionSection
@@ -566,7 +675,82 @@ export const AddLogPage = () => {
             isOpen={openSections.content}
             onToggle={() => toggleSection('content')}
           >
-            <div className="space-y-4">
+            <div className="space-y-6">
+
+              {/* Sighted Creatures Selection */}
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">見た生物を選択</label>
+
+                {/* 1. Area/Point Creatures (Thumbnails) */}
+                {areaCreatures.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs text-gray-500 mb-2 font-bold">このエリアの生物</p>
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                      {areaCreatures.map(c => {
+                        const isSelected = formData.sightedCreatures.includes(c.id);
+                        return (
+                          <button
+                            type="button"
+                            key={c.id}
+                            onClick={() => handleSightedCreatureToggle(c.id)}
+                            className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${isSelected ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-100 hover:border-gray-300'
+                              }`}
+                          >
+                            <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
+                            <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1">
+                              <p className="text-[10px] text-white font-bold truncate text-center">{c.name}</p>
+                            </div>
+                            {isSelected && (
+                              <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5">
+                                <Check size={12} />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Search for others */}
+                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
+                  <p className="text-xs text-gray-500 mb-2 font-bold">その他の生物を検索</p>
+                  <div className="relative">
+                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="生物名を入力..."
+                      value={creatureSearchTerm}
+                      onChange={e => setCreatureSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    />
+                  </div>
+                  {/* Search Results */}
+                  {creatureSearchTerm && (
+                    <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                      {searchResults.map(c => {
+                        const isSelected = formData.sightedCreatures.includes(c.id);
+                        return (
+                          <button
+                            type="button"
+                            key={c.id}
+                            onClick={() => handleSightedCreatureToggle(c.id)}
+                            className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors ${isSelected ? 'bg-green-50 border border-green-200' : 'bg-white hover:bg-gray-100'
+                              }`}
+                          >
+                            <img src={c.imageUrl} className="w-8 h-8 rounded object-cover bg-gray-200" />
+                            <span className={`text-sm font-bold flex-1 ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>{c.name}</span>
+                            {isSelected && <Check size={16} className="text-green-600" />}
+                          </button>
+                        );
+                      })}
+                      {searchResults.length === 0 && <p className="text-center text-xs text-gray-400 py-2">見つかりませんでした</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">メインの生物</label>
                 <select
@@ -576,27 +760,20 @@ export const AddLogPage = () => {
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
                 >
                   <option value="">選択なし</option>
-                  {creatures.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
+                  {/* Show sighted creatures first, then others? Or just all?
+                      User context implies selecting essentially from what was seen.
+                      Let's list All Sighted Creatures + All Area Creatures (deduplicated)
+                  */}
+                  {Array.from(new Set([...formData.sightedCreatures, ...areaCreatures.map(c => c.id)])).map(id => {
+                    const c = creatures.find(x => x.id === id);
+                    if (!c) return null;
+                    return <option key={c.id} value={c.id}>{c.name}</option>;
+                  })}
+                  {/* Fallback: if nothing sighted or in area, allow selecting anything?
+                      Maybe too long list. Let's stick to scoped list for Main Creature for now.
+                  */}
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">他に見た生物</label>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-2 border border-gray-200 rounded-lg">
-                  {creatures.map(c => (
-                    <label key={c.id} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
-                      <input
-                        type="checkbox"
-                        checked={formData.sightedCreatures.includes(c.id)}
-                        onChange={() => handleSightedCreatureToggle(c.id)}
-                        className="rounded text-blue-500 focus:ring-blue-500"
-                      />
-                      <span className="text-sm text-gray-700">{c.name}</span>
-                    </label>
-                  ))}
-                </div>
+                <p className="text-xs text-gray-400 mt-1">※「見た生物」またはエリア内の生物から選択できます</p>
               </div>
 
               <div>

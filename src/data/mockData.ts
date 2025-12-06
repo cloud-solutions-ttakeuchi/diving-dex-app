@@ -1,6 +1,7 @@
 import type { Region, Zone, Area, Point, Creature, User, Log, CertificationMaster, BadgeMaster, Rarity, CreatureStats, RankMaster } from '../types';
 // 生成した生物データをインポート
 import creaturesSeed from '../data/creatures_real.json';
+import pointCreaturesSeed from '../data/point_creatures_seed.json';
 
 // --- Helper Types for JSON Import ---
 // JSONファイルの構造に合わせて型を定義（アプリのCreature型とは異なる部分があるため）
@@ -15,7 +16,7 @@ type SeedCreature = {
   depthRange: { min: number; max: number };
   waterTempRange: { min: number; max: number };
   specialAttributes?: string[];
-  regions: string[];
+  // regions: string[]; // Removed from usage
   size?: string;
   season?: string[];
   imageCredit?: string;
@@ -130,7 +131,7 @@ rawLocations.forEach(regionNode => {
           topography: (pointNode.topography as any[]) || [],
           features: pointNode.features || [],
           description: pointNode.description || '',
-          creatures: [], // Populated dynamically later
+          // creatures: [], // Populated dynamically later
           // Use provided image or fallback
           imageUrl: pointNode.image || 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80',
           images: pointNode.image ? [pointNode.image] : ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&q=80'],
@@ -171,7 +172,7 @@ const CREATURES: Creature[] = creaturesSeed.map((c: SeedCreature) => ({
   depthRange: c.depthRange,
   waterTempRange: c.waterTempRange,
   specialAttributes: c.specialAttributes,
-  regions: c.regions,
+  // regions: c.regions, // Removed from type
   imageCredit: c.imageCredit,
   imageLicense: c.imageLicense,
   imageKeyword: c.imageKeyword,
@@ -252,26 +253,24 @@ function calculateCreatureStats(c: {
   };
 }
 
-// --- Dynamic Linking (生物とポイントの紐付け) ---
-// ポイントの `creatures` 配列を、新しい生物データに基づいて再構築します
+// 5. Dynamic Linking (生物とポイントの紐付け)
+// 代わりに PointCreature 関係テーブルを作成
+import type { PointCreature } from '../types';
+
+// Use generated associations
+export const POINT_CREATURES: PointCreature[] = pointCreaturesSeed as PointCreature[];
+
+// Removed on-the-fly generation logic
+/*
+const determineLocalRarity = ...
+POINTS = POINTS.map(...)
+*/
+
+// Update POINTS to just return point structure (no side-effects needed for POINT_CREATURES population)
 POINTS = POINTS.map(point => {
-  // そのポイントのエリア（region/zone）にマッチする生物を抽出
-  const localCreatures = CREATURES.filter(c => {
-    if (!c.regions) return false;
-    return c.regions.some((r: string) =>
-      point.region.includes(r) || point.zone.includes(r) || point.area.includes(r)
-    );
-  });
-
-  // マッチした生物の中からランダムに最大10匹をこのポイントに「出現」させる
-  // これにより、手動でIDを指定しなくても自動的に図鑑と場所が紐付きます
-  const shuffled = [...localCreatures].sort(() => 0.5 - Math.random());
-  const assignedCreatures = shuffled.slice(0, 10);
-
   return {
     ...point,
-    creatures: assignedCreatures.map(c => c.id), // IDの配列をセット
-    bookmarkCount: Math.floor(Math.random() * 50) // Random bookmark count
+    bookmarkCount: Math.floor(Math.random() * 50)
   };
 });
 
@@ -333,13 +332,11 @@ const rawLogs: Partial<Log>[] = [
 
 const LOGS: Log[] = rawLogs.map(log => {
   // ログのポイント情報を元に、そのポイントにいる生物からランダムに1つ選んでcreatureIdにセット
-  // これにより、ログデータも新しい生物IDと矛盾しなくなります
-  const point = POINTS.find(p => p.id === log.spotId) || POINTS[0];
-  const validCreatures = point.creatures;
+  // POINT_CREATURES を検索
+  const validLinks = POINT_CREATURES.filter(pc => pc.pointId === log.spotId);
 
-  // ポイントに生物が紐付いていればそこから、なければ全生物からランダム
-  const randomCreatureId = validCreatures.length > 0
-    ? validCreatures[Math.floor(Math.random() * validCreatures.length)]
+  const randomCreatureId = validLinks.length > 0
+    ? validLinks[Math.floor(Math.random() * validLinks.length)].creatureId
     : (CREATURES[0]?.id || 'unknown');
 
   return {
@@ -365,6 +362,7 @@ export const INITIAL_DATA = {
   areas: AREAS,
   points: POINTS,
   creatures: CREATURES,
+  pointCreatures: POINT_CREATURES,
   users: USERS,
   logs: LOGS,
 };
