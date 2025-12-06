@@ -277,6 +277,10 @@ export const MyPage = () => {
               <Shield size={16} />
               提案を審査する
             </Link>
+            <Link to="/admin/areas" className="flex items-center gap-2 text-sm font-bold text-orange-600 hover:bg-orange-50 px-3 py-1.5 rounded-lg transition-colors ml-2">
+              <span className="text-orange-500 text-lg">🧹</span>
+              エリア整理
+            </Link>
           </div>
         ) : null}
 
