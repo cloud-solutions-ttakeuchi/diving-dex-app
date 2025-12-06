@@ -198,7 +198,7 @@ export const AddLogPage = () => {
           }
         },
         entryType: formData.entryType as any,
-        creatureId: formData.creatureId || undefined,
+        ...(formData.creatureId ? { creatureId: formData.creatureId } : {}),
         sightedCreatures: formData.sightedCreatures,
         comment: formData.comment,
         isPrivate: formData.isPrivate,
@@ -696,7 +696,7 @@ export const AddLogPage = () => {
                             className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${isSelected ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-100 hover:border-gray-300'
                               }`}
                           >
-                            <img src={c.imageUrl} alt={c.name} className="w-full h-full object-cover" />
+                            <img src={c.imageUrl || '/images/no-image-creature.png'} alt={c.name} className="w-full h-full object-cover" />
                             <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1">
                               <p className="text-[10px] text-white font-bold truncate text-center">{c.name}</p>
                             </div>
@@ -738,7 +738,7 @@ export const AddLogPage = () => {
                             className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors ${isSelected ? 'bg-green-50 border border-green-200' : 'bg-white hover:bg-gray-100'
                               }`}
                           >
-                            <img src={c.imageUrl} className="w-8 h-8 rounded object-cover bg-gray-200" />
+                            <img src={c.imageUrl || '/images/no-image-creature.png'} className="w-8 h-8 rounded object-cover bg-gray-200" />
                             <span className={`text-sm font-bold flex-1 ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>{c.name}</span>
                             {isSelected && <Check size={16} className="text-green-600" />}
                           </button>

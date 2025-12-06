@@ -7,7 +7,7 @@ import clsx from 'clsx';
 
 export const MyPointDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { points, areas, creatures, logs, isAuthenticated } = useApp();
+  const { points, areas, creatures, logs, pointCreatures, isAuthenticated } = useApp();
   const { t } = useLanguage();
   const point = points.find(p => p.id === id);
 
@@ -15,7 +15,12 @@ export const MyPointDetail = () => {
   if (!isAuthenticated) return <div className="text-center mt-10 text-gray-500">{t('common.login_required')}</div>;
 
   const area = areas.find(a => a.id === point.areaId);
-  const pointCreatures = point.creatures
+  /* const area already declared above */
+  const validPointCreatureIds = pointCreatures
+    .filter(pc => pc.pointId === point.id && (pc.status === 'approved' || pc.status === undefined))
+    .map(pc => pc.creatureId);
+
+  const localPointCreatures = validPointCreatureIds
     .map(id => creatures.find(c => c.id === id))
     .filter((c): c is Creature => c !== undefined)
     .sort((a, b) => {
@@ -32,7 +37,7 @@ export const MyPointDetail = () => {
   const userLogs = logs.filter(l => l.spotId === point.id);
 
   const discoveredCount = new Set(userLogs.map(l => l.creatureId)).size;
-  const totalCount = pointCreatures.length;
+  const totalCount = localPointCreatures.length;
   const masteryRate = totalCount > 0 ? Math.round((discoveredCount / totalCount) * 100) : 0;
 
   return (
@@ -49,7 +54,7 @@ export const MyPointDetail = () => {
       <div className="bg-white border border-deepBlue-100 rounded-2xl overflow-hidden shadow-sm">
         <div className="h-32 relative">
           <img
-            src={point.imageUrl}
+            src={point.imageUrl || '/images/no-image-point.png'}
             alt={point.name}
             className="w-full h-full object-cover"
           />
@@ -100,7 +105,7 @@ export const MyPointDetail = () => {
         </h3>
 
         <div className="grid grid-cols-3 gap-3">
-          {pointCreatures.map(creature => {
+          {localPointCreatures.map(creature => {
             const isDiscovered = userLogs.some(l => l.creatureId === creature.id);
 
             return (
@@ -128,7 +133,7 @@ export const MyPointDetail = () => {
                   </div>
 
                   <img
-                    src={isDiscovered ? creature.imageUrl : '/images/locked.png'}
+                    src={isDiscovered ? (creature.imageUrl || '/images/no-image-creature.png') : '/images/locked.png'}
                     alt={creature.name}
                     className={`w-full h-full object-cover ${isDiscovered ? '' : 'opacity-60 p-4'}`}
                   />

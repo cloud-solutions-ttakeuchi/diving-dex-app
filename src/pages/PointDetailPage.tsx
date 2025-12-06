@@ -13,8 +13,8 @@ export const PointDetailPage = () => {
 
   // Local state to track creatures added in this session (to show "Pending" status)
   // Store as object to keep track of rarity too for optimistic display
-  const [pendingCreatures, setPendingCreatures] = useState<{ id: string, rarity: Rarity }[]>([]);
-  const pendingCreatureIds = pendingCreatures.map(p => p.id);
+  /* sentPendingCreatures removed */
+  /* const pendingCreatureIds removed */
 
   const point = points.find(p => p.id === id);
 
@@ -49,7 +49,7 @@ export const PointDetailPage = () => {
       {/* Header with Large Image */}
       <div className="relative h-[40vh] min-h-[300px]">
         <img
-          src={point.imageUrl}
+          src={point.imageUrl || '/images/no-image-point.png'}
           alt={point.name}
           className="w-full h-full object-cover"
         />
@@ -158,7 +158,7 @@ export const PointDetailPage = () => {
                     className="group relative aspect-square rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1"
                   >
                     <img
-                      src={creature.imageUrl}
+                      src={creature.imageUrl || '/images/no-image-creature.png'}
                       alt={creature.name}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
@@ -171,7 +171,7 @@ export const PointDetailPage = () => {
                           e.preventDefault();
                           if (window.confirm('この生物の関連付けを削除（または削除申請）しますか？')) {
                             // Debugging
-                            const link = pointCreatures.find(pc => pc.pointId === point.id && pc.creatureId === creature.id);
+                            /* const link removed */
                             // alert(`Debug: Role=${currentUser.role}, LinkID=${link?.id}, Point=${point.id}, Creature=${creature.id}`);
 
                             // Call context remove
@@ -271,7 +271,7 @@ export const PointDetailPage = () => {
           pointId={point.id}
           currentCreatureIds={inhabitants.map(c => c.id)}
           onClose={() => setIsAddModalOpen(false)}
-          onAdd={(id, rarity) => setPendingCreatures(prev => [...prev, { id, rarity }])}
+          onAdd={() => { }}
         />
       )}
     </div >

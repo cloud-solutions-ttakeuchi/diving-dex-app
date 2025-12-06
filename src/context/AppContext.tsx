@@ -354,23 +354,32 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addLog = async (logData: Omit<Log, 'id' | 'userId'>) => {
+    console.log("[CTX] addLog called with:", logData);
     const newLogId = `l${Date.now()}`;
     const newLog: Log = {
       ...logData,
       id: newLogId,
       userId: currentUser.id,
     };
+    console.log("[CTX] Constructed newLog:", newLog);
 
     // Firestore Persist (Subcollection)
     if (isAuthenticated) {
       try {
-        await setDoc(doc(firestore, 'users', currentUser.id, 'logs', newLogId), newLog);
+        const ref = doc(firestore, 'users', currentUser.id, 'logs', newLogId);
+        console.log("[CTX] Writing to Firestore path:", ref.path);
+
+        await setDoc(ref, newLog);
+        console.log("[CTX] Firestore write successful for log:", newLogId);
+
         // We might not need to update 'users' logs array if we rely on subcollection.
         // But for safety/legacy checks:
         // updateDoc(doc(firestore, 'users', currentUser.id), { logs: arrayUnion(newLogId) });
       } catch (e) {
         console.error("Error adding log:", e);
       }
+    } else {
+      console.warn("[CTX] addLog skipped: Not authenticated");
     }
   };
 

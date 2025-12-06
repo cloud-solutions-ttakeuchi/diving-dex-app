@@ -103,7 +103,7 @@ export const AddPointPage = () => {
         createdAt: new Date().toISOString(),
         images: formData.images,
         imageUrl: formData.images[0] || '/images/seascape.png',
-        creatures: [],
+        /* creatures: [] removed */
         bookmarkCount: 0
       };
 

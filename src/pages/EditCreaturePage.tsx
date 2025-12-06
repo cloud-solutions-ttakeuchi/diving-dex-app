@@ -56,7 +56,7 @@ export const EditCreaturePage = () => {
         imageUrl: existingCreature.imageUrl,
         tagsInput: existingCreature.tags.join(', '),
         specialAttributesInput: existingCreature.specialAttributes ? existingCreature.specialAttributes.join(', ') : '',
-        regionsInput: existingCreature.regions ? existingCreature.regions.join(', ') : '',
+        regionsInput: '',
         depthMin: existingCreature.depthRange?.min.toString() || '',
         depthMax: existingCreature.depthRange?.max.toString() || '',
         size: existingCreature.size || '',

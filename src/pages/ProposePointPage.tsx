@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ArrowLeft, MapPin, Camera, Info, Anchor, Mountain } from 'lucide-react';
 import { compressImage } from '../utils/imageUtils';
-import type { Point } from '../types';
+/* import type { Point } from '../types'; removed */
 
 export const ProposePointPage = () => {
   const navigate = useNavigate();

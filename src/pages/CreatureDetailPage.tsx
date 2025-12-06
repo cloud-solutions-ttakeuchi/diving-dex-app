@@ -251,16 +251,7 @@ export const CreatureDetailPage = () => {
                 </div>
               </div>
 
-              <div>
-                <div className="text-sm font-bold text-gray-500 mb-1">生息地域</div>
-                <div className="flex flex-wrap gap-2">
-                  {creature.regions?.map(region => (
-                    <span key={region} className="text-gray-900 font-bold border-b-2 border-yellow-200">
-                      {region}
-                    </span>
-                  )) || <span className="text-gray-400">情報なし</span>}
-                </div>
-              </div>
+/* regions removed */
             </div>
           </div>
 

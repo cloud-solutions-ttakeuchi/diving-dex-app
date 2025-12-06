@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { CERTIFICATION_MASTER, BADGE_MASTER, TRUST_RANKS } from '../data/mockData';
 
 export const MyPage = () => {
-  const { currentUser, logs, points, zones, areas, creatures, isAuthenticated, updateUser, toggleLikeLog } = useApp();
+  const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, updateUser, toggleLikeLog } = useApp();
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'logbook' | 'collection' | 'favorites' | 'wanted' | 'bookmarks'>('dashboard');
@@ -125,7 +125,8 @@ export const MyPage = () => {
     const pointLogs = userLogs.filter(l => l.spotId === point.id);
     if (pointLogs.length === 0) return null;
 
-    const totalInhabitants = point.creatures.length;
+    const validPointCreatures = pointCreatures.filter(pc => pc.pointId === point.id && (pc.status === 'approved' || pc.status === undefined));
+    const totalInhabitants = validPointCreatures.length;
     const discoveredInhabitants = new Set(pointLogs.map(l => l.creatureId)).size;
     const masteryRate = totalInhabitants > 0 ? Math.round((discoveredInhabitants / totalInhabitants) * 100) : 0;
 
@@ -382,7 +383,9 @@ export const MyPage = () => {
 
                   {/* Creature Locks */}
                   <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    {pm!.point.creatures
+                    {pointCreatures
+                      .filter(pc => pc.pointId === pm!.point.id && (pc.status === 'approved' || pc.status === undefined))
+                      .map(pc => pc.creatureId)
                       .map(cId => creatures.find(c => c.id === cId))
                       .filter((c): c is Creature => c !== undefined)
                       .sort((a, b) => {
@@ -399,7 +402,7 @@ export const MyPage = () => {
                         return (
                           <div key={creature.id} className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-100">
                             <img
-                              src={isDiscovered ? creature.imageUrl : '/images/locked.png'}
+                              src={isDiscovered ? (creature.imageUrl || '/images/no-image-creature.png') : '/images/locked.png'}
                               alt={creature.name}
                               className={`w-full h-full object-cover ${isDiscovered ? '' : 'opacity-60 p-1'
                                 }`}
@@ -452,7 +455,7 @@ export const MyPage = () => {
                 {userLogs.map(log => {
                   const creature = creatures.find(c => c.id === log.creatureId);
                   const point = points.find(p => p.id === log.spotId);
-                  const mainImage = log.photos[0] || creature?.imageUrl || point?.imageUrl || '/images/no-image.png';
+                  const mainImage = log.photos[0] || (creature?.imageUrl || '/images/no-image-creature.png') || (point?.imageUrl || '/images/no-image-point.png') || '/images/no-image.png';
 
                   return (
                     <div
@@ -529,7 +532,7 @@ export const MyPage = () => {
               {/* Header Image */}
               <div className="relative h-64 flex-shrink-0">
                 <img
-                  src={selectedLog.photos[0] || creatures.find(c => c.id === selectedLog.creatureId)?.imageUrl || points.find(p => p.id === selectedLog.spotId)?.imageUrl || '/images/no-image.png'}
+                  src={selectedLog.photos[0] || (creatures.find(c => c.id === selectedLog.creatureId)?.imageUrl || '/images/no-image-creature.png') || (points.find(p => p.id === selectedLog.spotId)?.imageUrl || '/images/no-image-point.png') || '/images/no-image.png'}
                   alt="Log Header"
                   className="w-full h-full object-cover"
                 />
@@ -709,17 +712,47 @@ export const MyPage = () => {
                     <h3 className="font-bold text-deepBlue-900 mb-3 flex items-center gap-2 border-b pb-2 border-gray-100">
                       <Fish size={18} className="text-red-500" /> 生物
                     </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedLog.creatureId && (
-                        <Link to={`/creature/${selectedLog.creatureId}`} className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-sm font-bold border border-red-100 hover:bg-red-100 transition-colors">
-                          ★ {creatures.find(c => c.id === selectedLog.creatureId)?.name || 'Unknown'}
-                        </Link>
-                      )}
-                      {selectedLog.sightedCreatures?.map(id => (
-                        <Link key={id} to={`/creature/${id}`} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm hover:bg-gray-200 transition-colors">
-                          {creatures.find(c => c.id === id)?.name || 'Unknown'}
-                        </Link>
-                      ))}
+                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {/* Main Creature */}
+                      {selectedLog.creatureId && (() => {
+                        const c = creatures.find(c => c.id === selectedLog.creatureId);
+                        if (c) {
+                          return (
+                            <Link key={c.id} to={`/creature/${c.id}`} className="group relative block aspect-square rounded-xl overflow-hidden border-2 border-red-200 shadow-sm hover:shadow-md transition-all">
+                              <img
+                                src={c.imageUrl || '/images/no-image-creature.png'}
+                                alt={c.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg shadow-sm">MAIN</div>
+                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
+                                <div className="text-white text-xs font-bold truncate text-center drop-shadow-md">{c.name}</div>
+                              </div>
+                            </Link>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                      {/* Sighted Creatures */}
+                      {selectedLog.sightedCreatures
+                        ?.filter(id => id !== selectedLog.creatureId)
+                        .map(id => {
+                          const c = creatures.find(c => c.id === id);
+                          if (!c) return null;
+                          return (
+                            <Link key={id} to={`/creature/${id}`} className="group relative block aspect-square rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all">
+                              <img
+                                src={c.imageUrl || '/images/no-image-creature.png'}
+                                alt={c.name}
+                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                              />
+                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-2 pt-6">
+                                <div className="text-white text-xs font-bold truncate text-center drop-shadow-md">{c.name}</div>
+                              </div>
+                            </Link>
+                          );
+                        })}
                     </div>
                   </section>
                 )}
@@ -794,7 +827,7 @@ export const MyPage = () => {
                   )}
                 >
                   <img
-                    src={creature.imageUrl}
+                    src={creature.imageUrl || '/images/no-image-creature.png'}
                     alt={creature.name}
                     className={clsx(
                       "object-cover transition-transform duration-700 group-hover:scale-110",

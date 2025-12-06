@@ -3,7 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ChevronLeft, MapPin, Camera, Info, Anchor, Mountain } from 'lucide-react';
 import { compressImage } from '../utils/imageUtils';
-import type { Point } from '../types';
+/* import type { Point } from '../types'; removed */
 
 export const EditPointPage = () => {
   const { id } = useParams<{ id: string }>();
