@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiveLog } from '../types';
 import { compressImage } from '../utils/imageUtils';
@@ -158,6 +158,10 @@ export const EditLogPage = () => {
       c.name.includes(creatureSearchTerm) || c.scientificName?.includes(creatureSearchTerm) || c.tags?.some(tag => tag.includes(creatureSearchTerm))
     ).slice(0, 10); // Limit results
   }, [creatureSearchTerm, creatures]);
+
+  // Help Popups
+  const [activeHelp, setActiveHelp] = useState<string | null>(null);
+  const toggleHelp = (key: string) => setActiveHelp(prev => prev === key ? null : key);
 
   if (!isAuthenticated) {
     return (
@@ -725,7 +729,17 @@ export const EditLogPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">メインの生物</label>
+                <div className="flex items-center gap-2 mb-1">
+                  <label className="block text-sm font-medium text-gray-700">メインの生物</label>
+                  <button type="button" onClick={() => toggleHelp('mainCreature')} className="text-gray-400 hover:text-blue-500 transition-colors">
+                    <Info size={16} />
+                  </button>
+                </div>
+                {activeHelp === 'mainCreature' && (
+                  <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mb-2 animate-fade-in text-left">
+                    ※写真が登録されていない場合、この生物の画像がログ一覧の紹介画像（サムネイル）として使用されます
+                  </div>
+                )}
                 <select
                   name="creatureId"
                   value={formData.creatureId}
@@ -756,7 +770,17 @@ export const EditLogPage = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">写真</label>
+                <div className="flex items-center gap-2 mb-1">
+                  <label className="block text-sm font-medium text-gray-700">写真</label>
+                  <button type="button" onClick={() => toggleHelp('photo')} className="text-gray-400 hover:text-blue-500 transition-colors">
+                    <Info size={16} />
+                  </button>
+                </div>
+                {activeHelp === 'photo' && (
+                  <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mb-2 animate-fade-in text-left">
+                    ※1枚目の写真がログ一覧の紹介画像（サムネイル）として使用されます
+                  </div>
+                )}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {/* Upload Button */}
                   <div
@@ -790,16 +814,27 @@ export const EditLogPage = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="isPrivate"
-                  checked={formData.isPrivate}
-                  onChange={handleChange}
-                  id="isPrivate"
-                  className="rounded text-blue-500 focus:ring-blue-500"
-                />
-                <label htmlFor="isPrivate" className="text-sm text-gray-700">非公開にする</label>
+              <div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="isPrivate"
+                    checked={formData.isPrivate}
+                    onChange={handleChange}
+                    id="isPrivate"
+                    className="rounded text-blue-500 focus:ring-blue-500"
+                  />
+                  <label htmlFor="isPrivate" className="text-sm font-bold text-gray-700">非公開にする</label>
+                  <button type="button" onClick={() => toggleHelp('private')} className="text-gray-400 hover:text-blue-500 transition-colors">
+                    <Info size={16} />
+                  </button>
+                </div>
+                {activeHelp === 'private' && (
+                  <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mt-2 animate-fade-in leading-relaxed text-left">
+                    チェックを入れると自分専用のログになります。<br />
+                    公開する場合、「チーム情報」と「ショップ情報」以外のデータが他のユーザーにも公開されます。
+                  </div>
+                )}
               </div>
             </div>
           </AccordionSection>

@@ -59,7 +59,7 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
             </h2>
             <div className="text-sm opacity-80 flex items-center gap-1 mt-1">
               <MapPin size={14} />
-              {log.location.region} {log.location.shopName && ` / ${log.location.shopName}`}
+              {log.location.region} {(isOwner && log.location.shopName) && ` / ${log.location.shopName}`}
             </div>
 
             {/* Like Button in Header */}

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check } from 'lucide-react';
+import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiveLog } from '../types';
 import { compressImage } from '../utils/imageUtils';
@@ -27,8 +27,12 @@ export const AddLogPage = () => {
     );
   }
 
+  // Help Popups
+  const [activeHelp, setActiveHelp] = useState<string | null>(null);
+  const toggleHelp = (key: string) => setActiveHelp(prev => prev === key ? null : key);
+
   // Form State
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LogFormData>({
     // Basic
     date: new Date().toISOString().split('T')[0],
     diveNumber: '',
@@ -748,91 +752,116 @@ export const AddLogPage = () => {
                     </div>
                   )}
                 </div>
-              </div>
 
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">メインの生物</label>
-                <select
-                  name="creatureId"
-                  value={formData.creatureId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                >
-                  <option value="">選択なし</option>
-                  {/* Show sighted creatures first, then others? Or just all?
-                      User context implies selecting essentially from what was seen.
-                      Let's list All Sighted Creatures + All Area Creatures (deduplicated)
-                  */}
-                  {Array.from(new Set([...formData.sightedCreatures, ...areaCreatures.map(c => c.id)])).map(id => {
-                    const c = creatures.find(x => x.id === id);
-                    if (!c) return null;
-                    return <option key={c.id} value={c.id}>{c.name}</option>;
-                  })}
-                  {/* Fallback: if nothing sighted or in area, allow selecting anything?
-                      Maybe too long list. Let's stick to scoped list for Main Creature for now.
-                  */}
-                </select>
-                <p className="text-xs text-gray-400 mt-1">※「見た生物」またはエリア内の生物から選択できます</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">コメント</label>
-                <textarea
-                  name="comment"
-                  rows={3}
-                  value={formData.comment}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none resize-none"
-                  placeholder="ログの感想やメモ..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">写真</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {/* Upload Button */}
-                  <div
-                    className="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer"
-                    onClick={() => document.getElementById('log-photos-upload')?.click()}
-                  >
-                    <Camera size={24} className="mb-1" />
-                    <span className="text-xs">写真を追加</span>
-                    <input
-                      type="file"
-                      id="log-photos-upload"
-                      accept="image/*"
-                      multiple
-                      className="hidden"
-                      onChange={handlePhotoUpload}
-                    />
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <label className="block text-sm font-medium text-gray-700">メインの生物</label>
+                    <button type="button" onClick={() => toggleHelp('mainCreature')} className="text-gray-400 hover:text-blue-500 transition-colors">
+                      <Info size={16} />
+                    </button>
                   </div>
-                  {/* Photo Previews */}
-                  {formData.photos.map((photo, index) => (
-                    <div key={index} className="aspect-square rounded-xl overflow-hidden relative group">
-                      <img src={photo} alt={`Log photo ${index + 1}`} className="w-full h-full object-cover" />
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(index)}
-                        className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <ArrowDown size={12} className="rotate-45" />
-                      </button>
+                  {activeHelp === 'mainCreature' && (
+                    <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mb-2 animate-fade-in text-left">
+                      ※写真が登録されていない場合、この生物の画像がログ一覧の紹介画像（サムネイル）として使用されます
                     </div>
-                  ))}
+                  )}
+                  <select
+                    name="creatureId"
+                    value={formData.creatureId}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                  >
+                    <option value="">選択なし</option>
+                    {/* Scope to Sighted + Area creatures */}
+                    {Array.from(new Set([...formData.sightedCreatures, ...areaCreatures.map(c => c.id)])).map(id => {
+                      const c = creatures.find(x => x.id === id);
+                      if (!c) return null;
+                      return <option key={c.id} value={c.id}>{c.name}</option>;
+                    })}
+                  </select>
+                  <p className="text-xs text-gray-400 mt-1">※「見た生物」またはエリア内の生物から選択できます</p>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  name="isPrivate"
-                  checked={formData.isPrivate}
-                  onChange={handleChange}
-                  id="isPrivate"
-                  className="rounded text-blue-500 focus:ring-blue-500"
-                />
-                <label htmlFor="isPrivate" className="text-sm text-gray-700">非公開にする</label>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">コメント</label>
+                  <textarea
+                    name="comment"
+                    rows={3}
+                    value={formData.comment}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none resize-none"
+                    placeholder="ログの感想やメモ..."
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <label className="block text-sm font-medium text-gray-700">写真</label>
+                    <button type="button" onClick={() => toggleHelp('photo')} className="text-gray-400 hover:text-blue-500 transition-colors">
+                      <Info size={16} />
+                    </button>
+                  </div>
+                  {activeHelp === 'photo' && (
+                    <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mb-2 animate-fade-in text-left">
+                      ※1枚目の写真がログ一覧の紹介画像（サムネイル）として使用されます
+                    </div>
+                  )}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {/* Upload Button */}
+                    <div
+                      className="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:bg-gray-50 transition-colors cursor-pointer"
+                      onClick={() => document.getElementById('log-photos-upload')?.click()}
+                    >
+                      <Camera size={24} className="mb-1" />
+                      <span className="text-xs">写真を追加</span>
+                      <input
+                        type="file"
+                        id="log-photos-upload"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                      />
+                    </div>
+                    {/* Photo Previews */}
+                    {formData.photos.map((photo, index) => (
+                      <div key={index} className="aspect-square rounded-xl overflow-hidden relative group">
+                        <img src={photo} alt={`Log photo ${index + 1}`} className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <ArrowDown size={12} className="rotate-45" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      name="isPrivate"
+                      checked={formData.isPrivate}
+                      onChange={handleChange}
+                      id="isPrivate"
+                      className="rounded text-blue-500 focus:ring-blue-500"
+                    />
+                    <label htmlFor="isPrivate" className="text-sm font-bold text-gray-700">非公開にする</label>
+                    <button type="button" onClick={() => toggleHelp('private')} className="text-gray-400 hover:text-blue-500 transition-colors">
+                      <Info size={16} />
+                    </button>
+                  </div>
+                  {activeHelp === 'private' && (
+                    <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mt-2 animate-fade-in leading-relaxed text-left">
+                      チェックを入れると自分専用のログになります。<br />
+                      公開する場合、「チーム情報」と「ショップ情報」以外のデータが他のユーザーにも公開されます。
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </AccordionSection>
