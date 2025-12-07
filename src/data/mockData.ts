@@ -14,8 +14,8 @@ type SeedCreature = {
   family?: string;
   tags: string[];
   description: string;
-  baseRarity: string; // JSONではbaseRarity
-  image: string;      // JSONではimage
+  rarity: string; // JSON uses 'rarity'
+  imageUrl: string;      // JSON uses 'imageUrl'
   depthRange: { min: number; max: number };
   waterTempRange: { min: number; max: number };
   specialAttributes?: string[];
@@ -177,8 +177,8 @@ const CREATURES: Creature[] = creaturesSeed.map((c: SeedCreature) => ({
   category: c.category,
   tags: c.tags,
   description: c.description,
-  rarity: (rarityMap[c.baseRarity] || 'Common') as Rarity,
-  imageUrl: c.image,
+  rarity: (rarityMap[c.rarity] || 'Common') as Rarity,
+  imageUrl: c.imageUrl,
   depthRange: c.depthRange,
   waterTempRange: c.waterTempRange,
   specialAttributes: c.specialAttributes,
@@ -193,7 +193,7 @@ const CREATURES: Creature[] = creaturesSeed.map((c: SeedCreature) => ({
     tags: c.tags,
     specialAttributes: c.specialAttributes,
     size: c.size,
-    baseRarity: c.baseRarity
+    baseRarity: c.rarity
   })
 }));
 
