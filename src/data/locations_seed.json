@@ -810,1071 +810,6 @@
         "type": "Zone"
       },
       {
-        "name": "伊豆",
-        "description": "首都圏からアクセスしやすい多様なダイビングスポット",
-        "children": [
-          {
-            "name": "熱海",
-            "description": "沈船や近隣の島へのアクセス拠点",
-            "id": "a_1764956598_0_2_0",
-            "type": "Area",
-            "children": [
-              {
-                "name": "沈船ポイント",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "wreck",
-                  "sand"
-                ],
-                "features": [
-                  "wreck",
-                  "fish school",
-                  "soft coral"
-                ],
-                "description": "熱海沖に沈む全長80mの漁船。魚影が濃く、ソフトコーラルも美しい。",
-                "imageKeyword": "sunken ship",
-                "id": "p_a_1764956598_0_2_0_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sunkenship,underwater"
-              },
-              {
-                "name": "小曽我洞窟",
-                "level": "Intermediate",
-                "maxDepth": 18,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "cave",
-                  "glass fish",
-                  "lobster"
-                ],
-                "description": "ダイナミックな地形が魅力。光の差し込む洞窟内は幻想的。",
-                "imageKeyword": "underwater cave",
-                "id": "p_a_1764956598_0_2_0_1",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwatercave,underwater"
-              },
-              {
-                "name": "熱海瀬",
-                "level": "Advanced",
-                "maxDepth": 35,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "shark",
-                  "yellowtail",
-                  "drift"
-                ],
-                "description": "潮流が速い外洋ポイント。回遊魚や大物狙いに最適。",
-                "imageKeyword": "open water fish",
-                "id": "p_a_1764956598_0_2_0_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)openwaterfish,underwater"
-              },
-              {
-                "name": "網代沖",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "seahorse",
-                  "nudibranch"
-                ],
-                "description": "穏やかな海況で初心者にもおすすめ。マクロ生物が豊富。",
-                "imageKeyword": "seahorse underwater",
-                "id": "p_a_1764956598_0_2_0_3",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)seahorseunderwater,underwater"
-              },
-              {
-                "name": "フタ根",
-                "level": "Intermediate",
-                "maxDepth": 28,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "fish school",
-                  "soft coral",
-                  "octopus"
-                ],
-                "description": "根の周りに魚が集まる人気ポイント。ソフトコーラルも綺麗。",
-                "imageKeyword": "coral reef fish",
-                "id": "p_a_1764956598_0_2_0_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)coralreeffish,underwater"
-              },
-              {
-                "name": "曽我浦",
-                "level": "Beginner",
-                "maxDepth": 12,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "small fish",
-                  "sea slug"
-                ],
-                "description": "ビーチエントリーで手軽に潜れる。初心者や体験ダイビング向け。",
-                "imageKeyword": "beach dive",
-                "id": "p_a_1764956598_0_2_0_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)beachdive,underwater"
-              },
-              {
-                "name": "お宮の熱海",
-                "level": "Beginner",
-                "maxDepth": 10,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "small fish",
-                  "seaweed",
-                  "easy dive"
-                ],
-                "description": "穏やかな海で初心者も安心。手軽に楽しめるビーチポイント。",
-                "imageKeyword": "easy diving",
-                "id": "p_a_1764956598_0_2_0_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)easydiving,underwater"
-              },
-              {
-                "name": "熱海海中公園",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock",
-                  "artificial reef"
-                ],
-                "features": [
-                  "fish",
-                  "artificial reef",
-                  "easy dive"
-                ],
-                "description": "人工漁礁があり、魚が集まりやすい。初心者でも楽しめる。",
-                "imageKeyword": "artificial reef",
-                "id": "p_a_1764956598_0_2_0_7",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)artificialreef,underwater"
-              },
-              {
-                "name": "江之浦",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "fish school",
-                  "coral",
-                  "colorful"
-                ],
-                "description": "ドロップオフがあり、魚影が濃い。ソフトコーラルも豊富。",
-                "imageKeyword": "underwater coral",
-                "id": "p_a_1764956598_0_2_0_8",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwatercoral,underwater"
-              },
-              {
-                "name": "長根",
-                "level": "Intermediate",
-                "maxDepth": 22,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "fish",
-                  "macro",
-                  "octopus"
-                ],
-                "description": "様々な生物が見られる。マクロ撮影にもおすすめ。",
-                "imageKeyword": "underwater macro",
-                "id": "p_a_1764956598_0_2_0_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwatermacro,underwater"
-              }
-            ]
-          },
-          {
-            "name": "伊東",
-            "description": "富戸や八幡野へのアクセス拠点",
-            "id": "a_1764956598_0_2_1",
-            "type": "Area",
-            "children": [
-              {
-                "name": "白根",
-                "level": "Intermediate",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "macro",
-                  "fish"
-                ],
-                "description": "ソフトコーラルが群生し、多種多様な魚が見られる人気のポイント。稀にハンマーヘッドシャークも。",
-                "imageKeyword": "shirane diving",
-                "id": "p_a_1764956598_0_2_1_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)shiranediving,underwater"
-              },
-              {
-                "name": "赤沢",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "fish"
-                ],
-                "description": "穏やかな湾内で、初心者でも安心して楽しめる。ウミウシなどのマクロ生物が豊富。",
-                "imageKeyword": "akazawa diving",
-                "id": "p_a_1764956598_0_2_1_1",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)akazawadiving,underwater"
-              },
-              {
-                "name": "一碧湖",
-                "level": "Beginner",
-                "maxDepth": 8,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "lakebed",
-                  "plants"
-                ],
-                "features": [
-                  "freshwater fish",
-                  "plants"
-                ],
-                "description": "淡水ダイビングポイント。ブラックバスやコイなどが生息。透明度は時期による。",
-                "imageKeyword": "ippeki lake diving",
-                "id": "p_a_1764956598_0_2_1_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ippekilakediving,underwater"
-              },
-              {
-                "name": "川奈いるか浜",
-                "level": "Beginner",
-                "maxDepth": 12,
-                "entryType": "beach",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "fish",
-                  "beginner friendly"
-                ],
-                "description": "初心者講習にも最適な穏やかなビーチポイント。様々な熱帯魚も見られる。",
-                "imageKeyword": "kawana irukahama diving",
-                "id": "p_a_1764956598_0_2_1_3",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kawanairukahamadiving,underwater"
-              },
-              {
-                "name": "五島根",
-                "level": "Advanced",
-                "maxDepth": 40,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "pelagic fish",
-                  "shark"
-                ],
-                "description": "潮流が速く上級者向け。回遊魚や大型の魚影が期待できる。ドリフトダイビング。",
-                "imageKeyword": "gotone diving",
-                "id": "p_a_1764956598_0_2_1_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)gotonediving,underwater"
-              },
-              {
-                "name": "ヨコバマ",
-                "level": "Beginner",
-                "maxDepth": 18,
-                "entryType": "beach",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "fish"
-                ],
-                "description": "浅場でじっくりマクロ生物観察を楽しめる。クマノミやハゼなどが豊富。",
-                "imageKeyword": "yokobama diving",
-                "id": "p_a_1764956598_0_2_1_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yokobamadiving,underwater"
-              },
-              {
-                "name": "脇の浜",
-                "level": "Beginner",
-                "maxDepth": 10,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "fish",
-                  "beginner friendly"
-                ],
-                "description": "穏やかなビーチエントリー。家族連れにも人気。シュノーケリングにも最適。",
-                "imageKeyword": "wakinohama diving",
-                "id": "p_a_1764956598_0_2_1_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)wakinohamadiving,underwater"
-              },
-              {
-                "name": "富戸ホール",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "cave",
-                  "fish"
-                ],
-                "description": "海底にある巨大な洞窟を探検できる。神秘的な光景が広がる。",
-                "imageKeyword": "futo hole diving",
-                "id": "p_a_1764956598_0_2_1_7",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)futoholediving,underwater"
-              },
-              {
-                "name": "ボートポイント",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "fish",
-                  "coral"
-                ],
-                "description": "カラフルなソフトコーラルや、様々な魚の群れが見られる。写真撮影にも人気。",
-                "imageKeyword": "boat point diving",
-                "id": "p_a_1764956598_0_2_1_8",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)boatpointdiving,underwater"
-              },
-              {
-                "name": "雲見",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "fish",
-                  "cave",
-                  "macro"
-                ],
-                "description": "ダイナミックな地形と豊富な生物層が魅力。トンネルやアーチなど変化に富んだ地形。",
-                "imageKeyword": "kumomi diving",
-                "id": "p_a_1764956598_0_2_1_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kumomidiving,underwater"
-              }
-            ]
-          },
-          {
-            "name": "大瀬崎",
-            "description": "湾内の穏やかなダイビングスポット",
-            "id": "a_1764956598_0_2_2",
-            "type": "Area",
-            "children": [
-              {
-                "name": "湾内",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "beginner"
-                ],
-                "description": "初心者向け。穏やかな環境で練習や体験ダイビングに最適。多様な生物観察が可能。",
-                "imageKeyword": "osezaki bay beginner dive",
-                "id": "p_a_1764956598_0_2_2_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakibaybeginnerdive,underwater"
-              },
-              {
-                "name": "先端",
-                "level": "Intermediate",
-                "maxDepth": 30,
-                "entryType": "beach",
-                "current": "weak",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "fish",
-                  "drift"
-                ],
-                "description": "回遊魚や群れが見られる可能性あり。透明度も期待できる人気ポイント。",
-                "imageKeyword": "osezaki tip dive",
-                "id": "p_a_1764956598_0_2_2_1",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakitipdive,underwater"
-              },
-              {
-                "name": "門下",
-                "level": "Beginner",
-                "maxDepth": 20,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "beginner"
-                ],
-                "description": "多様な生物が生息。マクロ生物観察に最適。初心者も楽しめる。",
-                "imageKeyword": "osezaki mongesita dive",
-                "id": "p_a_1764956598_0_2_2_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakimongesitadive,underwater"
-              },
-              {
-                "name": "柵下",
-                "level": "Beginner",
-                "maxDepth": 18,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro"
-                ],
-                "description": "名前の通り柵の下にあるポイント。多くの生物が観察できる。",
-                "imageKeyword": "osezaki sakusita dive",
-                "id": "p_a_1764956598_0_2_2_3",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakisakusitadive,underwater"
-              },
-              {
-                "name": "大川出し",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "fish"
-                ],
-                "description": "ボートエントリー限定。沖合のポイントで、回遊魚などの大物に出会えるかも。",
-                "imageKeyword": "osezaki okawadasi dive",
-                "id": "p_a_1764956598_0_2_2_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakiokawadasidive,underwater"
-              },
-              {
-                "name": "一本松",
-                "level": "Intermediate",
-                "maxDepth": 28,
-                "entryType": "beach",
-                "current": "weak",
-                "topography": [
-                  "rock"
-                ],
-                "features": [
-                  "fish",
-                  "macro"
-                ],
-                "description": "多様な地形と生物が楽しめる。一本松を目印にする。",
-                "imageKeyword": "osezaki ipponmatu dive",
-                "id": "p_a_1764956598_0_2_2_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakiipponmatudive,underwater"
-              },
-              {
-                "name": "沖の根",
-                "level": "Advanced",
-                "maxDepth": 40,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "fish",
-                  "drift"
-                ],
-                "description": "上級者向け。ドリフトダイビングが楽しめる。潮流に注意。",
-                "imageKeyword": "osezaki okinone dive",
-                "id": "p_a_1764956598_0_2_2_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakiokinonedive,underwater"
-              },
-              {
-                "name": "二の根",
-                "level": "Intermediate",
-                "maxDepth": 35,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock"
-                ],
-                "features": [
-                  "fish",
-                  "macro"
-                ],
-                "description": "魚影が濃く、マクロ生物も豊富。中級者以上向け。",
-                "imageKeyword": "osezaki ninone dive",
-                "id": "p_a_1764956598_0_2_2_7",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakininonedive,underwater"
-              },
-              {
-                "name": "三の根",
-                "level": "Advanced",
-                "maxDepth": 40,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "fish",
-                  "shark"
-                ],
-                "description": "潮流が速い場合があり、上級者向け。大型回遊魚に出会える可能性あり。",
-                "imageKeyword": "osezaki sannone dive",
-                "id": "p_a_1764956598_0_2_2_8",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakisannonedive,underwater"
-              },
-              {
-                "name": "淡島",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "fish",
-                  "macro"
-                ],
-                "description": "様々な生物が生息しており、中級者向けのポイントです。",
-                "imageKeyword": "awashima dive site",
-                "id": "p_a_1764956598_0_2_2_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)awashimadivesite,underwater"
-              }
-            ]
-          },
-          {
-            "name": "井田",
-            "description": "透明度の高い海とマクロ生物が豊富",
-            "id": "a_1764956598_0_2_3",
-            "type": "Area",
-            "children": [
-              {
-                "name": "井田ビーチ",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "beginner"
-                ],
-                "description": "穏やかなビーチエントリー。初心者向けで、マクロ生物観察に最適。",
-                "imageKeyword": "ida beach diving",
-                "id": "p_a_1764956598_0_2_3_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)idabeachdiving,underwater"
-              },
-              {
-                "name": "井田根",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "macro",
-                  "fish school"
-                ],
-                "description": "豪快なドロップオフと魚影の濃さが魅力。ソフトコーラルが綺麗。",
-                "imageKeyword": "ida root diving",
-                "id": "p_a_1764956598_0_2_3_1",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)idarootdiving,underwater"
-              },
-              {
-                "name": "ブリマチ",
-                "level": "Intermediate",
-                "maxDepth": 28,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "fish school"
-                ],
-                "description": "回遊魚やマクロ生物が豊富。透明度が高いことが多い。",
-                "imageKeyword": "burimachi diving",
-                "id": "p_a_1764956598_0_2_3_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)burimachidiving,underwater"
-              },
-              {
-                "name": "平根",
-                "level": "Intermediate",
-                "maxDepth": 22,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "fish school"
-                ],
-                "description": "根の周りに魚が集まりやすいポイント。初心者も楽しめる。",
-                "imageKeyword": "hirane diving",
-                "id": "p_a_1764956598_0_2_3_3",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)hiranediving,underwater"
-              },
-              {
-                "name": "沖根",
-                "level": "Advanced",
-                "maxDepth": 35,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "fish school",
-                  "drift"
-                ],
-                "description": "潮流があるため、ドリフトダイビング向き。大物にも期待。",
-                "imageKeyword": "okine diving",
-                "id": "p_a_1764956598_0_2_3_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)okinediving,underwater"
-              },
-              {
-                "name": "フトネ",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "fish school"
-                ],
-                "description": "魚影が濃く、マクロ生物も楽しめるバランスの取れたポイント。",
-                "imageKeyword": "futone diving",
-                "id": "p_a_1764956598_0_2_3_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)futonediving,underwater"
-              },
-              {
-                "name": "三ツ石",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock"
-                ],
-                "features": [
-                  "fish school",
-                  "rock formation"
-                ],
-                "description": "特徴的な岩が3つ並ぶポイント。魚の隠れ家にもなっている。",
-                "imageKeyword": "mitsuishi diving",
-                "id": "p_a_1764956598_0_2_3_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)mitsuishidiving,underwater"
-              },
-              {
-                "name": "カマガ根",
-                "level": "Advanced",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "rock",
-                  "dropoff"
-                ],
-                "features": [
-                  "fish school",
-                  "drift"
-                ],
-                "description": "潮流に乗ってダイナミックなドリフトダイビングを楽しめる。",
-                "imageKeyword": "kamagane diving",
-                "id": "p_a_1764956598_0_2_3_7",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kamaganediving,underwater"
-              },
-              {
-                "name": "タカ根",
-                "level": "Intermediate",
-                "maxDepth": 27,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "fish school"
-                ],
-                "description": "ソフトコーラルと魚影が美しい。じっくり観察したいポイント。",
-                "imageKeyword": "takane diving",
-                "id": "p_a_1764956598_0_2_3_8",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)takanediving,underwater"
-              },
-              {
-                "name": "一本松",
-                "level": "Intermediate",
-                "maxDepth": 23,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "fish school"
-                ],
-                "description": "イサキやキンギョハナダイなどの群れが見られる。",
-                "imageKeyword": "ipponmatsu diving",
-                "id": "p_a_1764956598_0_2_3_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ipponmatsudiving,underwater"
-              }
-            ]
-          },
-          {
-            "name": "雲見",
-            "description": "洞窟やアーチなどの地形が特徴",
-            "id": "a_1764956598_0_2_4",
-            "type": "Area",
-            "children": [
-              {
-                "name": "牛着岩（うしつきいわ）",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "地形",
-                  "ソフトコーラル"
-                ],
-                "description": "雲見を代表するダイビングポイント。複雑な地形と豊富な魚影が魅力。",
-                "imageKeyword": "ushitsuki rock diving",
-                "id": "p_a_1764956598_0_2_4_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ushitsukirockdiving,underwater"
-              },
-              {
-                "name": "三競（さんきょう）",
-                "level": "Advanced",
-                "maxDepth": 35,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "回遊魚",
-                  "大物",
-                  "地形"
-                ],
-                "description": "外洋に面し、ダイナミックな地形と回遊魚が期待できる上級者向け。",
-                "imageKeyword": "sankyo diving point",
-                "id": "p_a_1764956598_0_2_4_1",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sankyodivingpoint,underwater"
-              },
-              {
-                "name": "V字",
-                "level": "Intermediate",
-                "maxDepth": 28,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "地形",
-                  "ソフトコーラル",
-                  "ハナダイ"
-                ],
-                "description": "V字に切れ込んだ地形が特徴。様々な生物が生息。",
-                "imageKeyword": "v shape diving",
-                "id": "p_a_1764956598_0_2_4_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)vshapediving,underwater"
-              },
-              {
-                "name": "24ブイ",
-                "level": "Intermediate",
-                "maxDepth": 22,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "ハナダイ",
-                  "キンギョハナダイ",
-                  "ソフトコーラル"
-                ],
-                "description": "カラフルなハナダイの群れが見られる癒し系ポイント。",
-                "imageKeyword": "24 buoy diving",
-                "id": "p_a_1764956598_0_2_4_3",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)24buoydiving,underwater"
-              },
-              {
-                "name": "はまゆりの根",
-                "level": "Beginner",
-                "maxDepth": 18,
-                "entryType": "boat",
-                "current": "none",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "ハゼ",
-                  "エビ"
-                ],
-                "description": "穏やかな環境で、マクロ生物観察に最適。",
-                "imageKeyword": "hamayuri root diving",
-                "id": "p_a_1764956598_0_2_4_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)hamayurirootdiving,underwater"
-              },
-              {
-                "name": "棚下",
-                "level": "Intermediate",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "ソフトコーラル",
-                  "ハナダイ",
-                  "回遊魚"
-                ],
-                "description": "ドロップオフ沿いにソフトコーラルが群生。",
-                "imageKeyword": "tanashita diving",
-                "id": "p_a_1764956598_0_2_4_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)tanashitadiving,underwater"
-              },
-              {
-                "name": "小牛の洞窟",
-                "level": "Intermediate",
-                "maxDepth": 18,
-                "entryType": "boat",
-                "current": "none",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "地形",
-                  "ソフトコーラル",
-                  "魚影"
-                ],
-                "description": "洞窟探検が楽しめる。光の差し込みが美しい。",
-                "imageKeyword": "little bull cave diving",
-                "id": "p_a_1764956598_0_2_4_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)littlebullcavediving,underwater"
-              },
-              {
-                "name": "大根",
-                "level": "Advanced",
-                "maxDepth": 40,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "回遊魚",
-                  "大物",
-                  "地形"
-                ],
-                "description": "潮流が速いポイント。回遊魚や大物が期待できる。",
-                "imageKeyword": "daikon diving",
-                "id": "p_a_1764956598_0_2_4_7",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)daikondiving,underwater"
-              },
-              {
-                "name": "フト根",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "sand"
-                ],
-                "features": [
-                  "ソフトコーラル",
-                  "ハナダイ",
-                  "キンギョハナダイ"
-                ],
-                "description": "ソフトコーラルが綺麗。様々な生物が見られる。",
-                "imageKeyword": "futo root diving",
-                "id": "p_a_1764956598_0_2_4_8",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)futorootdiving,underwater"
-              },
-              {
-                "name": "砂地",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "none",
-                "topography": [
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "ハゼ",
-                  "エビ"
-                ],
-                "description": "穏やかな砂地。じっくりマクロ生物観察を楽しめる。",
-                "imageKeyword": "sandy beach diving",
-                "id": "p_a_1764956598_0_2_4_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sandybeachdiving,underwater"
-              }
-            ]
-          }
-        ],
-        "id": "z_1764956598_0_2",
-        "type": "Zone"
-      },
-      {
         "name": "奄美群島",
         "description": "手付かずの自然が残る島々",
         "children": [
@@ -2503,28 +1438,839 @@
             "description": "沈船ポイントが有名、温泉地としても人気",
             "id": "a_1765003008_0_2_0",
             "type": "Area",
-            "children": []
+            "children": [
+              {
+                "name": "沈船ポイント",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "wreck",
+                  "sand"
+                ],
+                "features": [
+                  "wreck",
+                  "fish school",
+                  "soft coral"
+                ],
+                "description": "熱海沖に沈む全長80mの漁船。魚影が濃く、ソフトコーラルも美しい。",
+                "imageKeyword": "sunken ship",
+                "id": "p_a_1764956598_0_2_0_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sunkenship,underwater"
+              },
+              {
+                "name": "小曽我洞窟",
+                "level": "Intermediate",
+                "maxDepth": 18,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "cave",
+                  "rock"
+                ],
+                "features": [
+                  "cave",
+                  "glass fish",
+                  "lobster"
+                ],
+                "description": "ダイナミックな地形が魅力。光の差し込む洞窟内は幻想的。",
+                "imageKeyword": "underwater cave",
+                "id": "p_a_1764956598_0_2_0_1",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwatercave,underwater"
+              },
+              {
+                "name": "熱海瀬",
+                "level": "Advanced",
+                "maxDepth": 35,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "shark",
+                  "yellowtail",
+                  "drift"
+                ],
+                "description": "潮流が速い外洋ポイント。回遊魚や大物狙いに最適。",
+                "imageKeyword": "open water fish",
+                "id": "p_a_1764956598_0_2_0_2",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)openwaterfish,underwater"
+              },
+              {
+                "name": "網代沖",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "boat",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "seahorse",
+                  "nudibranch"
+                ],
+                "description": "穏やかな海況で初心者にもおすすめ。マクロ生物が豊富。",
+                "imageKeyword": "seahorse underwater",
+                "id": "p_a_1764956598_0_2_0_3",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)seahorseunderwater,underwater"
+              },
+              {
+                "name": "フタ根",
+                "level": "Intermediate",
+                "maxDepth": 28,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "fish school",
+                  "soft coral",
+                  "octopus"
+                ],
+                "description": "根の周りに魚が集まる人気ポイント。ソフトコーラルも綺麗。",
+                "imageKeyword": "coral reef fish",
+                "id": "p_a_1764956598_0_2_0_4",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)coralreeffish,underwater"
+              },
+              {
+                "name": "曽我浦",
+                "level": "Beginner",
+                "maxDepth": 12,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "small fish",
+                  "sea slug"
+                ],
+                "description": "ビーチエントリーで手軽に潜れる。初心者や体験ダイビング向け。",
+                "imageKeyword": "beach dive",
+                "id": "p_a_1764956598_0_2_0_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)beachdive,underwater"
+              },
+              {
+                "name": "お宮の熱海",
+                "level": "Beginner",
+                "maxDepth": 10,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "small fish",
+                  "seaweed",
+                  "easy dive"
+                ],
+                "description": "穏やかな海で初心者も安心。手軽に楽しめるビーチポイント。",
+                "imageKeyword": "easy diving",
+                "id": "p_a_1764956598_0_2_0_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)easydiving,underwater"
+              },
+              {
+                "name": "熱海海中公園",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand",
+                  "rock",
+                  "artificial reef"
+                ],
+                "features": [
+                  "fish",
+                  "artificial reef",
+                  "easy dive"
+                ],
+                "description": "人工漁礁があり、魚が集まりやすい。初心者でも楽しめる。",
+                "imageKeyword": "artificial reef",
+                "id": "p_a_1764956598_0_2_0_7",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)artificialreef,underwater"
+              },
+              {
+                "name": "江之浦",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "fish school",
+                  "coral",
+                  "colorful"
+                ],
+                "description": "ドロップオフがあり、魚影が濃い。ソフトコーラルも豊富。",
+                "imageKeyword": "underwater coral",
+                "id": "p_a_1764956598_0_2_0_8",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwatercoral,underwater"
+              },
+              {
+                "name": "長根",
+                "level": "Intermediate",
+                "maxDepth": 22,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "fish",
+                  "macro",
+                  "octopus"
+                ],
+                "description": "様々な生物が見られる。マクロ撮影にもおすすめ。",
+                "imageKeyword": "underwater macro",
+                "id": "p_a_1764956598_0_2_0_9",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwatermacro,underwater"
+              }
+            ]
           },
           {
             "name": "伊東",
             "description": "富戸や八幡野など、初心者から上級者まで楽しめるポイントがある",
             "id": "a_1765003008_0_2_1",
             "type": "Area",
-            "children": []
+            "children": [
+              {
+                "name": "白根",
+                "level": "Intermediate",
+                "maxDepth": 30,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "macro",
+                  "fish"
+                ],
+                "description": "ソフトコーラルが群生し、多種多様な魚が見られる人気のポイント。稀にハンマーヘッドシャークも。",
+                "imageKeyword": "shirane diving",
+                "id": "p_a_1764956598_0_2_1_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)shiranediving,underwater"
+              },
+              {
+                "name": "赤沢",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "fish"
+                ],
+                "description": "穏やかな湾内で、初心者でも安心して楽しめる。ウミウシなどのマクロ生物が豊富。",
+                "imageKeyword": "akazawa diving",
+                "id": "p_a_1764956598_0_2_1_1",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)akazawadiving,underwater"
+              },
+              {
+                "name": "一碧湖",
+                "level": "Beginner",
+                "maxDepth": 8,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "lakebed",
+                  "plants"
+                ],
+                "features": [
+                  "freshwater fish",
+                  "plants"
+                ],
+                "description": "淡水ダイビングポイント。ブラックバスやコイなどが生息。透明度は時期による。",
+                "imageKeyword": "ippeki lake diving",
+                "id": "p_a_1764956598_0_2_1_2",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ippekilakediving,underwater"
+              },
+              {
+                "name": "川奈いるか浜",
+                "level": "Beginner",
+                "maxDepth": 12,
+                "entryType": "beach",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "fish",
+                  "beginner friendly"
+                ],
+                "description": "初心者講習にも最適な穏やかなビーチポイント。様々な熱帯魚も見られる。",
+                "imageKeyword": "kawana irukahama diving",
+                "id": "p_a_1764956598_0_2_1_3",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kawanairukahamadiving,underwater"
+              },
+              {
+                "name": "五島根",
+                "level": "Advanced",
+                "maxDepth": 40,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "pelagic fish",
+                  "shark"
+                ],
+                "description": "潮流が速く上級者向け。回遊魚や大型の魚影が期待できる。ドリフトダイビング。",
+                "imageKeyword": "gotone diving",
+                "id": "p_a_1764956598_0_2_1_4",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)gotonediving,underwater"
+              },
+              {
+                "name": "ヨコバマ",
+                "level": "Beginner",
+                "maxDepth": 18,
+                "entryType": "beach",
+                "current": "weak",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "fish"
+                ],
+                "description": "浅場でじっくりマクロ生物観察を楽しめる。クマノミやハゼなどが豊富。",
+                "imageKeyword": "yokobama diving",
+                "id": "p_a_1764956598_0_2_1_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yokobamadiving,underwater"
+              },
+              {
+                "name": "脇の浜",
+                "level": "Beginner",
+                "maxDepth": 10,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "fish",
+                  "beginner friendly"
+                ],
+                "description": "穏やかなビーチエントリー。家族連れにも人気。シュノーケリングにも最適。",
+                "imageKeyword": "wakinohama diving",
+                "id": "p_a_1764956598_0_2_1_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)wakinohamadiving,underwater"
+              },
+              {
+                "name": "富戸ホール",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "cave",
+                  "rock"
+                ],
+                "features": [
+                  "cave",
+                  "fish"
+                ],
+                "description": "海底にある巨大な洞窟を探検できる。神秘的な光景が広がる。",
+                "imageKeyword": "futo hole diving",
+                "id": "p_a_1764956598_0_2_1_7",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)futoholediving,underwater"
+              },
+              {
+                "name": "ボートポイント",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "fish",
+                  "coral"
+                ],
+                "description": "カラフルなソフトコーラルや、様々な魚の群れが見られる。写真撮影にも人気。",
+                "imageKeyword": "boat point diving",
+                "id": "p_a_1764956598_0_2_1_8",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)boatpointdiving,underwater"
+              },
+              {
+                "name": "雲見",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "fish",
+                  "cave",
+                  "macro"
+                ],
+                "description": "ダイナミックな地形と豊富な生物層が魅力。トンネルやアーチなど変化に富んだ地形。",
+                "imageKeyword": "kumomi diving",
+                "id": "p_a_1764956598_0_2_1_9",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kumomidiving,underwater"
+              }
+            ]
           },
           {
             "name": "大瀬崎",
             "description": "湾内は穏やかで初心者向き、外海はダイナミックな地形が楽しめる",
             "id": "a_1765003008_0_2_2",
             "type": "Area",
-            "children": []
+            "children": [
+              {
+                "name": "湾内",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "beginner"
+                ],
+                "description": "初心者向け。穏やかな環境で練習や体験ダイビングに最適。多様な生物観察が可能。",
+                "imageKeyword": "osezaki bay beginner dive",
+                "id": "p_a_1764956598_0_2_2_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakibaybeginnerdive,underwater"
+              },
+              {
+                "name": "先端",
+                "level": "Intermediate",
+                "maxDepth": 30,
+                "entryType": "beach",
+                "current": "weak",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "fish",
+                  "drift"
+                ],
+                "description": "回遊魚や群れが見られる可能性あり。透明度も期待できる人気ポイント。",
+                "imageKeyword": "osezaki tip dive",
+                "id": "p_a_1764956598_0_2_2_1",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakitipdive,underwater"
+              },
+              {
+                "name": "門下",
+                "level": "Beginner",
+                "maxDepth": 20,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "beginner"
+                ],
+                "description": "多様な生物が生息。マクロ生物観察に最適。初心者も楽しめる。",
+                "imageKeyword": "osezaki mongesita dive",
+                "id": "p_a_1764956598_0_2_2_2",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakimongesitadive,underwater"
+              },
+              {
+                "name": "柵下",
+                "level": "Beginner",
+                "maxDepth": 18,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro"
+                ],
+                "description": "名前の通り柵の下にあるポイント。多くの生物が観察できる。",
+                "imageKeyword": "osezaki sakusita dive",
+                "id": "p_a_1764956598_0_2_2_3",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakisakusitadive,underwater"
+              },
+              {
+                "name": "大川出し",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "fish"
+                ],
+                "description": "ボートエントリー限定。沖合のポイントで、回遊魚などの大物に出会えるかも。",
+                "imageKeyword": "osezaki okawadasi dive",
+                "id": "p_a_1764956598_0_2_2_4",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakiokawadasidive,underwater"
+              },
+              {
+                "name": "一本松",
+                "level": "Intermediate",
+                "maxDepth": 28,
+                "entryType": "beach",
+                "current": "weak",
+                "topography": [
+                  "rock"
+                ],
+                "features": [
+                  "fish",
+                  "macro"
+                ],
+                "description": "多様な地形と生物が楽しめる。一本松を目印にする。",
+                "imageKeyword": "osezaki ipponmatu dive",
+                "id": "p_a_1764956598_0_2_2_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakiipponmatudive,underwater"
+              },
+              {
+                "name": "沖の根",
+                "level": "Advanced",
+                "maxDepth": 40,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "fish",
+                  "drift"
+                ],
+                "description": "上級者向け。ドリフトダイビングが楽しめる。潮流に注意。",
+                "imageKeyword": "osezaki okinone dive",
+                "id": "p_a_1764956598_0_2_2_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakiokinonedive,underwater"
+              },
+              {
+                "name": "二の根",
+                "level": "Intermediate",
+                "maxDepth": 35,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock"
+                ],
+                "features": [
+                  "fish",
+                  "macro"
+                ],
+                "description": "魚影が濃く、マクロ生物も豊富。中級者以上向け。",
+                "imageKeyword": "osezaki ninone dive",
+                "id": "p_a_1764956598_0_2_2_7",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakininonedive,underwater"
+              },
+              {
+                "name": "三の根",
+                "level": "Advanced",
+                "maxDepth": 40,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "fish",
+                  "shark"
+                ],
+                "description": "潮流が速い場合があり、上級者向け。大型回遊魚に出会える可能性あり。",
+                "imageKeyword": "osezaki sannone dive",
+                "id": "p_a_1764956598_0_2_2_8",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osezakisannonedive,underwater"
+              },
+              {
+                "name": "淡島",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "fish",
+                  "macro"
+                ],
+                "description": "様々な生物が生息しており、中級者向けのポイントです。",
+                "imageKeyword": "awashima dive site",
+                "id": "p_a_1764956598_0_2_2_9",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)awashimadivesite,underwater"
+              }
+            ]
           },
           {
             "name": "井田",
             "description": "透明度が高く、生物の種類が豊富",
             "id": "a_1765003008_0_2_3",
             "type": "Area",
-            "children": []
+            "children": [
+              {
+                "name": "井田ビーチ",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "beach",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "beginner"
+                ],
+                "description": "穏やかなビーチエントリー。初心者向けで、マクロ生物観察に最適。",
+                "imageKeyword": "ida beach diving",
+                "id": "p_a_1764956598_0_2_3_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)idabeachdiving,underwater"
+              },
+              {
+                "name": "井田根",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "macro",
+                  "fish school"
+                ],
+                "description": "豪快なドロップオフと魚影の濃さが魅力。ソフトコーラルが綺麗。",
+                "imageKeyword": "ida root diving",
+                "id": "p_a_1764956598_0_2_3_1",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)idarootdiving,underwater"
+              },
+              {
+                "name": "ブリマチ",
+                "level": "Intermediate",
+                "maxDepth": 28,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "fish school"
+                ],
+                "description": "回遊魚やマクロ生物が豊富。透明度が高いことが多い。",
+                "imageKeyword": "burimachi diving",
+                "id": "p_a_1764956598_0_2_3_2",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)burimachidiving,underwater"
+              },
+              {
+                "name": "平根",
+                "level": "Intermediate",
+                "maxDepth": 22,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "fish school"
+                ],
+                "description": "根の周りに魚が集まりやすいポイント。初心者も楽しめる。",
+                "imageKeyword": "hirane diving",
+                "id": "p_a_1764956598_0_2_3_3",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)hiranediving,underwater"
+              },
+              {
+                "name": "沖根",
+                "level": "Advanced",
+                "maxDepth": 35,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "fish school",
+                  "drift"
+                ],
+                "description": "潮流があるため、ドリフトダイビング向き。大物にも期待。",
+                "imageKeyword": "okine diving",
+                "id": "p_a_1764956598_0_2_3_4",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)okinediving,underwater"
+              },
+              {
+                "name": "フトネ",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "fish school"
+                ],
+                "description": "魚影が濃く、マクロ生物も楽しめるバランスの取れたポイント。",
+                "imageKeyword": "futone diving",
+                "id": "p_a_1764956598_0_2_3_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)futonediving,underwater"
+              },
+              {
+                "name": "三ツ石",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock"
+                ],
+                "features": [
+                  "fish school",
+                  "rock formation"
+                ],
+                "description": "特徴的な岩が3つ並ぶポイント。魚の隠れ家にもなっている。",
+                "imageKeyword": "mitsuishi diving",
+                "id": "p_a_1764956598_0_2_3_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)mitsuishidiving,underwater"
+              },
+              {
+                "name": "カマガ根",
+                "level": "Advanced",
+                "maxDepth": 30,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "rock",
+                  "dropoff"
+                ],
+                "features": [
+                  "fish school",
+                  "drift"
+                ],
+                "description": "潮流に乗ってダイナミックなドリフトダイビングを楽しめる。",
+                "imageKeyword": "kamagane diving",
+                "id": "p_a_1764956598_0_2_3_7",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kamaganediving,underwater"
+              },
+              {
+                "name": "タカ根",
+                "level": "Intermediate",
+                "maxDepth": 27,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "fish school"
+                ],
+                "description": "ソフトコーラルと魚影が美しい。じっくり観察したいポイント。",
+                "imageKeyword": "takane diving",
+                "id": "p_a_1764956598_0_2_3_8",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)takanediving,underwater"
+              },
+              {
+                "name": "一本松",
+                "level": "Intermediate",
+                "maxDepth": 23,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "fish school"
+                ],
+                "description": "イサキやキンギョハナダイなどの群れが見られる。",
+                "imageKeyword": "ipponmatsu diving",
+                "id": "p_a_1764956598_0_2_3_9",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ipponmatsudiving,underwater"
+              }
+            ]
           },
           {
             "name": "獅子浜",
@@ -2538,7 +2284,218 @@
             "description": "洞窟やアーチなど、地形派ダイバーに人気",
             "id": "a_1765003008_0_2_5",
             "type": "Area",
-            "children": []
+            "children": [
+              {
+                "name": "牛着岩（うしつきいわ）",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "cave",
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "地形",
+                  "ソフトコーラル"
+                ],
+                "description": "雲見を代表するダイビングポイント。複雑な地形と豊富な魚影が魅力。",
+                "imageKeyword": "ushitsuki rock diving",
+                "id": "p_a_1764956598_0_2_4_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ushitsukirockdiving,underwater"
+              },
+              {
+                "name": "三競（さんきょう）",
+                "level": "Advanced",
+                "maxDepth": 35,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "回遊魚",
+                  "大物",
+                  "地形"
+                ],
+                "description": "外洋に面し、ダイナミックな地形と回遊魚が期待できる上級者向け。",
+                "imageKeyword": "sankyo diving point",
+                "id": "p_a_1764956598_0_2_4_1",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sankyodivingpoint,underwater"
+              },
+              {
+                "name": "V字",
+                "level": "Intermediate",
+                "maxDepth": 28,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "cave",
+                  "rock"
+                ],
+                "features": [
+                  "地形",
+                  "ソフトコーラル",
+                  "ハナダイ"
+                ],
+                "description": "V字に切れ込んだ地形が特徴。様々な生物が生息。",
+                "imageKeyword": "v shape diving",
+                "id": "p_a_1764956598_0_2_4_2",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)vshapediving,underwater"
+              },
+              {
+                "name": "24ブイ",
+                "level": "Intermediate",
+                "maxDepth": 22,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "ハナダイ",
+                  "キンギョハナダイ",
+                  "ソフトコーラル"
+                ],
+                "description": "カラフルなハナダイの群れが見られる癒し系ポイント。",
+                "imageKeyword": "24 buoy diving",
+                "id": "p_a_1764956598_0_2_4_3",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)24buoydiving,underwater"
+              },
+              {
+                "name": "はまゆりの根",
+                "level": "Beginner",
+                "maxDepth": 18,
+                "entryType": "boat",
+                "current": "none",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "ハゼ",
+                  "エビ"
+                ],
+                "description": "穏やかな環境で、マクロ生物観察に最適。",
+                "imageKeyword": "hamayuri root diving",
+                "id": "p_a_1764956598_0_2_4_4",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)hamayurirootdiving,underwater"
+              },
+              {
+                "name": "棚下",
+                "level": "Intermediate",
+                "maxDepth": 30,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "ソフトコーラル",
+                  "ハナダイ",
+                  "回遊魚"
+                ],
+                "description": "ドロップオフ沿いにソフトコーラルが群生。",
+                "imageKeyword": "tanashita diving",
+                "id": "p_a_1764956598_0_2_4_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)tanashitadiving,underwater"
+              },
+              {
+                "name": "小牛の洞窟",
+                "level": "Intermediate",
+                "maxDepth": 18,
+                "entryType": "boat",
+                "current": "none",
+                "topography": [
+                  "cave",
+                  "rock"
+                ],
+                "features": [
+                  "地形",
+                  "ソフトコーラル",
+                  "魚影"
+                ],
+                "description": "洞窟探検が楽しめる。光の差し込みが美しい。",
+                "imageKeyword": "little bull cave diving",
+                "id": "p_a_1764956598_0_2_4_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)littlebullcavediving,underwater"
+              },
+              {
+                "name": "大根",
+                "level": "Advanced",
+                "maxDepth": 40,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "回遊魚",
+                  "大物",
+                  "地形"
+                ],
+                "description": "潮流が速いポイント。回遊魚や大物が期待できる。",
+                "imageKeyword": "daikon diving",
+                "id": "p_a_1764956598_0_2_4_7",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)daikondiving,underwater"
+              },
+              {
+                "name": "フト根",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "sand"
+                ],
+                "features": [
+                  "ソフトコーラル",
+                  "ハナダイ",
+                  "キンギョハナダイ"
+                ],
+                "description": "ソフトコーラルが綺麗。様々な生物が見られる。",
+                "imageKeyword": "futo root diving",
+                "id": "p_a_1764956598_0_2_4_8",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)futorootdiving,underwater"
+              },
+              {
+                "name": "砂地",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "boat",
+                "current": "none",
+                "topography": [
+                  "sand"
+                ],
+                "features": [
+                  "macro",
+                  "ハゼ",
+                  "エビ"
+                ],
+                "description": "穏やかな砂地。じっくりマクロ生物観察を楽しめる。",
+                "imageKeyword": "sandy beach diving",
+                "id": "p_a_1764956598_0_2_4_9",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sandybeachdiving,underwater"
+              }
+            ]
           },
           {
             "name": "堂ヶ島",
@@ -3291,9 +3248,9 @@
         "description": "マンタやサンゴ礁など、多様な生物に出会える。",
         "children": [
           {
-            "name": "石垣港",
-            "description": "八重山諸島へのアクセス拠点",
-            "id": "a_1765003514_0_3_0",
+            "name": "川平・石崎",
+            "description": "マンタスクランブルなどがある北部・北西エリア",
+            "id": "a_ishigaki_kabira_634997",
             "type": "Area",
             "children": [
               {
@@ -3314,6 +3271,90 @@
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)mantaraycleaningstation,underwater"
               },
+              {
+                "name": "石崎マンタポイント",
+                "level": "Intermediate",
+                "maxDepth": 15,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand"
+                ],
+                "features": [
+                  "manta"
+                ],
+                "description": "マンタスクランブルに次ぐマンタ遭遇率。砂地でクリーニング。",
+                "imageKeyword": "ishizaki manta point",
+                "id": "p_a_1765003514_0_3_0_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ishizakimantapoint,underwater"
+              },
+              {
+                "name": "名蔵湾内マンタスクランブル",
+                "level": "Beginner",
+                "maxDepth": 15,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand"
+                ],
+                "features": [
+                  "manta"
+                ],
+                "description": "マンタ遭遇率が非常に高いポイント。浅瀬なので初心者でも安心して楽しめる。",
+                "imageKeyword": "nagura manta scramble",
+                "id": "p_a_1765003514_0_3_4_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)naguramantascramble,underwater"
+              },
+              {
+                "name": "Manta Scramble (マンタスクランブル)",
+                "level": "Intermediate",
+                "maxDepth": 15,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "manta",
+                  "cleaning station"
+                ],
+                "description": "高確率でマンタが見られる人気のポイント。クリーニングステーションで休憩するマンタを観察。",
+                "imageKeyword": "manta ray cleaning station",
+                "id": "p_a_1765003514_0_3_9_0",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)mantaraycleaningstation,underwater"
+              },
+              {
+                "name": "Manta City (マンタシティ)",
+                "level": "Intermediate",
+                "maxDepth": 18,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "manta",
+                  "cleaning station"
+                ],
+                "description": "マンタスクランブル同様、マンタ遭遇率の高いポイント。複数のマンタが乱舞することも。",
+                "imageKeyword": "multiple manta rays",
+                "id": "p_a_1765003514_0_3_9_1",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)multiplemantarays,underwater"
+              }
+            ]
+          },
+          {
+            "name": "大崎・名蔵",
+            "description": "生物豊富な大崎ハナゴイリーフや名蔵湾など",
+            "id": "a_ishigaki_osaki_350964",
+            "type": "Area",
+            "children": [
               {
                 "name": "大崎ハナゴイリーフ",
                 "level": "Beginner",
@@ -3374,81 +3415,6 @@
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)omotozakilighthousediving,underwater"
               },
               {
-                "name": "米原Wリーフ",
-                "level": "Intermediate",
-                "maxDepth": 18,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "reef"
-                ],
-                "features": [
-                  "coral",
-                  "turtle"
-                ],
-                "description": "美しいサンゴ礁が広がる。ウミガメとの遭遇も期待できる。",
-                "imageKeyword": "yonehara w reef coral",
-                "id": "p_a_1765003514_0_3_0_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yoneharawreefcoral,underwater"
-              },
-              {
-                "name": "石崎マンタポイント",
-                "level": "Intermediate",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand"
-                ],
-                "features": [
-                  "manta"
-                ],
-                "description": "マンタスクランブルに次ぐマンタ遭遇率。砂地でクリーニング。",
-                "imageKeyword": "ishizaki manta point",
-                "id": "p_a_1765003514_0_3_0_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ishizakimantapoint,underwater"
-              },
-              {
-                "name": "竹富島南",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "drift",
-                "topography": [
-                  "reef"
-                ],
-                "features": [
-                  "coral",
-                  "fish"
-                ],
-                "description": "ドリフトダイビングで広範囲を探索。多様な魚影が魅力。",
-                "imageKeyword": "taketomi island south reef",
-                "id": "p_a_1765003514_0_3_0_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)taketomiislandsouthreef,underwater"
-              },
-              {
-                "name": "パナリ (新城島)  ドロップオフ",
-                "level": "Advanced",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff"
-                ],
-                "features": [
-                  "shark",
-                  "pelagic"
-                ],
-                "description": "豪快なドロップオフ。回遊魚や大物狙いのダイバーに人気。",
-                "imageKeyword": "panari dropoff",
-                "id": "p_a_1765003514_0_3_0_7",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)panaridropoff,underwater"
-              },
-              {
                 "name": "崎枝ビッグアーチ",
                 "level": "Intermediate",
                 "maxDepth": 22,
@@ -3467,73 +3433,6 @@
                 "id": "p_a_1765003514_0_3_0_8",
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sakiedabigarch,underwater"
-              },
-              {
-                "name": "黒島V字",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "reef"
-                ],
-                "features": [
-                  "turtle",
-                  "coral"
-                ],
-                "description": "V字型の地形が特徴。ウミガメが多く生息。",
-                "imageKeyword": "kuroshima v shape reef",
-                "id": "p_a_1765003514_0_3_0_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kuroshimavshapereef,underwater"
-              }
-            ]
-          },
-          {
-            "name": "川平",
-            "description": "川平湾近くのダイビングサービスが多い",
-            "id": "a_1765003514_0_3_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "伊原間",
-            "description": "平久保崎方面のダイビングポイントへのアクセス",
-            "id": "a_1765003514_0_3_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "米原",
-            "description": "米原ビーチ近くのダイビングサービスがある",
-            "id": "a_1765003514_0_3_3",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "名蔵",
-            "description": "名蔵湾周辺のダイビングポイントへのアクセス",
-            "id": "a_1765003514_0_3_4",
-            "type": "Area",
-            "children": [
-              {
-                "name": "名蔵湾内マンタスクランブル",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand"
-                ],
-                "features": [
-                  "manta"
-                ],
-                "description": "マンタ遭遇率が非常に高いポイント。浅瀬なので初心者でも安心して楽しめる。",
-                "imageKeyword": "nagura manta scramble",
-                "id": "p_a_1765003514_0_3_4_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)naguramantascramble,underwater"
               },
               {
                 "name": "名蔵コーラルガーデン",
@@ -3556,27 +3455,6 @@
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)naguracoralgarden,underwater"
               },
               {
-                "name": "大崎ハナゴイリーフ",
-                "level": "Beginner",
-                "maxDepth": 18,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "coral",
-                  "fish"
-                ],
-                "description": "ハナゴイの群れが美しいポイント。ソフトコーラルも豊富。",
-                "imageKeyword": "osaki hanagoi reef",
-                "id": "p_a_1765003514_0_3_4_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osakihanagoireef,underwater"
-              },
-              {
                 "name": "大崎アカククリの根",
                 "level": "Intermediate",
                 "maxDepth": 25,
@@ -3595,64 +3473,6 @@
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osakiakakukurireef,underwater"
               },
               {
-                "name": "御神崎灯台下",
-                "level": "Intermediate",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "shark",
-                  "fish"
-                ],
-                "description": "流れが速いことがあるので注意。回遊魚やロウニンアジが見られる。",
-                "imageKeyword": "omisaki lighthouse",
-                "id": "p_a_1765003514_0_3_4_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)omisakilighthouse,underwater"
-              },
-              {
-                "name": "屋良部崎",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock"
-                ],
-                "features": [
-                  "shark",
-                  "fish"
-                ],
-                "description": "地形がダイナミック。運が良ければハンマーヘッドシャークが見られる。",
-                "imageKeyword": "yarabuzaki",
-                "id": "p_a_1765003514_0_3_4_5",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yarabuzaki,underwater"
-              },
-              {
-                "name": "崎枝ビッグアーチ",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "fish"
-                ],
-                "description": "大きなアーチ状の地形が特徴。アーチの中には様々な魚が生息。",
-                "imageKeyword": "sakieda big arch",
-                "id": "p_a_1765003514_0_3_4_6",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sakiedabigarch,underwater"
-              },
-              {
                 "name": "名蔵サンドパラダイス",
                 "level": "Beginner",
                 "maxDepth": 12,
@@ -3669,73 +3489,6 @@
                 "id": "p_a_1765003514_0_3_4_7",
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)nagurasandparadise,underwater"
-              },
-              {
-                "name": "米原Wリーフ",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock"
-                ],
-                "features": [
-                  "coral",
-                  "fish"
-                ],
-                "description": "2つのリーフが並ぶポイント。ソフトコーラルが美しい。",
-                "imageKeyword": "yonehara w reef",
-                "id": "p_a_1765003514_0_3_4_8",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yoneharawreef,underwater"
-              },
-              {
-                "name": "石崎マンタポイント",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "manta"
-                ],
-                "description": "マンタ遭遇率の高いポイント。浅瀬で初心者でも安心。",
-                "imageKeyword": "ishizaki manta point",
-                "id": "p_a_1765003514_0_3_4_9",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)ishizakimantapoint,underwater"
-              }
-            ]
-          },
-          {
-            "name": "大崎",
-            "description": "大崎エリアのダイビングポイントへのアクセス",
-            "id": "a_1765003514_0_3_5",
-            "type": "Area",
-            "children": [
-              {
-                "name": "大崎ハナゴイリーフ",
-                "level": "Beginner",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "reef",
-                  "sand"
-                ],
-                "features": [
-                  "macro",
-                  "anemonefish",
-                  "coral"
-                ],
-                "description": "カラフルなハナゴイが群れる人気ポイント。初心者でも安心して楽しめる穏やかな環境です。",
-                "imageKeyword": "osaki hanagoi reef",
-                "id": "p_a_1765003514_0_3_5_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osakihanagoireef,underwater"
               },
               {
                 "name": "大崎ミノカサゴ宮殿",
@@ -3757,27 +3510,6 @@
                 "id": "p_a_1765003514_0_3_5_1",
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osakiminokasagopalace,underwater"
-              },
-              {
-                "name": "大崎アカククリの根",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "reef",
-                  "dropoff"
-                ],
-                "features": [
-                  "schooling fish",
-                  "batfish",
-                  "coral"
-                ],
-                "description": "アカククリが群れをなす根。迫力満点の光景が楽しめます。ドロップオフ沿いには大物も。",
-                "imageKeyword": "osaki akakukuri root",
-                "id": "p_a_1765003514_0_3_5_2",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osakiakakukuriroot,underwater"
               },
               {
                 "name": "大崎タートルリーフ",
@@ -3919,75 +3651,6 @@
                 "id": "p_a_1765003514_0_3_5_9",
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)osakihanadaipoint,underwater"
-              }
-            ]
-          },
-          {
-            "name": "白保",
-            "description": "白保サンゴ礁へのアクセス",
-            "id": "a_1765003514_0_3_6",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "崎枝",
-            "description": "崎枝エリアのダイビングポイントへのアクセス",
-            "id": "a_1765003514_0_3_7",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "真栄里",
-            "description": "石垣空港に近いダイビングサービスがある",
-            "id": "a_1765003514_0_3_8",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "宮良",
-            "description": "宮良川河口周辺のダイビングポイントへのアクセス",
-            "id": "a_1765003514_0_3_9",
-            "type": "Area",
-            "children": [
-              {
-                "name": "Manta Scramble (マンタスクランブル)",
-                "level": "Intermediate",
-                "maxDepth": 15,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "manta",
-                  "cleaning station"
-                ],
-                "description": "高確率でマンタが見られる人気のポイント。クリーニングステーションで休憩するマンタを観察。",
-                "imageKeyword": "manta ray cleaning station",
-                "id": "p_a_1765003514_0_3_9_0",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)mantaraycleaningstation,underwater"
-              },
-              {
-                "name": "Manta City (マンタシティ)",
-                "level": "Intermediate",
-                "maxDepth": 18,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "manta",
-                  "cleaning station"
-                ],
-                "description": "マンタスクランブル同様、マンタ遭遇率の高いポイント。複数のマンタが乱舞することも。",
-                "imageKeyword": "multiple manta rays",
-                "id": "p_a_1765003514_0_3_9_1",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)multiplemantarays,underwater"
               },
               {
                 "name": "御神崎灯台下 (おがんざきとうだいした)",
@@ -4030,26 +3693,6 @@
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)pygmyseahorse,underwater"
               },
               {
-                "name": "ビッグアーチ",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "cave",
-                  "swimthrough"
-                ],
-                "description": "巨大なアーチ状の地形が特徴。光の差し込む洞窟内は神秘的な雰囲気。",
-                "imageKeyword": "underwater arch",
-                "id": "p_a_1765003514_0_3_9_4",
-                "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwaterarch,underwater"
-              },
-              {
                 "name": "崎枝ビッグアーチ (さきえだビッグアーチ)",
                 "level": "Intermediate",
                 "maxDepth": 22,
@@ -4068,26 +3711,33 @@
                 "id": "p_a_1765003514_0_3_9_5",
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)sakiedabigarch,underwater"
-              },
+              }
+            ]
+          },
+          {
+            "name": "米原・北部",
+            "description": "Wリーフなどサンゴが美しい北部エリア",
+            "id": "a_ishigaki_yonehara_273695",
+            "type": "Area",
+            "children": [
               {
-                "name": "トムズパラダイス",
-                "level": "Beginner",
-                "maxDepth": 12,
+                "name": "米原Wリーフ",
+                "level": "Intermediate",
+                "maxDepth": 18,
                 "entryType": "boat",
-                "current": "none",
+                "current": "weak",
                 "topography": [
-                  "sand",
-                  "rock"
+                  "reef"
                 ],
                 "features": [
-                  "macro",
-                  "coral"
+                  "coral",
+                  "turtle"
                 ],
-                "description": "カラフルなソフトコーラルが広がる癒し系のポイント。写真撮影にも最適。",
-                "imageKeyword": "soft coral garden",
-                "id": "p_a_1765003514_0_3_9_6",
+                "description": "美しいサンゴ礁が広がる。ウミガメとの遭遇も期待できる。",
+                "imageKeyword": "yonehara w reef coral",
+                "id": "p_a_1765003514_0_3_0_4",
                 "type": "Point",
-                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)softcoralgarden,underwater"
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yoneharawreefcoral,underwater"
               },
               {
                 "name": "米原Wリーフ (よねはらWリーフ)",
@@ -4108,6 +3758,131 @@
                 "id": "p_a_1765003514_0_3_9_7",
                 "type": "Point",
                 "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)shallowreeffish,underwater"
+              }
+            ]
+          },
+          {
+            "name": "市街地・南部",
+            "description": "港からのアクセスが良い南部エリアや離島方面",
+            "id": "a_ishigaki_city_627141",
+            "type": "Area",
+            "children": [
+              {
+                "name": "竹富島南",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "drift",
+                "topography": [
+                  "reef"
+                ],
+                "features": [
+                  "coral",
+                  "fish"
+                ],
+                "description": "ドリフトダイビングで広範囲を探索。多様な魚影が魅力。",
+                "imageKeyword": "taketomi island south reef",
+                "id": "p_a_1765003514_0_3_0_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)taketomiislandsouthreef,underwater"
+              },
+              {
+                "name": "パナリ (新城島)  ドロップオフ",
+                "level": "Advanced",
+                "maxDepth": 30,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff"
+                ],
+                "features": [
+                  "shark",
+                  "pelagic"
+                ],
+                "description": "豪快なドロップオフ。回遊魚や大物狙いのダイバーに人気。",
+                "imageKeyword": "panari dropoff",
+                "id": "p_a_1765003514_0_3_0_7",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)panaridropoff,underwater"
+              },
+              {
+                "name": "黒島V字",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand",
+                  "reef"
+                ],
+                "features": [
+                  "turtle",
+                  "coral"
+                ],
+                "description": "V字型の地形が特徴。ウミガメが多く生息。",
+                "imageKeyword": "kuroshima v shape reef",
+                "id": "p_a_1765003514_0_3_0_9",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)kuroshimavshapereef,underwater"
+              },
+              {
+                "name": "屋良部崎",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock"
+                ],
+                "features": [
+                  "shark",
+                  "fish"
+                ],
+                "description": "地形がダイナミック。運が良ければハンマーヘッドシャークが見られる。",
+                "imageKeyword": "yarabuzaki",
+                "id": "p_a_1765003514_0_3_4_5",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)yarabuzaki,underwater"
+              },
+              {
+                "name": "ビッグアーチ",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "cave",
+                  "rock"
+                ],
+                "features": [
+                  "cave",
+                  "swimthrough"
+                ],
+                "description": "巨大なアーチ状の地形が特徴。光の差し込む洞窟内は神秘的な雰囲気。",
+                "imageKeyword": "underwater arch",
+                "id": "p_a_1765003514_0_3_9_4",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)underwaterarch,underwater"
+              },
+              {
+                "name": "トムズパラダイス",
+                "level": "Beginner",
+                "maxDepth": 12,
+                "entryType": "boat",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "coral"
+                ],
+                "description": "カラフルなソフトコーラルが広がる癒し系のポイント。写真撮影にも最適。",
+                "imageKeyword": "soft coral garden",
+                "id": "p_a_1765003514_0_3_9_6",
+                "type": "Point",
+                "image": "[https://loremflickr.com/400/300/](https://loremflickr.com/400/300/)softcoralgarden,underwater"
               },
               {
                 "name": "宮良沖",
@@ -5211,107 +4986,6 @@
     "description": "インドネシア、バリ島",
     "children": [
       {
-        "name": "南部",
-        "description": "バリ島南部エリア",
-        "children": [
-          {
-            "name": "サヌール",
-            "description": "サヌール港、伝統的なボートが出航",
-            "id": "a_1764956627_0_0_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "ヌサドゥア",
-            "description": "ヌサドゥア地区、高級ホテル周辺",
-            "id": "a_1764956627_0_0_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "クタ",
-            "description": "クタ地区、サーフィンで有名",
-            "id": "a_1764956627_0_0_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "ジンバラン",
-            "description": "ジンバラン地区、シーフードレストランが有名",
-            "id": "a_1764956627_0_0_3",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1764956627_0_0",
-        "type": "Zone"
-      },
-      {
-        "name": "東部",
-        "description": "バリ島東部エリア",
-        "children": [
-          {
-            "name": "パダンバイ",
-            "description": "パダンバイ港、レンボンガン島、ギリテペコン島へのアクセス",
-            "id": "a_1764956627_0_1_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "トランバン",
-            "description": "トランバン港、アメッド方面へのアクセス",
-            "id": "a_1764956627_0_1_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "アメッド",
-            "description": "アメッド地区、のんびりとした漁村",
-            "id": "a_1764956627_0_1_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "チャンディダサ",
-            "description": "チャンディダサ地区、静かなビーチリゾート",
-            "id": "a_1764956627_0_1_3",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1764956627_0_1",
-        "type": "Zone"
-      },
-      {
-        "name": "北西部",
-        "description": "バリ島北西部エリア",
-        "children": [
-          {
-            "name": "プラムスラン",
-            "description": "プラムスラン, ムンジャンガン島への主要な出発地点",
-            "id": "a_1764956627_0_2_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "ラブハンララン",
-            "description": "ラブハンララン港、ムンジャンガン島方面へのアクセス",
-            "id": "a_1764956627_0_2_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "ペムテラン",
-            "description": "ペムテラン地区、リゾートホテルが多い",
-            "id": "a_1764956627_0_2_2",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1764956627_0_2",
-        "type": "Zone"
-      },
-      {
         "name": "レンボンガン島",
         "description": "レンボンガン島エリア",
         "children": [
@@ -5362,6 +5036,27 @@
             "name": "サムパラン",
             "description": "サムパラン周辺",
             "id": "a_1764956627_0_4_2",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "サンティカ",
+            "description": "サンティカ港",
+            "id": "a_1765003044_0_3_1",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "ブユック",
+            "description": "ブユック港",
+            "id": "a_1765003044_0_3_2",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "クンバ",
+            "description": "クンバ港",
+            "id": "a_1765003044_0_3_3",
             "type": "Area",
             "children": []
           }
@@ -5457,6 +5152,20 @@
             "id": "a_1765003044_0_1_3",
             "type": "Area",
             "children": []
+          },
+          {
+            "name": "パダンバイ",
+            "description": "パダンバイ港、レンボンガン島、ギリテペコン島へのアクセス",
+            "id": "a_1764956627_0_1_0",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "トランバン",
+            "description": "トランバン港、アメッド方面へのアクセス",
+            "id": "a_1764956627_0_1_1",
+            "type": "Area",
+            "children": []
           }
         ],
         "id": "z_1765003044_0_1",
@@ -5486,45 +5195,30 @@
             "id": "a_1765003044_0_2_2",
             "type": "Area",
             "children": []
-          }
-        ],
-        "id": "z_1765003044_0_2",
-        "type": "Zone"
-      },
-      {
-        "name": "ヌサペニダ",
-        "description": "ヌサペニダ島",
-        "children": [
+          },
           {
-            "name": "トヤパケ",
-            "description": "トヤパケ港 (主なダイビングサービス)",
-            "id": "a_1765003044_0_3_0",
+            "name": "プラムスラン",
+            "description": "プラムスラン, ムンジャンガン島への主要な出発地点",
+            "id": "a_1764956627_0_2_0",
             "type": "Area",
             "children": []
           },
           {
-            "name": "サンティカ",
-            "description": "サンティカ港",
-            "id": "a_1765003044_0_3_1",
+            "name": "ラブハンララン",
+            "description": "ラブハンララン港、ムンジャンガン島方面へのアクセス",
+            "id": "a_1764956627_0_2_1",
             "type": "Area",
             "children": []
           },
           {
-            "name": "ブユック",
-            "description": "ブユック港",
-            "id": "a_1765003044_0_3_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "クンバ",
-            "description": "クンバ港",
-            "id": "a_1765003044_0_3_3",
+            "name": "ペムテラン",
+            "description": "ペムテラン地区、リゾートホテルが多い",
+            "id": "a_1764956627_0_2_2",
             "type": "Area",
             "children": []
           }
         ],
-        "id": "z_1765003044_0_3",
+        "id": "z_1765003044_0_2",
         "type": "Zone"
       }
     ],
@@ -5602,6 +5296,41 @@
             "id": "a_1764956636_0_1_3",
             "type": "Area",
             "children": []
+          },
+          {
+            "name": "コスメル",
+            "description": "ドリフトダイビングで有名。サンミゲル港が拠点。",
+            "id": "a_1765003060_0_0_1",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "マハワル",
+            "description": "コスタマヤクルーズターミナルがある。手付かずの自然が残る。",
+            "id": "a_1765003060_0_0_5",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "シアンカアン",
+            "description": "手付かずの自然が残る保護区。ボートツアーでアクセス。",
+            "id": "a_1765003060_0_0_6",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "チェトゥマル",
+            "description": "バカル湖へのアクセス拠点。スキューバダイビングツアーが出発。",
+            "id": "a_1765003060_0_0_7",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "イスラムヘーレス",
+            "description": "手軽に楽しめるダイビングスポットがある。",
+            "id": "a_1765003060_0_0_8",
+            "type": "Area",
+            "children": []
           }
         ],
         "id": "z_1764956636_0_1",
@@ -5636,121 +5365,6 @@
             "name": "ロレト",
             "description": "カリフォルニア湾に面した歴史ある町。周辺の島々へのダイビング拠点。",
             "id": "a_1764956636_0_2_3",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1764956636_0_2",
-        "type": "Zone"
-      },
-      {
-        "name": "レビリャヒヘド諸島",
-        "description": "外洋に浮かぶ島々、ハンマーヘッドシャークやマンタとの遭遇率が高い",
-        "children": [
-          {
-            "name": "ソコロ島周辺",
-            "description": "ハンマーヘッドシャーク、マンタ、イルカとの遭遇が期待できる",
-            "id": "a_1764956636_0_3_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "サンベネディクト島周辺",
-            "description": "マンタ、イルカ、クジラが見られることもある",
-            "id": "a_1764956636_0_3_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "ロカ・パルティーダ周辺",
-            "description": "ジンベエザメ、ハンマーヘッドシャーク、イソマグロが集まる場所",
-            "id": "a_1764956636_0_3_2",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1764956636_0_3",
-        "type": "Zone"
-      },
-      {
-        "name": "カリブ海",
-        "description": "ユカタン半島沿岸のカリブ海",
-        "children": [
-          {
-            "name": "カンクン",
-            "description": "人気の観光地。ホテルゾーンからダイビングツアーが出発。",
-            "id": "a_1765003060_0_0_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "コスメル",
-            "description": "ドリフトダイビングで有名。サンミゲル港が拠点。",
-            "id": "a_1765003060_0_0_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "プラヤデルカルメン",
-            "description": "セノーテへのアクセスも便利。フェリーターミナル付近からツアーが出発。",
-            "id": "a_1765003060_0_0_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "トゥルム",
-            "description": "遺跡とセノーテが有名。海岸線沿いのホテルからアクセス。",
-            "id": "a_1765003060_0_0_3",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "プエルトモレロス",
-            "description": "のんびりとした雰囲気。小さな漁村からダイビングツアーが出発。",
-            "id": "a_1765003060_0_0_4",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "マハワル",
-            "description": "コスタマヤクルーズターミナルがある。手付かずの自然が残る。",
-            "id": "a_1765003060_0_0_5",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "シアンカアン",
-            "description": "手付かずの自然が残る保護区。ボートツアーでアクセス。",
-            "id": "a_1765003060_0_0_6",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "チェトゥマル",
-            "description": "バカル湖へのアクセス拠点。スキューバダイビングツアーが出発。",
-            "id": "a_1765003060_0_0_7",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "イスラムヘーレス",
-            "description": "手軽に楽しめるダイビングスポットがある。",
-            "id": "a_1765003060_0_0_8",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1765003060_0_0",
-        "type": "Zone"
-      },
-      {
-        "name": "太平洋（バハ・カリフォルニア半島）",
-        "description": "バハ・カリフォルニア半島沿岸の太平洋",
-        "children": [
-          {
-            "name": "ラパス",
-            "description": "コルテス海に面し、多様な海洋生物が見られる。",
-            "id": "a_1765003060_0_1_0",
             "type": "Area",
             "children": []
           },
@@ -5811,7 +5425,36 @@
             "children": []
           }
         ],
-        "id": "z_1765003060_0_1",
+        "id": "z_1764956636_0_2",
+        "type": "Zone"
+      },
+      {
+        "name": "レビリャヒヘド諸島",
+        "description": "外洋に浮かぶ島々、ハンマーヘッドシャークやマンタとの遭遇率が高い",
+        "children": [
+          {
+            "name": "ソコロ島周辺",
+            "description": "ハンマーヘッドシャーク、マンタ、イルカとの遭遇が期待できる",
+            "id": "a_1764956636_0_3_0",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "サンベネディクト島周辺",
+            "description": "マンタ、イルカ、クジラが見られることもある",
+            "id": "a_1764956636_0_3_1",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "ロカ・パルティーダ周辺",
+            "description": "ジンベエザメ、ハンマーヘッドシャーク、イソマグロが集まる場所",
+            "id": "a_1764956636_0_3_2",
+            "type": "Area",
+            "children": []
+          }
+        ],
+        "id": "z_1764956636_0_3",
         "type": "Zone"
       },
       {
