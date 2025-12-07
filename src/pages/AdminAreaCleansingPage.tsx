@@ -54,6 +54,24 @@ export const AdminAreaCleansingPage = () => {
     setSelectedItems(new Set());
   }, [targetField]);
 
+  const getLabel = () => {
+    switch (targetField) {
+      case 'area': return 'Area (地区)';
+      case 'zone': return 'Zone (エリア)';
+      case 'region': return 'Region (都道府県/国)';
+      case 'point': return 'Point (ポイント)';
+    }
+  };
+
+  const getParentLabel = () => {
+    switch (targetField) {
+      case 'area': return 'Parent Zone';
+      case 'zone': return 'Parent Region';
+      case 'point': return 'Parent Area';
+      default: return '';
+    }
+  };
+
   // 1. Aggregate Stats based on Target Field with Parent Info
   const fieldStats = useMemo(() => {
     // Map stores: name -> { count, parents: Set<string>, points: Point[] }
@@ -674,37 +692,58 @@ export const AdminAreaCleansingPage = () => {
 
     const msg = isPointMode
       ? `【危険】ポイント「${targetVal}」を含むすべてのドキュメント（${fieldStats.find(a => a.name === targetVal)?.count}件）を完全に削除しますか？\n警告：IDの異なる同名のポイントも全て削除されます。\n\n※関連する「生物紐付け」や「お気に入り」も同時に削除されます。`
-      : `${label}「${targetVal}」を削除しますか？\n（ポイント自体は削除されず、${label}情報のみがクリアされます）`;
+      : `${label}「${targetVal}」を完全に削除しますか？\n（Master Dataからも削除され、ポイントの${label}情報もクリアされます）`;
 
     if (!window.confirm(msg)) return;
 
     setProcessing(true);
     try {
-      const queryField = targetField === 'point' ? 'name' : targetField;
-      const q = query(collection(db, 'points'), where(queryField, '==', targetVal));
-      const snapshot = await getDocs(q);
-
       if (isPointMode) {
-        // Cascade Delete for EACH point
-        // Execute sequentially to reliability
+        // ... Existing Point Deletion Logic ...
+        const q = query(collection(db, 'points'), where('name', '==', targetVal));
+        const snapshot = await getDocs(q);
         let totalPc = 0;
         let totalUser = 0;
-
         for (const doc of snapshot.docs) {
           const res = await deletePointCascade(doc.id);
           totalPc += res.pcCount;
           totalUser += res.userCount;
         }
-
         alert(`完了: ${snapshot.size} 件のポイントデータを削除しました。\n(関連削除: 生物紐付け=${totalPc}件, お気に入り解除=${totalUser}件)`);
       } else {
-        // Clear field (Standard batch update)
+        // Master Data Deletion (Region/Zone/Area)
         const batch = writeBatch(db);
+        let deletedMasterCount = 0;
+
+        // 1. Delete Master Data Document(s) matching the name
+        // (We search by name because the UI lists by unique names)
+        const masterCollection = targetField + 's'; // regions, zones, areas
+        const masterItems = (targetField === 'region' ? regions : targetField === 'zone' ? zones : areas)
+          .filter(i => i.name === targetVal);
+
+        // We need to delete via Firestore reference. Since we have IDs in context:
+        for (const item of masterItems) {
+          batch.delete(doc(db, masterCollection, item.id));
+          deletedMasterCount++;
+        }
+
+        // 2. Update Points (Clear the field)
+        const q = query(collection(db, 'points'), where(targetField, '==', targetVal));
+        const snapshot = await getDocs(q);
+
+        const updateData: any = { [targetField]: '' };
+        if (targetField === 'area') {
+          updateData.areaId = ''; // Also clear areaId link
+        }
+
         snapshot.docs.forEach(doc => {
-          batch.update(doc.ref, { [targetField]: '' });
+          batch.update(doc.ref, updateData);
         });
+
         await batch.commit();
-        alert(`完了: ${snapshot.size} 件のポイントから${label}情報を削除しました。`);
+
+        // If it was a master data item with 0 points, snapshot.size is 0, but we still deleted the master doc.
+        alert(`完了: ${deletedMasterCount}件のMaster Dataを削除し、${snapshot.size} 件のポイントから${label}情報を削除しました。`);
       }
     } catch (e) {
       console.error(e);
@@ -833,42 +872,51 @@ export const AdminAreaCleansingPage = () => {
         const items = Array.from(selectedItems);
         // Process sequentially to avoid overwhelming browser/firestore with parallel complex queries
         for (const name of items) {
-          // We need to find all point IDs for this name
           const stats = fieldStats.find(s => s.name === name);
           if (!stats) continue;
           for (const p of stats.points) {
             await deletePointCascade(p.id);
           }
         }
+        alert('Bulk delete completed.');
       } else {
-        // Batch update for Field Cleansing
+        // Region/Zone/Area Bulk Delete
         const batch = writeBatch(db);
         const items = Array.from(selectedItems);
+        let deletedMasterCount = 0;
 
-        // 1. Find all points with these values
-        // const q = query(collection(db, 'points'), where(targetField, 'in', items.slice(0, 10))); // Limited 'in' query idea abandoned for loop simplicity
-        // Better strategy: Query by each value or use large loop?
-        // Actually, let's reuse handleClearGroup logic but optimize?
-        // Simpler: iterate selected items.
+        const masterCollection = targetField + 's';
 
         for (const name of items) {
+          // 1. Delete Master Data
+          const masterItems = (targetField === 'region' ? regions : targetField === 'zone' ? zones : areas)
+            .filter(i => i.name === name);
+
+          for (const item of masterItems) {
+            batch.delete(doc(db, masterCollection, item.id));
+            deletedMasterCount++;
+          }
+
+          // 2. Update Points
           const q = query(collection(db, 'points'), where(targetField, '==', name));
-          const snap = await getDocs(q);
-          snap.docs.forEach(d => {
-            batch.update(d.ref, { [targetField]: '' });
+          const snapshot = await getDocs(q);
+
+          const updateData: any = { [targetField]: '' };
+          if (targetField === 'area') updateData.areaId = '';
+
+          snapshot.docs.forEach(doc => {
+            batch.update(doc.ref, updateData);
           });
         }
         await batch.commit();
+        alert(`一括削除が完了しました。\n(Master Data: ${deletedMasterCount}件, Points Updated)`);
       }
-
-      alert(`Bulk Delete Completed.`);
-      setSelectedItems(new Set());
-      // Refresh? (UseEffect will handle if data changes)
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
-      alert('Error during bulk operation: ' + e.message);
+      alert('一括処理中にエラーが発生しました: ' + e);
     } finally {
       setProcessing(false);
+      setSelectedItems(new Set()); // Clear selection
     }
   };
 
@@ -996,24 +1044,6 @@ export const AdminAreaCleansingPage = () => {
       alert("Export failed: " + e.message);
     } finally {
       setProcessing(false);
-    }
-  };
-
-  const getLabel = () => {
-    switch (targetField) {
-      case 'area': return 'Area (地区)';
-      case 'zone': return 'Zone (エリア)';
-      case 'region': return 'Region (都道府県/国)';
-      case 'point': return 'Point (ポイント)';
-    }
-  };
-
-  const getParentLabel = () => {
-    switch (targetField) {
-      case 'area': return 'Parent Zone';
-      case 'zone': return 'Parent Region';
-      case 'point': return 'Parent Area';
-      default: return '';
     }
   };
 
