@@ -162,7 +162,7 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
         <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Upload size={24} className="text-blue-500" />
-            ログのインポート (CSV)
+            ログのインポート (Garmin簡易版)
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600">
             <X size={20} />
@@ -191,7 +191,8 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
               </div>
               <h3 className="text-lg font-bold text-gray-700 mb-2">CSVファイルを選択またはドラッグ&ドロップ</h3>
               <p className="text-gray-500 text-sm">
-                Garmin Connect, DiverLog+ などのCSV形式に対応
+                Garmin Connect などのCSV形式に対応<br />
+                <span className="text-xs text-gray-400 mt-2 inline-block">※ AquaLang対応や詳細データの取込は、将来の有料プランで提供予定です</span>
               </p>
             </div>
           )}

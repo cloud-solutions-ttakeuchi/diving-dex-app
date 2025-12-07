@@ -287,7 +287,7 @@ export const Home = () => {
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {popularCreatures.map((creature) => {
-            const isFavorite = currentUser.favorites.includes(creature.id);
+            const isFavorite = currentUser.favoriteCreatureIds?.includes(creature.id);
             return (
               <Link key={creature.id} to={`/creature/${creature.id}`} className="group relative block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                 <div className="aspect-square bg-white p-4 relative flex items-center justify-center">

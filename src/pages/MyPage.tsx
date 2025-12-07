@@ -3,8 +3,10 @@ import { useLanguage } from '../context/LanguageContext';
 import type { Creature } from '../types';
 import { LogDetailModal } from '../components/LogDetailModal';
 import { LogImportModal } from '../components/LogImportModal';
+import { ProfileEditModal } from '../components/ProfileEditModal';
 import { LogCard } from '../components/LogCard';
-import { Award, MapPin, Grid, List, BookOpen, Heart, Bookmark, Check, Star, PenTool, ChevronRight, Compass, Droplet, Map as MapIcon, Aperture, Crown, Shield, Info, Settings, X, Activity, Droplets, Camera, Image as ImageIcon, Upload } from 'lucide-react';
+import { BulkEditModal } from '../components/BulkEditModal';
+import { Award, MapPin, Grid, List, BookOpen, Heart, Bookmark, Check, Star, PenTool, ChevronRight, Compass, Droplet, Map as MapIcon, Aperture, Crown, Shield, Info, Settings, X, Activity, Droplets, Image as ImageIcon, Upload, Trash2 } from 'lucide-react';
 
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
@@ -14,11 +16,14 @@ import { useState } from 'react';
 import { CERTIFICATION_MASTER, BADGE_MASTER, TRUST_RANKS } from '../data/mockData';
 
 export const MyPage = () => {
-  const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, updateUser, toggleLikeLog } = useApp();
+  const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, updateUser, toggleLikeLog, deleteLogs, updateLogs } = useApp();
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'logbook' | 'collection' | 'favorites' | 'wanted' | 'bookmarks'>('dashboard');
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
+  const [selectedLogIds, setSelectedLogIds] = useState<string[]>([]);
+  const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [showRankInfo, setShowRankInfo] = useState(false);
 
@@ -26,44 +31,9 @@ export const MyPage = () => {
   const selectedLog = selectedLogId ? (logs.find(l => l.id === selectedLogId) || null) : null;
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editImage, setEditImage] = useState<string | undefined>(undefined);
-  const [editOrgId, setEditOrgId] = useState('');
-  const [editRankId, setEditRankId] = useState('');
-  const [editCertDate, setEditCertDate] = useState('');
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const openEditModal = () => {
-    setEditName(currentUser.name);
-    setEditImage(currentUser.profileImage);
-    setEditOrgId(currentUser.certification?.orgId || CERTIFICATION_MASTER.id);
-    setEditRankId(currentUser.certification?.rankId || '');
-    setEditCertDate(currentUser.certification?.date || '');
     setIsEditingProfile(true);
-  };
-
-  const handleUpdateProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    updateUser({
-      name: editName,
-      profileImage: editImage,
-      certification: {
-        orgId: editOrgId,
-        rankId: editRankId,
-        date: editCertDate
-      }
-    });
-    setIsEditingProfile(false);
   };
 
   if (!isAuthenticated) {
@@ -458,7 +428,7 @@ export const MyPage = () => {
                 <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
                   <Upload size={20} />
                 </div>
-                <div className="font-bold text-sm">Import</div>
+                <div className="font-bold text-sm">Garmin取込</div>
               </button>
             </div>
 
@@ -472,24 +442,75 @@ export const MyPage = () => {
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {userLogs.map(log => {
-                  const creature = creatures.find(c => c.id === log.creatureId);
-                  const point = points.find(p => p.id === log.spotId);
+              <>
+                <div className="flex justify-between items-center mb-2 px-1">
+                  <div className="text-sm font-bold text-gray-500">
+                    {isSelectionMode ? `${selectedLogIds.length} stores selected` : `${userLogs.length} logs`}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsSelectionMode(!isSelectionMode);
+                      setSelectedLogIds([]);
+                    }}
+                    className={`text-sm font-bold px-3 py-1.5 rounded-lg transition-colors ${isSelectionMode ? 'bg-gray-200 text-gray-700' : 'bg-ocean-50 text-ocean-600'}`}
+                  >
+                    {isSelectionMode ? t('bulk.cancel' as any) : t('bulk.edit' as any)}
+                  </button>
+                </div>
 
-                  return (
-                    <LogCard
-                      key={log.id}
-                      log={log}
-                      currentUser={currentUser}
-                      creature={creature}
-                      point={point}
-                      onLike={toggleLikeLog}
-                      onClick={(id) => setSelectedLogId(id)}
-                    />
-                  );
-                })}
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
+                  {userLogs.map(log => {
+                    const creature = creatures.find(c => c.id === log.creatureId);
+                    const point = points.find(p => p.id === log.spotId);
+
+                    return (
+                      <LogCard
+                        key={log.id}
+                        log={log}
+                        currentUser={currentUser}
+                        creature={creature}
+                        point={point}
+                        onLike={toggleLikeLog}
+                        onClick={(id) => setSelectedLogId(id)}
+                        selectable={isSelectionMode}
+                        isSelected={selectedLogIds.includes(log.id)}
+                        onSelect={(id) => {
+                          setSelectedLogIds(prev =>
+                            prev.includes(id) ? prev.filter(pid => pid !== id) : [...prev, id]
+                          );
+                        }}
+                      />
+                    );
+                  })}
+                </div>
+
+                {/* Bulk Action Bar */}
+                {isSelectionMode && selectedLogIds.length > 0 && (
+                  <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-xl z-50 flex items-center gap-6 animate-in slide-in-from-bottom-4">
+                    <div className="font-bold">{selectedLogIds.length} {t('bulk.selected' as any)}</div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          if (window.confirm(t('bulk.delete_confirm' as any).replace('{{count}}', String(selectedLogIds.length)))) {
+                            deleteLogs(selectedLogIds);
+                            setIsSelectionMode(false);
+                            setSelectedLogIds([]);
+                          }
+                        }}
+                        className="flex items-center gap-1 bg-gray-50 text-red-600 hover:bg-gray-100 px-4 py-2 rounded-lg font-bold transition-colors"
+                      >
+                        <Trash2 size={16} /> {t('bulk.delete' as any)}
+                      </button>
+                      <button
+                        onClick={() => setIsBulkEditOpen(true)}
+                        className="flex items-center gap-1 bg-gray-50 text-slate-900 hover:bg-gray-100 px-4 py-2 rounded-lg font-bold transition-colors"
+                      >
+                        <Settings size={16} /> {t('bulk.edit' as any)}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )
@@ -509,6 +530,18 @@ export const MyPage = () => {
         onClose={() => setIsImportOpen(false)}
         onImportComplete={() => {
           // Maybe a toast or just refresh (automatic via context)
+        }}
+      />
+
+      {/* Bulk Edit Modal */}
+      <BulkEditModal
+        isOpen={isBulkEditOpen}
+        onClose={() => setIsBulkEditOpen(false)}
+        selectedCount={selectedLogIds.length}
+        onSave={async (data) => {
+          await updateLogs(selectedLogIds, data);
+          setIsSelectionMode(false);
+          setSelectedLogIds([]);
         }}
       />
 
@@ -616,10 +649,10 @@ export const MyPage = () => {
           <div className="space-y-4">
             <h3 className="font-bold text-deepBlue-900 flex items-center gap-2 px-1">
               <Heart size={18} className="text-red-500" />
-              Favorites <span className="text-gray-400 text-sm font-normal">({currentUser.favorites.length})</span>
+              Favorites <span className="text-gray-400 text-sm font-normal">({currentUser.favoriteCreatureIds?.length || 0})</span>
             </h3>
             <div className="grid grid-cols-2 gap-4">
-              {currentUser.favorites.map(id => {
+              {currentUser.favoriteCreatureIds?.map(id => {
                 const creature = creatures.find(c => c.id === id);
                 if (!creature) return null;
                 return (
@@ -651,7 +684,7 @@ export const MyPage = () => {
                   </Link>
                 );
               })}
-              {currentUser.favorites.length === 0 && (
+              {(currentUser.favoriteCreatureIds?.length || 0) === 0 && (
                 <div className="col-span-2 text-center py-12 text-gray-400 text-sm bg-white rounded-2xl border border-gray-100 border-dashed">
                   No favorites yet.
                 </div>
@@ -812,86 +845,11 @@ export const MyPage = () => {
         )
       }
       {/* Edit Profile Modal */}
-      {
-        isEditingProfile && (
-          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl">
-              <h3 className="font-bold text-lg text-deepBlue-900 mb-4">プロフィール編集</h3>
-              <form onSubmit={handleUpdateProfile}>
-                <div className="mb-6 flex flex-col items-center">
-                  <div className="relative w-24 h-24 rounded-full bg-gray-100 mb-2 overflow-hidden border-2 border-dashed border-gray-300 flex items-center justify-center group">
-                    {editImage ? (
-                      <img src={editImage} alt="Preview" className="w-full h-full object-cover" />
-                    ) : (
-                      <Camera className="text-gray-400" size={32} />
-                    )}
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                      <span className="text-white text-xs font-bold">変更</span>
-                    </div>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="absolute inset-0 opacity-0 cursor-pointer"
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500">プロフィール画像</p>
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">名前</label>
-                  <input
-                    type="text"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ocean outline-none"
-                    required
-                  />
-                </div>
-
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">認定ランク (PADI)</label>
-                  <select
-                    value={editRankId}
-                    onChange={(e) => setEditRankId(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ocean outline-none"
-                  >
-                    <option value="">選択してください</option>
-                    {CERTIFICATION_MASTER.ranks.map(rank => (
-                      <option key={rank.id} value={rank.id}>{rank.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">認定日</label>
-                  <input
-                    type="date"
-                    value={editCertDate}
-                    onChange={(e) => setEditCertDate(e.target.value)}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-ocean outline-none"
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setIsEditingProfile(false)}
-                    className="px-4 py-2 rounded-lg text-gray-500 hover:bg-gray-100 font-bold text-sm"
-                  >
-                    キャンセル
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-lg bg-[#0096C7] text-white hover:bg-[#0077B6] font-bold text-sm"
-                  >
-                    保存
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )
-      }
+      {/* Edit Profile Modal */}
+      <ProfileEditModal
+        isOpen={isEditingProfile}
+        onClose={() => setIsEditingProfile(false)}
+      />
     </div >
   );
 };

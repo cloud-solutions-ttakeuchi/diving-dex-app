@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ImageWithFallback } from './common/ImageWithFallback';
-import { X, Calendar, Clock, MapPin, Heart, Activity, Sun, Settings, Users, Fish, FileText, Camera } from 'lucide-react';
+import { X, Calendar, Clock, MapPin, Heart, Activity, Sun, Settings, Users, Fish, FileText, Camera, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 import type { Log } from '../types';
 
@@ -14,7 +14,7 @@ type Props = {
 };
 
 export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
-  const { points, creatures, currentUser, toggleLikeLog } = useApp();
+  const { points, creatures, currentUser, toggleLikeLog, deleteLog } = useApp();
   const [isLiked, setIsLiked] = React.useState(false);
   const [likeCount, setLikeCount] = React.useState(0);
 
@@ -52,14 +52,27 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
             <X size={20} />
           </button>
 
-          {/* Edit Button - Only for Owner */}
+          {/* Edit & Delete Buttons - Only for Owner */}
           {isOwner && (
-            <Link
-              to={`/edit-log/${log.id}`}
-              className="absolute top-4 right-16 bg-white/90 text-deepBlue-900 px-3 py-2 rounded-full font-bold text-xs shadow-md hover:bg-white transition-colors z-10 flex items-center gap-1"
-            >
-              <Settings size={14} /> 編集
-            </Link>
+            <div className="absolute top-4 right-16 flex gap-2 z-10">
+              <Link
+                to={`/edit-log/${log.id}`}
+                className="bg-white/90 text-deepBlue-900 px-3 py-2 rounded-full font-bold text-xs shadow-md hover:bg-white transition-colors flex items-center gap-1"
+              >
+                <Settings size={14} /> 編集
+              </Link>
+              <button
+                onClick={async () => {
+                  if (window.confirm('このログを削除してもよろしいですか？この操作は取り消せません。')) {
+                    await deleteLog(log.id);
+                    onClose();
+                  }
+                }}
+                className="bg-white/90 text-red-600 px-3 py-2 rounded-full font-bold text-xs shadow-md hover:bg-white hover:text-red-700 transition-colors flex items-center gap-1"
+              >
+                <Trash2 size={14} /> 削除
+              </button>
+            </div>
           )}
 
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6 text-white">
@@ -72,10 +85,16 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
               {log.time.entry || '--:--'} - {log.time.exit || '--:--'} ({log.time.duration}min)
             </div>
             <h2 className="text-2xl font-bold">
-              {points.find(p => p.id === log.spotId)?.name || log.location.pointName}
+              {log.title || points.find(p => p.id === log.spotId)?.name || log.location.pointName}
             </h2>
             <div className="text-sm opacity-80 flex items-center gap-1 mt-1">
               <MapPin size={14} />
+              {/* If title is present, show Point Name here for context */}
+              {log.title && (
+                <span className="font-bold mr-1">
+                  {points.find(p => p.id === log.spotId)?.name || log.location.pointName}
+                </span>
+              )}
               {log.location.region} {(isOwner && log.location.shopName) && ` / ${log.location.shopName}`}
             </div>
 

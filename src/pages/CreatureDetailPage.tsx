@@ -179,13 +179,13 @@ export const CreatureDetailPage = () => {
                     onClick={() => toggleFavorite(creature.id)}
                     className={clsx(
                       "p-3 rounded-full shadow-sm border transition-all hover:scale-105 active:scale-95",
-                      currentUser.favorites.includes(creature.id)
+                      currentUser.favoriteCreatureIds?.includes(creature.id)
                         ? "bg-red-50 border-red-100 text-red-500"
                         : "bg-white border-gray-100 text-gray-400 hover:text-red-500 hover:border-red-100"
                     )}
                     title="Add to Favorites"
                   >
-                    <Heart size={24} fill={currentUser.favorites.includes(creature.id) ? "currentColor" : "none"} />
+                    <Heart size={24} fill={currentUser.favoriteCreatureIds?.includes(creature.id) ? "currentColor" : "none"} />
                   </button>
                   <button
                     onClick={() => toggleWanted(creature.id)}

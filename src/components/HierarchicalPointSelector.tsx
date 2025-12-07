@@ -2,17 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import { ChevronRight, MapPin } from 'lucide-react';
 import clsx from 'clsx';
-import type { Region, Zone, Area, Point } from '../types';
 
 interface HierarchicalPointSelectorProps {
   value: string;
   onChange: (pointId: string) => void;
+  onHierarchyChange?: (region: string, zone: string, area: string) => void;
   className?: string;
 }
 
 export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps> = ({
   value,
   onChange,
+  onHierarchyChange,
   className,
 }) => {
   const { regions, zones, areas, points } = useApp();
@@ -43,6 +44,8 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
         const region = regions.find((r) => r.id === zone.regionId);
         if (region) {
           setSelectedRegionId(region.id);
+          // Notify parent of full hierarchy (optional, usually parent knows if it passed value)
+          // But effectively we want to sync
         }
       }
     }
@@ -50,10 +53,12 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
 
   // Handlers
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRegionId(e.target.value);
+    const rId = e.target.value;
+    setSelectedRegionId(rId);
     setSelectedZoneId('');
     setSelectedAreaId('');
     onChange(''); // Reset point
+    onHierarchyChange?.(rId, '', '');
   };
 
   const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -61,15 +66,18 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     setSelectedZoneId(newZoneId);
 
     // Reverse lookup: Find Region
+    let rId = selectedRegionId;
     if (newZoneId) {
       const zone = zones.find(z => z.id === newZoneId);
       if (zone) {
         setSelectedRegionId(zone.regionId);
+        rId = zone.regionId;
       }
     }
 
     setSelectedAreaId('');
     onChange(''); // Reset point
+    onHierarchyChange?.(rId, newZoneId, '');
   };
 
   const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -77,18 +85,24 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     setSelectedAreaId(newAreaId);
 
     // Reverse lookup: Find Zone and Region
+    let zId = selectedZoneId;
+    let rId = selectedRegionId;
+
     if (newAreaId) {
       const area = areas.find(a => a.id === newAreaId);
       if (area) {
         setSelectedZoneId(area.zoneId);
+        zId = area.zoneId;
 
         const zone = zones.find(z => z.id === area.zoneId);
         if (zone) {
           setSelectedRegionId(zone.regionId);
+          rId = zone.regionId;
         }
       }
     }
     onChange(''); // Reset point
+    onHierarchyChange?.(rId, zId, newAreaId);
   };
 
   const handlePointChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -116,19 +130,21 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     [areas, selectedZoneId, selectedRegionId, zones]
   );
 
-  const visiblePoints = useMemo(
-    () => selectedAreaId
-      ? points.filter((p) => p.areaId === selectedAreaId)
-      : points.filter(p => {
-        // Fallback filtering if area not selected but region/zone is
-        if (selectedZoneId) {
-          const area = areas.find(a => a.id === p.areaId);
-          return area?.zoneId === selectedZoneId;
-        }
-        return false; // Don't show all points, too many. Force at least Zone? Or Area.
-      }),
-    [points, selectedAreaId, selectedZoneId, areas]
-  );
+  const visiblePoints = useMemo(() => {
+    if (selectedAreaId) {
+      return points.filter(p => p.areaId === selectedAreaId);
+    }
+    if (selectedZoneId) {
+      const areaIdsInZone = areas.filter(a => a.zoneId === selectedZoneId).map(a => a.id);
+      return points.filter(p => areaIdsInZone.includes(p.areaId));
+    }
+    if (selectedRegionId) {
+      const zoneIdsInRegion = zones.filter(z => z.regionId === selectedRegionId).map(z => z.id);
+      const areaIdsInRegion = areas.filter(a => zoneIdsInRegion.includes(a.zoneId)).map(a => a.id);
+      return points.filter(p => areaIdsInRegion.includes(p.areaId));
+    }
+    return points; // Return all points if nothing selected (Reverse Lookup)
+  }, [points, selectedAreaId, selectedZoneId, selectedRegionId, areas, zones]);
 
   return (
     <div className={clsx("space-y-3", className)}>

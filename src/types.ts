@@ -114,7 +114,19 @@ export interface User {
   trustScore: number;
   profileImage?: string; // Data URL or path
   logs: string[]; // IDs of logs
-  favorites: string[]; // IDs of favorite creatures
+  favorites: {
+    points: { id: string; isPrimary: boolean }[];
+    areas: { id: string; isPrimary: boolean }[];
+    shops: { name: string; isPrimary: boolean }[];
+    gear: {
+      tanks: {
+        name: string;
+        specs: { material?: 'steel' | 'aluminum'; capacity?: number; gasType?: string; };
+        isPrimary: boolean;
+      }[];
+    };
+  };
+  favoriteCreatureIds: string[]; // Renamed from favorites
   wanted: string[]; // IDs of wanted creatures
   bookmarkedPointIds: string[]; // IDs of bookmarked points
 

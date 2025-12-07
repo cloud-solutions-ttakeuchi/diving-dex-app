@@ -1,15 +1,55 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { DiveLog } from '../types';
 import { compressImage } from '../utils/imageUtils';
+import { HierarchicalPointSelector } from '../components/HierarchicalPointSelector';
+
+interface LogFormData {
+  title: string;
+  date: string;
+  diveNumber: string;
+  pointId: string;
+  shopName: string;
+  region: string;
+  zone: string;
+  area: string;
+  buddy: string;
+  guide: string;
+  members: string;
+  entryTime: string;
+  exitTime: string;
+  maxDepth: string;
+  avgDepth: string;
+  weather: string;
+  airTemp: string;
+  waterTempSurface: string;
+  waterTempBottom: string;
+  transparency: string;
+  wave: string;
+  current: string;
+  surge: string;
+  suitType: string;
+  suitThickness: string;
+  weight: string;
+  tankMaterial: string;
+  tankCapacity: string;
+  pressureStart: string;
+  pressureEnd: string;
+  entryType: string;
+  creatureId: string;
+  sightedCreatures: string[];
+  comment: string;
+  isPrivate: boolean;
+  photos: string[];
+}
 
 export const AddLogPage = () => {
   const navigate = useNavigate();
   // Refactor: use points, creatures from context
-  const { addLog, points, creatures, pointCreatures, isAuthenticated } = useApp();
+  const { addLog, points, creatures, pointCreatures, isAuthenticated, currentUser } = useApp();
 
   // Note: points and creatures should be loaded in AppContext
 
@@ -34,6 +74,7 @@ export const AddLogPage = () => {
   // Form State
   const [formData, setFormData] = useState<LogFormData>({
     // Basic
+    title: '',
     date: new Date().toISOString().split('T')[0],
     diveNumber: '',
 
@@ -86,38 +127,61 @@ export const AddLogPage = () => {
     photos: [] as string[],
   });
 
-  // Derived Selections for Hierarchy
-  // 1. Regions
-  const availableRegions = Array.from(new Set(points.map(p => p.region))).filter(Boolean);
+  // Default Values from Favorites
+  useEffect(() => {
+    if (currentUser?.favorites) {
+      // 1. Point Defaults
+      const primaryPointId = currentUser.favorites.points?.find(p => p.isPrimary)?.id;
+      if (primaryPointId && !formData.pointId) {
+        const point = points.find(p => p.id === primaryPointId);
+        if (point) {
+          setFormData(prev => ({
+            ...prev,
+            pointId: point.id,
+            region: point.region,
+            zone: point.zone,
+            area: point.area,
+            shopName: prev.shopName || (currentUser.favorites.shops?.find(s => s.isPrimary)?.name || '')
+          }));
+        }
+      } else if (!formData.shopName) {
+        // Just Shop
+        const primaryShop = currentUser.favorites.shops?.find(s => s.isPrimary)?.name;
+        if (primaryShop) setFormData(prev => ({ ...prev, shopName: primaryShop }));
+      }
 
-  // 2. Zones (based on Region)
-  const availableZones = Array.from(new Set(
-    points.filter(p => !formData.region || p.region === formData.region).map(p => p.zone)
-  )).filter(Boolean);
-
-  // 3. Areas (based on Zone)
-  const availableAreas = Array.from(new Set(
-    points.filter(p => (!formData.region || p.region === formData.region) && (!formData.zone || p.zone === formData.zone)).map(p => p.area)
-  )).filter(Boolean);
-
-  // 4. Points (based on Area)
-  const availablePoints = points.filter(p =>
-    (!formData.region || p.region === formData.region) &&
-    (!formData.zone || p.zone === formData.zone) &&
-    (!formData.area || p.area === formData.area)
-  );
+      // 2. Gear Defaults
+      const primaryTank = currentUser.favorites.gear?.tanks?.find(t => t.isPrimary);
+      if (primaryTank && !formData.tankCapacity) { // Only if not set
+        setFormData(prev => ({
+          ...prev,
+          tankMaterial: primaryTank.specs.material || 'steel',
+          tankCapacity: primaryTank.specs.capacity?.toString() || '10',
+        }));
+      }
+    }
+  }, [currentUser, points]); // Run once on load (deps ensure data is ready)
 
   // Creature Search State
   const [creatureSearchTerm, setCreatureSearchTerm] = useState('');
 
   // Filtered Creatures for "This Area"
   const areaCreatures = useMemo(() => {
-    // If no location selected, show nothing or all? User said "Area inhabiting creatures".
-    // We aggregate all points in simple match of current filters.
-    if (!formData.pointId && !formData.area) return [];
+    // If no location selected, show nothing or all?
+    if (!formData.pointId && !formData.area && !formData.zone && !formData.region) return [];
 
     // Find all point IDs in the current scope
-    const targetPointIds = formData.pointId ? [formData.pointId] : availablePoints.map(p => p.id);
+    let targetPointIds: string[] = [];
+    if (formData.pointId) {
+      targetPointIds = [formData.pointId];
+    } else {
+      // Filter points based on current hierarchy
+      targetPointIds = points.filter(p =>
+        (!formData.region || p.region === formData.region) &&
+        (!formData.zone || p.zone === formData.zone) &&
+        (!formData.area || p.area === formData.area)
+      ).map(p => p.id);
+    }
 
     // Find all creatures linked to these points
     const linkedCreatureIds = new Set(
@@ -127,7 +191,7 @@ export const AddLogPage = () => {
     );
 
     return creatures.filter(c => linkedCreatureIds.has(c.id));
-  }, [formData.pointId, formData.area, availablePoints, pointCreatures, creatures]);
+  }, [formData.pointId, formData.area, formData.zone, formData.region, points, pointCreatures, creatures]);
 
   // Filtered Creatures for Search
   const searchResults = useMemo(() => {
@@ -156,6 +220,7 @@ export const AddLogPage = () => {
 
       // Construct the DiveLog object
       const logData: Omit<DiveLog, 'id' | 'userId'> = {
+        title: formData.title,
         date: formData.date,
         diveNumber: Number(formData.diveNumber),
         location: {
@@ -304,6 +369,17 @@ export const AddLogPage = () => {
             onToggle={() => toggleSection('basic')}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">タイトル</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none font-bold"
+                  placeholder="例: 青の洞窟でのんびりダイブ"
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">日付</label>
                 <input
@@ -351,59 +427,14 @@ export const AddLogPage = () => {
           >
             <div className="space-y-4">
               {/* Hierarchical Location Selector */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">地方 (Region)</label>
-                  <select
-                    name="region"
-                    value={formData.region}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  >
-                    <option value="">未選択</option>
-                    {availableRegions.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">エリア (Zone)</label>
-                  <select
-                    name="zone"
-                    value={formData.zone}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                    disabled={!formData.region}
-                  >
-                    <option value="">未選択</option>
-                    {availableZones.map(z => <option key={z} value={z}>{z}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">詳細エリア (Area)</label>
-                  <select
-                    name="area"
-                    value={formData.area}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                    disabled={!formData.zone}
-                  >
-                    <option value="">未選択</option>
-                    {availableAreas.map(a => <option key={a} value={a}>{a}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">ポイント</label>
-                  <select
-                    name="pointId"
-                    value={formData.pointId}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none font-bold text-gray-900"
-                    required
-                    disabled={!formData.area && availablePoints.length > 20} // Optional guidance
-                  >
-                    <option value="">ポイントを選択</option>
-                    {availablePoints.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
+              <div className="space-y-4">
+                <HierarchicalPointSelector
+                  value={formData.pointId}
+                  onChange={(pointId) => setFormData(prev => ({ ...prev, pointId }))}
+                  onHierarchyChange={(region, zone, area) => {
+                    setFormData(prev => ({ ...prev, region, zone, area }));
+                  }}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">

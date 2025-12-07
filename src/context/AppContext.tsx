@@ -3,7 +3,23 @@ import type { User, Log, Rarity, Creature, Point, PointCreature } from '../types
 import { INITIAL_DATA, TRUST_RANKS } from '../data/mockData';
 import { auth, googleProvider, db as firestore } from '../lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
-import { doc, setDoc, updateDoc, deleteDoc, collection, onSnapshot, query, orderBy, where, getDoc, collectionGroup, limit } from 'firebase/firestore';
+import {
+  collection,
+  onSnapshot,
+  query,
+  where,
+  orderBy,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  setDoc,
+  getDoc, // Kept getDoc as it was in the original and not explicitly removed
+  getDocs,
+  collectionGroup,
+  limit,
+  writeBatch
+} from 'firebase/firestore';
 import { seedFirestore } from '../utils/seeder';
 interface AppContextType {
   // db: DB; // Removed
@@ -19,8 +35,11 @@ interface AppContextType {
   updateLog: (logId: string, logData: Partial<Log>) => Promise<void>;
   updateCreature: (creatureId: string, creatureData: Partial<Creature>) => Promise<void>;
   updatePoint: (pointId: string, pointData: Partial<Point>) => Promise<void>;
+  deleteLog: (logId: string) => Promise<void>;
+  deleteLogs: (logIds: string[]) => Promise<void>;
+  updateLogs: (logIds: string[], data: Record<string, any>) => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
-  toggleLikeLog: (logId: string) => void;
+  toggleLikeLog: (log: Log) => Promise<void>;
   toggleFavorite: (creatureId: string) => void;
   toggleWanted: (creatureId: string) => void;
   toggleBookmarkPoint: (pointId: string) => void;
@@ -143,7 +162,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addCreatureProposal = async (creatureData: any) => {
     if (!isAuthenticated) return;
     try {
-      const newId = `prop_c_${Date.now()}`;
+      const newId = `prop_c_${Date.now()} `;
       await setDoc(doc(firestore, 'creature_proposals', newId), {
         ...creatureData,
         status: 'pending',
@@ -159,7 +178,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addPointProposal = async (pointData: any) => {
     if (!isAuthenticated) return;
     try {
-      const newId = `prop_p_${Date.now()}`;
+      const newId = `prop_p_${Date.now()} `;
       // areaId is required by Point type but proposals might not have it strictly linked yet?
       // Or we just provide a placeholder.
       const fullPointData = {
@@ -182,7 +201,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     if (proposalType === 'create') {
       // 1. Copy to main collection
-      const realId = type === 'creature' ? `c${Date.now()}` : `p${Date.now()}`; // Generate real ID
+      const realId = type === 'creature' ? `c${Date.now()} ` : `p${Date.now()} `; // Generate real ID
       const realData = { ...data, id: realId, status: 'approved' };
       // cleanup proposal meta fields if needed
       delete realData.proposalType;
@@ -316,8 +335,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               role: 'user',
               trustScore: 0,
               profileImage: user.photoURL || undefined,
-              logs: [], // Legacy field, might be empty if we use subcollection
-              favorites: [],
+              logs: [],
+              favoriteCreatureIds: [],
+              favorites: {
+                points: [],
+                areas: [],
+                shops: [],
+                gear: { tanks: [] }
+              },
               wanted: [],
               bookmarkedPointIds: [],
             };
@@ -414,7 +439,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const addLog = async (logData: Omit<Log, 'id' | 'userId'>) => {
     console.log("[CTX] addLog called with:", logData);
-    const newLogId = `l${Date.now()}`;
+    const newLogId = `l${Date.now()} `;
     const newLog: Log = {
       ...logData,
       id: newLogId,
@@ -445,7 +470,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addCreature = async (creatureData: Omit<Creature, 'id'>) => {
     const newCreature: Creature = {
       ...creatureData,
-      id: `c${Date.now()}`,
+      id: `c${Date.now()} `,
     };
 
     // Firestore Persist
@@ -462,7 +487,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addPoint = async (pointData: Omit<Point, 'id'>) => {
     const newPoint: Point = {
       ...pointData,
-      id: `p${Date.now()}`,
+      id: `p${Date.now()} `,
     };
 
     // Firestore Persist
@@ -477,11 +502,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const addPointCreature = async (pointId: string, creatureId: string, localRarity: Rarity) => {
-    console.log(`[CTX-ADD] addPointCreature: ${pointId}, ${creatureId}, ${localRarity}`);
+    console.log(`[CTX - ADD] addPointCreature: ${pointId}, ${creatureId}, ${localRarity} `);
     if (!isAuthenticated) return;
 
     // ID generation
-    const relId = `${pointId}_${creatureId}`;
+    const relId = `${pointId}_${creatureId} `;
     const pointCreatureData: PointCreature = {
       id: relId,
       pointId,
@@ -492,7 +517,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     // Optimistic Update
     setPointCreatures(prev => {
-      console.log(`[CTX-ADD] Updating state...`);
+      console.log(`[CTX - ADD] Updating state...`);
       const existing = prev.find(p => p.id === relId);
       if (existing) return prev.map(p => p.id === relId ? pointCreatureData : p);
       return [...prev, pointCreatureData];
@@ -500,9 +525,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     try {
       await setDoc(doc(firestore, 'point_creatures', relId), pointCreatureData);
-      console.log(`[CTX-ADD] Firestore write success`);
+      console.log(`[CTX - ADD] Firestore write success`);
     } catch (e) {
-      console.error(`[CTX-ADD] Firestore write failed`, e);
+      console.error(`[CTX - ADD] Firestore write failed`, e);
       throw e;
     }
   };
@@ -511,29 +536,29 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (!isAuthenticated) return;
 
     // DEBUG: Check what we are trying to delete
-    console.log(`[DELETE] Request: Point=${pointId}, Creature=${creatureId}`);
+    console.log(`[DELETE] Request: Point = ${pointId}, Creature = ${creatureId} `);
     const target = pointCreatures.find(pc => pc.pointId === pointId && pc.creatureId === creatureId);
-    console.log(`[DELETE] Found Target in State:`, target);
+    console.log(`[DELETE] Found Target in State: `, target);
 
     // If not found in state, try constructing it, but prefer state
-    const realId = target ? target.id : `${pointId}_${creatureId}`;
-    console.log(`[DELETE] Using ID: ${realId}`);
+    const realId = target ? target.id : `${pointId}_${creatureId} `;
+    console.log(`[DELETE] Using ID: ${realId} `);
 
     // Admin/Mod: Force Delete
     if (currentUser.role === 'admin' || currentUser.role === 'moderator') {
-      console.log(`[DELETE] Action: Force Delete (Admin)`);
+      console.log(`[DELETE] Action: Force Delete(Admin)`);
       // Optimistic Delete
       setPointCreatures(prev => {
         const exists = prev.find(p => p.id === realId);
-        console.log(`[DELETE] Optimistic remove. Exists in prev?`, !!exists);
+        console.log(`[DELETE] Optimistic remove.Exists in prev ? `, !!exists);
         return prev.filter(p => p.id !== realId);
       });
       try {
         await deleteDoc(doc(firestore, 'point_creatures', realId));
         console.log(`[DELETE] Firestore delete success`);
-      } catch (e) { console.error(`[DELETE] Firestore error:`, e); }
+      } catch (e) { console.error(`[DELETE] Firestore error: `, e); }
     } else {
-      console.log(`[DELETE] Action: Request Deletion (User)`);
+      console.log(`[DELETE] Action: Request Deletion(User)`);
       // User: Request Deletion
       // Optimistic Update
       setPointCreatures(prev => prev.map(p => p.id === realId ? { ...p, status: 'deletion_requested' } : p));
@@ -581,6 +606,61 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const deleteLog = async (logId: string) => {
+    if (!isAuthenticated) return;
+    try {
+      // Delete from Firestore
+      const logRef = doc(firestore, 'users', currentUser.id, 'logs', logId);
+      await deleteDoc(logRef);
+      console.log("[CTX] Log deleted:", logId);
+
+      // Optimistic update for UI (though snapshot listener usually handles this)
+      setAllLogs(prev => prev.filter(l => l.id !== logId));
+      setRecentLogs(prev => prev.filter(l => l.id !== logId));
+
+    } catch (e) {
+      console.error("Error deleting log:", e);
+    }
+  };
+
+  const deleteLogs = async (logIds: string[]) => {
+    if (!isAuthenticated) return;
+    try {
+      // Batch delete
+      // Note: Firestore batch has limit of 500 ops. Assuming selection is smaller for now.
+      const batch = writeBatch(firestore);
+      logIds.forEach(id => {
+        const ref = doc(firestore, 'users', currentUser.id, 'logs', id);
+        batch.delete(ref);
+      });
+      await batch.commit();
+      console.log("[CTX] Bulk logs deleted:", logIds.length);
+
+      // Optimistic update
+      setAllLogs(prev => prev.filter(l => !logIds.includes(l.id)));
+      setRecentLogs(prev => prev.filter(l => !logIds.includes(l.id)));
+    } catch (e) {
+      console.error("Error bulk deleting logs:", e);
+      throw e;
+    }
+  };
+
+  const updateLogs = async (logIds: string[], data: Record<string, any>) => {
+    if (!isAuthenticated) return;
+    try {
+      const batch = writeBatch(firestore);
+      logIds.forEach(id => {
+        const ref = doc(firestore, 'users', currentUser.id, 'logs', id);
+        batch.update(ref, data);
+      });
+      await batch.commit();
+      console.log("[CTX] Bulk logs updated:", logIds.length);
+    } catch (e) {
+      console.error("Error bulk updating logs:", e);
+      throw e;
+    }
+  };
+
   const updateUser = async (userData: Partial<User>) => {
     // Optimistic update
     setCurrentUser(prev => ({ ...prev, ...userData }));
@@ -595,30 +675,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-
-
-  const toggleLikeLog = async (logId: string) => {
-    // In new structure, logs are user-specific.
-    // If we can only like OUR logs, it's easy.
-    // But usually we like OTHERS' logs.
-    // If Logs are subcollection of Users, we need to know the Owner ID of the log to update it.
-    // However, the `logId` might not contain owner info.
-    // If `allLogs` contains `userId`, we can find it there.
-    // Check both personal logs and public recent logs
-    const log = allLogs.find(l => l.id === logId) || recentLogs.find(l => l.id === logId);
-
-    if (!log) {
-      console.warn("Log not found for liking:", logId);
-      return;
-    }
-
-    // Use userId from log to target the correct path: users/{ownerId}/logs/{logId}
+  const toggleLikeLog = async (log: Log) => {
+    if (!isAuthenticated) return;
+    const logId = log.id;
     const ownerId = log.userId;
 
+    // Current State
     const currentLikedBy = log.likedBy || [];
     const currentLikeCount = log.likeCount || 0;
-
     const isLiked = currentLikedBy.includes(currentUser.id);
+
     const newLikedBy = isLiked
       ? currentLikedBy.filter(id => id !== currentUser.id)
       : [...currentLikedBy, currentUser.id];
@@ -652,18 +718,18 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const toggleFavorite = async (creatureId: string) => {
-    const isFavorite = currentUser.favorites.includes(creatureId);
+    const isFavorite = currentUser.favoriteCreatureIds?.includes(creatureId);
     const newFavorites = isFavorite
-      ? currentUser.favorites.filter(id => id !== creatureId)
-      : [...currentUser.favorites, creatureId];
+      ? currentUser.favoriteCreatureIds.filter(id => id !== creatureId)
+      : [...(currentUser.favoriteCreatureIds || []), creatureId];
 
     // Optimistic
-    setCurrentUser(prev => ({ ...prev, favorites: newFavorites }));
+    setCurrentUser(prev => ({ ...prev, favoriteCreatureIds: newFavorites }));
 
     // Firestore Persist
     if (isAuthenticated) {
       try {
-        await updateDoc(doc(firestore, 'users', currentUser.id), { favorites: newFavorites });
+        await updateDoc(doc(firestore, 'users', currentUser.id), { favoriteCreatureIds: newFavorites });
       } catch (e) {
         console.error(e);
       }
@@ -756,6 +822,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       updateLog,
       updateCreature,
       updatePoint,
+      deleteLog,
+      deleteLogs,
+      updateLogs,
       updateUser,
       toggleLikeLog,
       toggleFavorite,

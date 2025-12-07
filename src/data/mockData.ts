@@ -360,7 +360,15 @@ const LOGS: Log[] = rawLogs.map(log => {
 
 const USERS: User[] = [
   {
-    id: 'u1', name: 'Minarai Diver', role: 'admin', trustScore: 1000, profileImage: undefined, logs: LOGS.map(l => l.id), favorites: [], wanted: [], bookmarkedPointIds: ['p1', 'p4'],
+    id: 'u1', name: 'Minarai Diver', role: 'admin', trustScore: 1000, profileImage: undefined, logs: LOGS.map(l => l.id),
+    favoriteCreatureIds: [],
+    favorites: {
+      points: [],
+      areas: [],
+      shops: [],
+      gear: { tanks: [] }
+    },
+    wanted: [], bookmarkedPointIds: ['p1', 'p4'],
     certification: { orgId: 'org_padi', rankId: 'rank_aow', date: '2020-01-01' },
     badges: [{ badgeId: 'bg_izu_master', earnedAt: '2024-08-10' }]
   }
