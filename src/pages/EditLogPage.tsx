@@ -5,6 +5,7 @@ import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Sett
 import { Link } from 'react-router-dom';
 import type { DiveLog } from '../types';
 import { compressImage } from '../utils/imageUtils';
+import { HierarchicalPointSelector } from '../components/HierarchicalPointSelector';
 
 export const EditLogPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -372,17 +373,12 @@ export const EditLogPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ポイント</label>
-                <select
-                  name="pointId"
-                  required
-                  value={formData.pointId}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                >
-                  {points.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
+                <div className="mb-2">
+                  <HierarchicalPointSelector
+                    value={formData.pointId}
+                    onChange={(pointId) => setFormData(prev => ({ ...prev, pointId }))}
+                  />
+                </div>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">ショップ名</label>

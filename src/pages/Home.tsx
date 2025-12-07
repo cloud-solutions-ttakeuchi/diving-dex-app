@@ -25,7 +25,7 @@ export const Home = () => {
     .slice(0, 5);
 
   // 2. Popular Creatures (Global Popularity Stats)
-  const popularCreatures = [...creatures]
+  const popularCreatures = Array.from(new Map(creatures.map(c => [c.id, c])).values())
     .sort((a, b) => (b.stats?.popularity || 0) - (a.stats?.popularity || 0))
     .slice(0, 10);
 

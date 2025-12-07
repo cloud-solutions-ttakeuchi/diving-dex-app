@@ -2,7 +2,8 @@ import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { Creature } from '../types';
 import { LogDetailModal } from '../components/LogDetailModal';
-import { Award, MapPin, Grid, List, BookOpen, Heart, Bookmark, Check, Star, Calendar, Clock, PenTool, ChevronRight, Compass, Droplet, Map as MapIcon, Aperture, Crown, Shield, Info, Settings, X, Activity, Droplets, Camera, Fish, Sun, Users, FileText } from 'lucide-react';
+import { LogCard } from '../components/LogCard';
+import { Award, MapPin, Grid, List, BookOpen, Heart, Bookmark, Check, Star, PenTool, ChevronRight, Compass, Droplet, Map as MapIcon, Aperture, Crown, Shield, Info, Settings, X, Activity, Droplets, Camera, Image as ImageIcon } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
@@ -19,7 +20,7 @@ export const MyPage = () => {
   const [showRankInfo, setShowRankInfo] = useState(false);
 
   // Refactor: Use logs from context
-  const selectedLog = selectedLogId ? logs.find(l => l.id === selectedLogId) : null;
+  const selectedLog = selectedLogId ? (logs.find(l => l.id === selectedLogId) || null) : null;
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [editName, setEditName] = useState('');
@@ -460,67 +461,17 @@ export const MyPage = () => {
                 {userLogs.map(log => {
                   const creature = creatures.find(c => c.id === log.creatureId);
                   const point = points.find(p => p.id === log.spotId);
-                  const mainImage = log.photos[0] || (creature?.imageUrl || '/images/no-image-creature.png') || (point?.imageUrl || '/images/no-image-point.png') || '/images/no-image.png';
 
                   return (
-                    <div
+                    <LogCard
                       key={log.id}
-                      onClick={() => setSelectedLogId(log.id)}
-                      className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-all text-left group flex flex-col cursor-pointer"
-                    >
-                      <div className="h-48 relative overflow-hidden">
-                        <img
-                          src={mainImage}
-                          alt="Log thumbnail"
-                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                        />
-                        <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-deepBlue-900 flex items-center gap-1 shadow-sm">
-                          <Calendar size={12} />
-                          {new Date(log.date).toLocaleDateString()}
-                        </div>
-                      </div>
-                      <div className="p-4 flex-1 flex flex-col">
-                        <div className="flex justify-between items-start mb-2">
-                          <h4 className="font-bold text-lg text-deepBlue-900 line-clamp-1">
-                            {point?.name || log.location.pointName}
-                          </h4>
-                        </div>
-                        <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-                          <div className="flex items-center gap-1">
-                            <Clock size={12} /> {log.time.duration}min
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Droplets size={12} /> {log.depth.max}m
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-end mt-auto">
-                          {log.comment ? (
-                            <p className="text-sm text-gray-600 line-clamp-2 flex-1 mr-2">
-                              {log.comment}
-                            </p>
-                          ) : <div className="flex-1" />}
-
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleLikeLog(log.id);
-                            }}
-                            className="flex items-center gap-1 text-gray-400 hover:text-pink-500 transition-colors group/like"
-                          >
-                            <Heart
-                              size={16}
-                              className={clsx(
-                                "transition-all duration-300 group-active/like:scale-125",
-                                (log.likedBy || []).includes(currentUser.id) ? "fill-pink-500 text-pink-500" : "group-hover/like:fill-pink-100"
-                              )}
-                            />
-                            <span className={clsx("text-xs font-bold", (log.likedBy || []).includes(currentUser.id) ? "text-pink-500" : "")}>
-                              {(log.likeCount || 0) > 0 ? log.likeCount : ''}
-                            </span>
-                          </button>
-                        </div>
-                      </div>
-                    </div>
+                      log={log}
+                      currentUser={currentUser}
+                      creature={creature}
+                      point={point}
+                      onLike={toggleLikeLog}
+                      onClick={(id) => setSelectedLogId(id)}
+                    />
                   );
                 })}
               </div>
@@ -653,7 +604,7 @@ export const MyPage = () => {
                     to={`/creature/${id}`}
                     className="group relative aspect-[4/5] rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                   >
-                    <img src={creature.imageUrl} alt={creature.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src={creature.imageUrl || '/images/no-image-creature.png'} alt={creature.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-deepBlue-900 via-transparent to-transparent opacity-90" />
                     <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                       <h4 className="font-bold text-white text-lg leading-tight drop-shadow-md mb-1">{creature.name}</h4>
@@ -705,7 +656,7 @@ export const MyPage = () => {
                     to={`/creature/${id}`}
                     className="group relative aspect-[4/5] rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                   >
-                    <img src={creature.imageUrl} alt={creature.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    <img src={creature.imageUrl || '/images/no-image-creature.png'} alt={creature.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-deepBlue-900 via-transparent to-transparent opacity-90" />
 
                     {isDiscovered && (
@@ -795,8 +746,16 @@ export const MyPage = () => {
                             to={`/point/${point!.id}`}
                             className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-all flex gap-4 group"
                           >
-                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0">
-                              <img src={point!.imageUrl} alt={point!.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            <div className="w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 relative bg-gray-100 flex items-center justify-center border border-gray-100">
+                              {(point!.imageUrl && !point!.imageUrl.includes('loremflickr') && point!.imageUrl.match(/\((https?:\/\/.*?)\)/)?.[1]) || (point!.imageUrl && !point!.imageUrl.includes('loremflickr')) ? (
+                                <img
+                                  src={(point!.imageUrl.match(/\((https?:\/\/.*?)\)/)?.[1]) || point!.imageUrl}
+                                  alt={point!.name}
+                                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                />
+                              ) : (
+                                <ImageIcon size={24} className="text-gray-300" />
+                              )}
                             </div>
                             <div className="flex-1 flex flex-col justify-between py-1">
                               <div>

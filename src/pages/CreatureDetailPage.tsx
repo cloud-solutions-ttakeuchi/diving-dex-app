@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import type { Rarity } from '../types';
 import { Image as ImageIcon } from 'lucide-react';
+import { HierarchicalPointSelector } from '../components/HierarchicalPointSelector';
 
 export const CreatureDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -408,17 +409,10 @@ export const CreatureDetailPage = () => {
 
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">場所 (Point)</label>
-                  <select
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-900 font-bold appearance-none"
+                  <HierarchicalPointSelector
                     value={selectedSpotId}
-                    onChange={(e) => setSelectedSpotId(e.target.value)}
-                  >
-                    <option value="">ポイントを選択...</option>
-                    {points.map(p => (
-                      <option key={p.id} value={p.id}>{p.name} ({p.area})</option>
-                    ))}
-                  </select>
+                    onChange={(pointId) => setSelectedSpotId(pointId)}
+                  />
                 </div>
 
                 <div>

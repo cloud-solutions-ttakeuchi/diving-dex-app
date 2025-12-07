@@ -604,13 +604,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     // If Logs are subcollection of Users, we need to know the Owner ID of the log to update it.
     // However, the `logId` might not contain owner info.
     // If `allLogs` contains `userId`, we can find it there.
-    const log = allLogs.find(l => l.id === logId);
-    // Note: if we are viewing ANOTHER user's log, `allLogs` might only contain CURRENT user's logs
-    // depending on how we fetched.
-    // IF we are on a page viewing another user, we probably fetched their logs.
-    // For now, let's assume `log` is found in `allLogs` (which implies we are viewing it).
+    // Check both personal logs and public recent logs
+    const log = allLogs.find(l => l.id === logId) || recentLogs.find(l => l.id === logId);
 
-    if (!log) return;
+    if (!log) {
+      console.warn("Log not found for liking:", logId);
+      return;
+    }
 
     // Use userId from log to target the correct path: users/{ownerId}/logs/{logId}
     const ownerId = log.userId;
@@ -623,7 +623,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       ? currentLikedBy.filter(id => id !== currentUser.id)
       : [...currentLikedBy, currentUser.id];
 
+    console.log("[AppContext] toggling like. LogId:", logId, "NewState:", isLiked ? "Unlike" : "Like");
+
     const newLikeCount = isLiked ? currentLikeCount - 1 : currentLikeCount + 1;
+
+    // Optimistic Update
+    const updateLogState = (prevLogs: Log[]) =>
+      prevLogs.map(l =>
+        l.id === logId
+          ? { ...l, likedBy: newLikedBy, likeCount: newLikeCount }
+          : l
+      );
+
+    setAllLogs(prev => updateLogState(prev));
+    setRecentLogs(prev => updateLogState(prev));
 
     // Firestore Persist
     if (isAuthenticated) {
@@ -632,6 +645,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         await updateDoc(logRef, { likedBy: newLikedBy, likeCount: newLikeCount });
       } catch (e) {
         console.error(e);
+        // Revert on error (optional, but good practice)
+        // setAllLogs(prev => ... revert ...);
       }
     }
   };

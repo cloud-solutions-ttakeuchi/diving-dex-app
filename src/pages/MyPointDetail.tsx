@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { Creature } from '../types';
-import { MapPin, Lock, CheckCircle, ArrowLeft, Droplets, Trophy, Check } from 'lucide-react';
+import { MapPin, Lock, CheckCircle, ArrowLeft, Droplets, Trophy, Check, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
 
 export const MyPointDetail = () => {
@@ -53,11 +53,17 @@ export const MyPointDetail = () => {
       {/* Point Overview Card */}
       <div className="bg-white border border-deepBlue-100 rounded-2xl overflow-hidden shadow-sm">
         <div className="h-32 relative">
-          <img
-            src={point.imageUrl || '/images/no-image-point.png'}
-            alt={point.name}
-            className="w-full h-full object-cover"
-          />
+          {(point.imageUrl && !point.imageUrl.includes('loremflickr') && point.imageUrl.match(/\((https?:\/\/.*?)\)/)?.[1]) || (point.imageUrl && !point.imageUrl.includes('loremflickr')) ? (
+            <img
+              src={(point.imageUrl.match(/\((https?:\/\/.*?)\)/)?.[1]) || point.imageUrl}
+              alt={point.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+              <ImageIcon size={48} className="text-gray-300" />
+            </div>
+          )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
             <div className="text-white">
               <div className="flex items-center gap-1 text-xs opacity-90 mb-1">

@@ -15,8 +15,25 @@ type Props = {
 
 export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
   const { points, creatures, currentUser, toggleLikeLog } = useApp();
+  const [isLiked, setIsLiked] = React.useState(false);
+  const [likeCount, setLikeCount] = React.useState(0);
+
+  React.useEffect(() => {
+    if (log) {
+      setIsLiked((log.likedBy || []).includes(currentUser.id));
+      setLikeCount(log.likeCount || 0);
+    }
+  }, [log, currentUser.id]);
 
   if (!isOpen || !log) return null;
+
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newIsLiked = !isLiked;
+    setIsLiked(newIsLiked);
+    setLikeCount(prev => newIsLiked ? prev + 1 : Math.max(0, prev - 1));
+    toggleLikeLog(log.id);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 animate-fade-in backdrop-blur-sm" onClick={onClose}>
@@ -64,20 +81,17 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
 
             {/* Like Button in Header */}
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleLikeLog(log.id);
-              }}
+              onClick={handleLike}
               className="absolute bottom-6 right-6 bg-white/20 backdrop-blur-md border border-white/30 rounded-full px-4 py-2 flex items-center gap-2 text-white hover:bg-white/30 transition-all active:scale-95"
             >
               <Heart
                 size={20}
                 className={clsx(
                   "transition-all duration-300",
-                  (log.likedBy || []).includes(currentUser.id) ? "fill-pink-500 text-pink-500" : "text-white"
+                  isLiked ? "fill-pink-500 text-pink-500" : "text-white"
                 )}
               />
-              <span className="font-bold">{log.likeCount || 0}</span>
+              <span className="font-bold">{likeCount}</span>
             </button>
           </div>
         </div>
