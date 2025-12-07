@@ -11,7 +11,7 @@ import { INITIAL_DATA } from '../data/mockData';
 type TargetField = 'area' | 'zone' | 'region' | 'point';
 
 export const AdminAreaCleansingPage = () => {
-  const { points, currentUser, regions, zones, areas } = useApp();
+  const { regions, zones, areas, points, creatures, pointCreatures, currentUser } = useApp();
   const navigate = useNavigate();
   const [targetField, setTargetField] = useState<TargetField>('area');
   const [editingValue, setEditingValue] = useState<string | null>(null);
@@ -238,6 +238,42 @@ export const AdminAreaCleansingPage = () => {
     setProcessing(false);
     if (success) alert('同期完了しました。');
     else alert('同期に失敗しました。');
+  };
+
+  const handleExportCreatures = () => {
+    try {
+      // Filter out any strictly internal/runtime properties if necessary,
+      // but typically we want the whole object as it matches the seed schema.
+      const exportData = creatures;
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `creatures_real_export_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e: any) {
+      console.error("Export failed:", e);
+      alert("Export failed: " + e.message);
+    }
+  };
+
+  const handleExportPointCreatures = () => {
+    try {
+      const exportData = pointCreatures;
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `point_creatures_seed_export_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e: any) {
+      console.error("Export failed:", e);
+      alert("Export failed: " + e.message);
+    }
   };
 
   const handleRepairDuplicates = async () => {
@@ -1080,7 +1116,23 @@ export const AdminAreaCleansingPage = () => {
               className="px-3 py-1 bg-green-600 text-white font-bold rounded hover:bg-green-700 transition-colors flex items-center gap-2 text-xs"
             >
               <Download size={12} />
-              Export JSON
+              Export Locations
+            </button>
+            <button
+              onClick={handleExportCreatures}
+              disabled={processing}
+              className="px-3 py-1 bg-teal-600 text-white font-bold rounded hover:bg-teal-700 transition-colors flex items-center gap-2 text-xs"
+            >
+              <Download size={12} />
+              Export Creatures
+            </button>
+            <button
+              onClick={handleExportPointCreatures}
+              disabled={processing}
+              className="px-3 py-1 bg-teal-600 text-white font-bold rounded hover:bg-teal-700 transition-colors flex items-center gap-2 text-xs"
+            >
+              <Download size={12} />
+              Export Relations
             </button>
             <button
               onClick={handleRepairDuplicates}
