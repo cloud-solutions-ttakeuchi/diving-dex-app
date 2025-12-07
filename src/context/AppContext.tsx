@@ -19,6 +19,22 @@ import {
   writeBatch
 } from 'firebase/firestore';
 import { seedFirestore } from '../utils/seeder';
+
+// Helper to remove undefined values
+const sanitizePayload = (data: any): any => {
+  return Object.entries(data).reduce((acc, [key, value]) => {
+    if (value !== undefined) {
+      // Recursively sanitize objects (optional, but good for nested fields like location)
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        acc[key] = sanitizePayload(value);
+      } else {
+        acc[key] = value;
+      }
+    }
+    return acc;
+  }, {} as any);
+};
+
 interface AppContextType {
   // db: DB; // Removed
   currentUser: User;
@@ -438,30 +454,39 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addLog = async (logData: Omit<Log, 'id' | 'userId'>) => {
     console.log("[CTX] addLog called with:", logData);
     const newLogId = `l${Date.now()}`;
+
+    // Force Sync spotId with location.pointId
+    const finalSpotId = logData.location?.pointId || logData.spotId || '';
+
     const newLog: Log = {
       ...logData,
       id: newLogId,
       userId: currentUser.id,
+      spotId: finalSpotId, // Ensure it is set
     };
-    console.log("[CTX] Constructed newLog:", newLog);
+
+    // Sanitize before saving
+    const payload = sanitizePayload(newLog);
+
+    console.log("[CTX] Constructed newLog with spotId:", finalSpotId);
 
     // Firestore Persist (Subcollection)
     if (isAuthenticated) {
       try {
         const ref = doc(firestore, 'users', currentUser.id, 'logs', newLogId);
-        console.log("[CTX] Writing to Firestore path:", ref.path);
+        await setDoc(ref, payload);
 
-        await setDoc(ref, newLog);
-        console.log("[CTX] Firestore write successful for log:", newLogId);
-
-        // We might not need to update 'users' logs array if we rely on subcollection.
-        // But for safety/legacy checks:
-        // updateDoc(doc(firestore, 'users', currentUser.id), { logs: arrayUnion(newLogId) });
+        // Optimistic Update
+        // Note: use the sanitized payload + original undefineds if needed?
+        // Actually for local state, undefined is fine usually, but let's be consistent.
+        const logWithId = payload as Log;
+        setAllLogs(prev => [logWithId, ...prev]);
+        if (!newLog.isPrivate) {
+          setRecentLogs(prev => [logWithId, ...prev]);
+        }
       } catch (e) {
         console.error("Error adding log:", e);
       }
-    } else {
-      console.warn("[CTX] addLog skipped: Not authenticated");
     }
   };
 
@@ -568,42 +593,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const updateLog = async (logId: string, logData: Partial<Log>) => {
-    // Firestore Persist
-    if (isAuthenticated) {
-      try {
-        const logRef = doc(firestore, 'users', currentUser.id, 'logs', logId);
-        await updateDoc(logRef, logData);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
-  const updateCreature = async (creatureId: string, creatureData: Partial<Creature>) => {
-    // Firestore Persist
-    if (isAuthenticated) {
-      try {
-        const creatureRef = doc(firestore, 'creatures', creatureId);
-        await updateDoc(creatureRef, creatureData);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
-  const updatePoint = async (pointId: string, pointData: Partial<Point>) => {
-    // Firestore Persist
-    if (isAuthenticated) {
-      try {
-        const pointRef = doc(firestore, 'points', pointId);
-        await updateDoc(pointRef, pointData);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  };
-
   const deleteLog = async (logId: string) => {
     if (!isAuthenticated) return;
     try {
@@ -643,16 +632,87 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const updateLog = async (logId: string, logData: Partial<Log>) => {
+    // Force Sync spotId if location.pointId is present
+    const rawPayload = { ...logData };
+    if (rawPayload.location?.pointId) {
+      rawPayload.spotId = rawPayload.location.pointId;
+    }
+
+    const payload = sanitizePayload(rawPayload);
+
+    // Firestore Persist
+    if (isAuthenticated) {
+      try {
+        const logRef = doc(firestore, 'users', currentUser.id, 'logs', logId);
+        await updateDoc(logRef, payload);
+
+        // Optimistic Update
+        setAllLogs(prev => prev.map(l => l.id === logId ? { ...l, ...payload } as Log : l));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const updateCreature = async (creatureId: string, creatureData: Partial<Creature>) => {
+    // Firestore Persist
+    if (isAuthenticated) {
+      try {
+        const creatureRef = doc(firestore, 'creatures', creatureId);
+        await updateDoc(creatureRef, creatureData);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
+  const updatePoint = async (pointId: string, pointData: Partial<Point>) => {
+    // Firestore Persist
+    if (isAuthenticated) {
+      try {
+        const pointRef = doc(firestore, 'points', pointId);
+        await updateDoc(pointRef, pointData);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
   const updateLogs = async (logIds: string[], data: Record<string, any>) => {
     if (!isAuthenticated) return;
+
+    // Force Sync spotId if location.pointId is present (dot notation)
+    const rawPayload = { ...data };
+    if (rawPayload['location.pointId']) {
+      rawPayload['spotId'] = rawPayload['location.pointId'];
+    }
+
+    const payload = sanitizePayload(rawPayload);
+
     try {
       const batch = writeBatch(firestore);
       logIds.forEach(id => {
         const ref = doc(firestore, 'users', currentUser.id, 'logs', id);
-        batch.update(ref, data);
+        batch.update(ref, payload);
       });
       await batch.commit();
       console.log("[CTX] Bulk logs updated:", logIds.length);
+
+      // Optimistic Update (Manual reload might be needed or we map manually)
+      setAllLogs(prev => prev.map(l => {
+        if (logIds.includes(l.id)) {
+          // Deep merge simulation for optimistic update is hard with dot notation.
+          // But simple spotId update is key.
+          const newL = { ...l };
+          // Very basic handling for key update
+          if (payload['spotId']) newL.spotId = payload['spotId'];
+          if (payload.isPrivate !== undefined) newL.isPrivate = payload.isPrivate;
+          return newL;
+        }
+        return l;
+      }));
+
     } catch (e) {
       console.error("Error bulk updating logs:", e);
       throw e;
