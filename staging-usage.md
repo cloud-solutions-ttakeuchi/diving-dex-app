@@ -7,6 +7,8 @@
 - **Firebase CLI**: インストール済みであること
   ```bash
   npm install -g firebase-tools
+  # 権限エラーの場合は
+  sudo npm install -g firebase-tools
   ```
 - **Firebase Login**: 認証が完了していること
   ```bash
