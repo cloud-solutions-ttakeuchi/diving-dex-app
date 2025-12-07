@@ -1096,8 +1096,8 @@ export const AdminAreaCleansingPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="w-full max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => navigate('/mypage')} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
               <ArrowLeft size={24} />
             </button>
@@ -1248,25 +1248,25 @@ export const AdminAreaCleansingPage = () => {
           {/* ... existing tabs ... */}
           <button
             onClick={() => { setTargetField('region'); setEditingValue(null); setExpandedRow(null); }}
-            className={`flex items - center gap - 2 px - 4 py - 2 rounded - lg font - bold transition - all whitespace - nowrap ${targetField === 'region' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'} `}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${targetField === 'region' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}
           >
             <Globe size={18} /> Region
           </button>
           <button
             onClick={() => { setTargetField('zone'); setEditingValue(null); setExpandedRow(null); }}
-            className={`flex items - center gap - 2 px - 4 py - 2 rounded - lg font - bold transition - all whitespace - nowrap ${targetField === 'zone' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'} `}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${targetField === 'zone' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}
           >
             <MapIcon size={18} /> Zone
           </button>
           <button
             onClick={() => { setTargetField('area'); setEditingValue(null); setExpandedRow(null); }}
-            className={`flex items - center gap - 2 px - 4 py - 2 rounded - lg font - bold transition - all whitespace - nowrap ${targetField === 'area' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'} `}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${targetField === 'area' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}
           >
             <Layers size={18} /> Area
           </button>
           <button
             onClick={() => { setTargetField('point'); setEditingValue(null); setExpandedRow(null); }}
-            className={`flex items - center gap - 2 px - 4 py - 2 rounded - lg font - bold transition - all whitespace - nowrap ${targetField === 'point' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'} `}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all whitespace-nowrap ${targetField === 'point' ? 'bg-blue-600 text-white shadow-md' : 'bg-white text-gray-600 border hover:bg-gray-50'}`}
           >
             <MapPin size={18} /> Point
           </button>
