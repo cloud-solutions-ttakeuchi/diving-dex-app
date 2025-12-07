@@ -192,7 +192,7 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
               <h3 className="text-lg font-bold text-gray-700 mb-2">CSVファイルを選択またはドラッグ&ドロップ</h3>
               <p className="text-gray-500 text-sm">
                 Garmin Connect などのCSV形式に対応<br />
-                <span className="text-xs text-gray-400 mt-2 inline-block">※ AquaLang対応や詳細データの取込は、将来の有料プランで提供予定です</span>
+                <span className="text-xs text-gray-400 mt-2 inline-block">※ AquaLang対応やGarminの詳細データの取込は、将来提供予定です</span>
               </p>
             </div>
           )}
