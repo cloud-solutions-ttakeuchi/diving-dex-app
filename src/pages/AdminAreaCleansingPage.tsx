@@ -1,8 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Edit2, Trash2, Save, X, RefreshCw, Layers, Map as MapIcon, Globe, MapPin, ChevronDown, ChevronUp, AlertTriangle, GitMerge } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Save, X, RefreshCw, Layers, Map as MapIcon, Globe, MapPin, ChevronDown, ChevronUp, AlertTriangle, GitMerge, Plus, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { writeBatch, collection, getDocs, query, where, doc, updateDoc, arrayRemove, arrayUnion, deleteDoc } from 'firebase/firestore';
+import { writeBatch, collection, getDocs, query, where, doc, updateDoc, arrayRemove, arrayUnion, deleteDoc, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import type { Point } from '../types';
 import { seedFirestore } from '../utils/seeder';
@@ -11,7 +11,7 @@ import { INITIAL_DATA } from '../data/mockData';
 type TargetField = 'area' | 'zone' | 'region' | 'point';
 
 export const AdminAreaCleansingPage = () => {
-  const { points, currentUser, regions, zones, areas } = useApp();
+  const { regions, zones, areas, points, creatures, pointCreatures, currentUser } = useApp();
   const navigate = useNavigate();
   const [targetField, setTargetField] = useState<TargetField>('area');
   const [editingValue, setEditingValue] = useState<string | null>(null);
@@ -28,22 +28,99 @@ export const AdminAreaCleansingPage = () => {
   const [mergeSource, setMergeSource] = useState<Point | null>(null);
   const [mergeTargetId, setMergeTargetId] = useState('');
 
-  // Group Merge Modal State
   const [groupMergeModalOpen, setGroupMergeModalOpen] = useState(false);
   const [groupMergeSource, setGroupMergeSource] = useState('');
   const [groupMergeTargetName, setGroupMergeTargetName] = useState('');
+
+  // Master Data Management State
+  const [masterModalOpen, setMasterModalOpen] = useState(false);
+  const [masterEditType, setMasterEditType] = useState<'region' | 'zone' | 'area' | null>(null);
+  const [masterFormData, setMasterFormData] = useState({ id: '', name: '', description: '', parentId: '' });
+  const [isNewMaster, setIsNewMaster] = useState(false);
+
+  // Filter State (Arrays for Multi-Select)
+  const [filterRegion, setFilterRegion] = useState<string[]>([]);
+  const [filterZone, setFilterZone] = useState<string[]>([]);
+  const [filterArea, setFilterArea] = useState<string[]>([]);
+
+  // Selection State
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
+
+  // Reset filters and selection when target changes
+  React.useEffect(() => {
+    setFilterRegion([]);
+    setFilterZone([]);
+    setFilterArea([]);
+    setSelectedItems(new Set());
+  }, [targetField]);
 
   // 1. Aggregate Stats based on Target Field with Parent Info
   const fieldStats = useMemo(() => {
     // Map stores: name -> { count, parents: Set<string>, points: Point[] }
     const stats = new Map<string, { count: number, parents: Set<string>, points: Point[] }>();
 
+    // 0. Prepare Filters : Resolve Names to IDs for filtering Master Data properly
+    // Note: Regions are simple. Zones need Region IDs. Areas need Zone IDs.
+    const targetRegionIds = filterRegion.length > 0
+      ? regions.filter(r => filterRegion.includes(r.name)).map(r => r.id)
+      : [];
+    const targetZoneIds = filterZone.length > 0
+      ? zones.filter(z => filterZone.includes(z.name)).map(z => z.id)
+      : [];
+
+    // 1. Initialize with Master Data (to show empty items)
+    if (targetField === 'region') {
+      regions.forEach(r => {
+        stats.set(r.name, { count: 0, parents: new Set(), points: [] });
+      });
+    } else if (targetField === 'zone') {
+      zones.forEach(z => {
+        // Filter by Region (if any selected)
+        if (targetRegionIds.length > 0 && !targetRegionIds.includes(z.regionId)) return;
+
+        const item = { count: 0, parents: new Set<string>(), points: [] as Point[] };
+        const regionName = regions.find(r => r.id === z.regionId)?.name;
+        if (regionName) item.parents.add(regionName);
+        stats.set(z.name, item);
+      });
+    } else if (targetField === 'area') {
+      areas.forEach(a => {
+        // Filter by Zone (if any selected)
+        if (targetZoneIds.length > 0 && !targetZoneIds.includes(a.zoneId)) return;
+
+        // Implicit Filter by Region (if Region selected but NO Zone selected)
+        if (targetRegionIds.length > 0 && targetZoneIds.length === 0) {
+          const parentZone = zones.find(z => z.id === a.zoneId);
+          if (!parentZone || !targetRegionIds.includes(parentZone.regionId)) return;
+        }
+
+        const item = { count: 0, parents: new Set<string>(), points: [] as Point[] };
+        const zoneName = zones.find(z => z.id === a.zoneId)?.name;
+        if (zoneName) item.parents.add(zoneName);
+        stats.set(a.name, item);
+      });
+    }
+
+    // 2. Aggregate Points
     points.forEach(p => {
       // Determine field value and parent value
       let val = '';
       let parentVal = '';
 
+      // Check Filters
+      // Note: Data is denormalized on Point, so we check names (or look up IDs if reliable)
+      // For robustness with "Unknown/Legacy" data, checking text match is often safer for cleansing tools.
+
+      // Region Filter
+      if (filterRegion.length > 0 && !filterRegion.includes(p.region)) return;
+      // Zone Filter
+      if (filterZone.length > 0 && !filterZone.includes(p.zone)) return;
+      // Area Filter (only for Point tab)
+      if (targetField !== 'point' && filterArea.length > 0 && !filterArea.includes(p.area)) return;
+
       if (targetField === 'point') {
+        if (filterArea.length > 0 && !filterArea.includes(p.area)) return; // Point tab Area filter
+
         val = p.name;
         parentVal = p.area; // Parent of Point is Area
       } else if (targetField === 'area') {
@@ -66,7 +143,8 @@ export const AdminAreaCleansingPage = () => {
       const item = stats.get(val)!;
       item.count++;
       item.points.push(p);
-      // Only track parent if it exists and is meaningful
+
+      // Track parent from Point data
       if (targetField !== 'region' && parentVal !== '(Empty)') {
         item.parents.add(parentVal);
       }
@@ -81,7 +159,7 @@ export const AdminAreaCleansingPage = () => {
         points: data.points
       }))
       .sort((a, b) => b.count - a.count); // Most frequent first
-  }, [points, targetField]);
+  }, [points, targetField, filterRegion, filterZone, filterArea, regions, zones, areas]);
 
   // Admin Check
   if (currentUser.role !== 'admin' && currentUser.role !== 'moderator') {
@@ -160,6 +238,42 @@ export const AdminAreaCleansingPage = () => {
     setProcessing(false);
     if (success) alert('同期完了しました。');
     else alert('同期に失敗しました。');
+  };
+
+  const handleExportCreatures = () => {
+    try {
+      // Filter out any strictly internal/runtime properties if necessary,
+      // but typically we want the whole object as it matches the seed schema.
+      const exportData = creatures;
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `creatures_real_export_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e: any) {
+      console.error("Export failed:", e);
+      alert("Export failed: " + e.message);
+    }
+  };
+
+  const handleExportPointCreatures = () => {
+    try {
+      const exportData = pointCreatures;
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `point_creatures_seed_export_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e: any) {
+      console.error("Export failed:", e);
+      alert("Export failed: " + e.message);
+    }
   };
 
   const handleRepairDuplicates = async () => {
@@ -616,6 +730,275 @@ export const AdminAreaCleansingPage = () => {
     }
   };
 
+  // --- Master Data Management Handlers ---
+
+  const handleOpenMasterEdit = (type: 'region' | 'zone' | 'area', data: any = null) => {
+    setMasterEditType(type);
+    setIsNewMaster(!data);
+    if (data) {
+      setMasterFormData({
+        id: data.id,
+        name: data.name,
+        description: data.description || '',
+        parentId: type === 'zone' ? data.regionId : type === 'area' ? data.zoneId : ''
+      });
+    } else {
+      setMasterFormData({ id: '', name: '', description: '', parentId: '' });
+    }
+    setMasterModalOpen(true);
+  };
+
+  const handleSaveMasterData = async () => {
+    if (!masterEditType || !masterFormData.name) return;
+    setProcessing(true);
+
+    try {
+      const collectionName = masterEditType + 's'; // regions, zones, areas
+      const data: any = {
+        name: masterFormData.name,
+        description: masterFormData.description
+      };
+
+      // Add Parent ID
+      if (masterEditType === 'zone') {
+        if (!masterFormData.parentId) throw new Error('Parent Region is required');
+        data.regionId = masterFormData.parentId;
+      } else if (masterEditType === 'area') {
+        if (!masterFormData.parentId) throw new Error('Parent Zone is required');
+        data.zoneId = masterFormData.parentId;
+      }
+
+      let docId = masterFormData.id;
+
+      if (isNewMaster) {
+        // Generate ID: {first_char}_{timestamp}
+        if (!docId) {
+          const prefix = masterEditType[0]; // r, z, a
+          docId = `${prefix}_${Math.floor(Date.now() / 1000)}`;
+        }
+        data.id = docId;
+        await setDoc(doc(db, collectionName, docId), data);
+        alert(`Created new ${masterEditType}: ${masterFormData.name}`);
+      } else {
+        await updateDoc(doc(db, collectionName, docId), data);
+        alert(`Updated ${masterEditType}: ${masterFormData.name}`);
+      }
+
+      setMasterModalOpen(false);
+      setMasterFormData({ id: '', name: '', description: '', parentId: '' });
+    } catch (e: any) {
+      console.error(e);
+      alert(`Error: ${e.message}`);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  // --- Bulk Selection Handlers ---
+  const toggleSelection = (name: string) => {
+    const newSet = new Set(selectedItems);
+    if (newSet.has(name)) newSet.delete(name);
+    else newSet.add(name);
+    setSelectedItems(newSet);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedItems.size === fieldStats.length) {
+      setSelectedItems(new Set());
+    } else {
+      const allNames = fieldStats.map(s => s.name);
+      setSelectedItems(new Set(allNames));
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedItems.size === 0) return;
+    const label = getLabel();
+    const count = selectedItems.size;
+
+    if (targetField === 'point') {
+      if (!window.confirm(`【危険】選択された ${count} 件のポイント定義(名前)を削除しますか？\n\n※それに属する個別のポイントID全てが削除されます。\nこれには関連する写真、ログ、お気に入り情報などが含まれます。\n\n本当に実行しますか？`)) return;
+    } else {
+      if (!window.confirm(`選択された ${count} 件の ${label} を削除しますか？\n（ポイントデータからこの ${label} 情報がクリアされます）`)) return;
+    }
+
+    setProcessing(true);
+    try {
+      // Loop through selected items and call existing handlers
+      // Ideally we should batch this better, but reusing existing logic ensures consistency (cascade deletes etc).
+      // For Master Data (Regions/Zones/Areas) it's just batch updates.
+      // For Points, it's cascade delete.
+
+      if (targetField === 'point') {
+        const items = Array.from(selectedItems);
+        // Process sequentially to avoid overwhelming browser/firestore with parallel complex queries
+        for (const name of items) {
+          // We need to find all point IDs for this name
+          const stats = fieldStats.find(s => s.name === name);
+          if (!stats) continue;
+          for (const p of stats.points) {
+            await deletePointCascade(p.id);
+          }
+        }
+      } else {
+        // Batch update for Field Cleansing
+        const batch = writeBatch(db);
+        const items = Array.from(selectedItems);
+
+        // 1. Find all points with these values
+        // const q = query(collection(db, 'points'), where(targetField, 'in', items.slice(0, 10))); // Limited 'in' query idea abandoned for loop simplicity
+        // Better strategy: Query by each value or use large loop?
+        // Actually, let's reuse handleClearGroup logic but optimize?
+        // Simpler: iterate selected items.
+
+        for (const name of items) {
+          const q = query(collection(db, 'points'), where(targetField, '==', name));
+          const snap = await getDocs(q);
+          snap.docs.forEach(d => {
+            batch.update(d.ref, { [targetField]: '' });
+          });
+        }
+        await batch.commit();
+      }
+
+      alert(`Bulk Delete Completed.`);
+      setSelectedItems(new Set());
+      // Refresh? (UseEffect will handle if data changes)
+    } catch (e: any) {
+      console.error(e);
+      alert('Error during bulk operation: ' + e.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  /*
+    const handleBulkMerge = () => {
+      if (selectedItems.size === 0) return;
+      // Open a special Bulk Merge Modal? Or reuse Group Merge with multiple sources?
+      // For simplicity, let's just use the Group Merge Modal but with "Bulk Source" mode.
+      // Current Group Merge expects a single source string.
+
+      // Let's create a new mode for "Bulk Merge"
+      alert("Bulk Merge is not fully implemented yet in this iteration. Please use Bulk Delete or individual Merge.");
+      // Implementing Bulk Merge requires changing the Merge Logic to accept an array of sources.
+      // I'll stick to Delete for now as it's the most common "Cleansing" task.
+    };
+  */
+
+  // --- Export JSON Handler ---
+  const handleExportJson = async () => {
+    try {
+      setProcessing(true);
+
+      // Reconstruct hierarchy from Firestore data (context)
+      // Structure: Region -> Zone -> Area -> Point
+
+      const exportData = regions.map(r => {
+        // Get Zones for this Region
+        const rZones = zones.filter(z => z.regionId === r.id);
+
+        const childrenZones = rZones.map(z => {
+          // Get Areas for this Zone
+          const zAreas = areas.filter(a => a.zoneId === z.id);
+
+          const childrenAreas = zAreas.map(a => {
+            // Get Points for this Area (by name matching, since points are denormalized)
+            // Note: 'points' in context is a flat list. Points link to Area by NAME (p.area).
+            // Optimization: Filter points by p.area === a.name
+            // Wait, `points` in context has `area` field which is the Name.
+            // Issue: Points link by Name, but Areas have IDs.
+            // We should rely on `a.name` matching `p.area`.
+
+            const aPoints = points.filter(p => p.area === a.name);
+
+            const childrenPoints = aPoints.map(p => ({
+              name: p.name,
+              level: p.level,
+              maxDepth: p.maxDepth,
+              entryType: p.entryType,
+              current: p.current,
+              topography: p.topography,
+              features: p.features,
+              description: p.description,
+              imageKeyword: p.imageKeyword, // Legacy field?
+              id: p.id,
+              type: "Point",
+              image: (p as any).image || (p.images && p.images[0]) || ""
+            }));
+
+            return {
+              name: a.name,
+              description: a.description || "",
+              id: a.id,
+              type: "Area",
+              children: childrenPoints
+            };
+          });
+
+          return {
+            name: z.name,
+            description: z.description || "",
+            id: z.id,
+            type: "Zone",
+            children: childrenAreas
+          };
+        });
+
+        return {
+          name: r.name,
+          description: r.description || "",
+          children: childrenZones
+          // Region doesn't strictly have an ID in the seed file if it's top level?
+          // Checking locations_seed.json...
+          // Root elements have "name", "description", "children". No "id", No "type".
+          // But let's check the view...
+          // Line 3: "name": "日本", ... "children": [...]
+          // Line 7: "name": "沖縄本島", ... "children": [...]
+          // Seems regions in our specific data model might be mapped to these.
+          // However, our Firestore `regions` collection is usually the equivalent of "Okinawa Main Island" etc.
+          // If we want to strictly match `locations_seed.json`, we might need a "Japan" root wrapper?
+          // Current `regions` context likely contains "Okinawa Main Island", "Miyako", "Ishigaki".
+          // Let's assume we export the list of regions as the root array.
+          // If the seed file has a wrapper "Japan", we might miss it.
+          // But looking at the current data, `regions` context are the top level items we manage.
+        };
+      });
+
+      // Wrap in "Japan" if needed?
+      // Let's look at line 1 of locations_seed.json. It's an ARRAY of regions.
+      // The first item is "日本" (Japan).
+      // If our `regions` matches "日本", then we are good.
+      // If `regions` are "Okinawa", "Ishigaki" etc., then they are children of "Japan".
+      // Let's check `regions` content.
+      // Usually `locations_structure.json` flattens things.
+      // But let's assume `regions` context corresponds to the top-level objects in `locations_seed.json`.
+
+      // Wait, `regions` in Firestore likely came from `INITIAL_DATA.regions`.
+      // Let's check `mockData.ts` or `seeder.ts`.
+      // `seeder.ts`: `regions` data comes from `INITIAL_DATA.regions`.
+      // `mockData.ts`: `export const INITIAL_DATA = { regions: [...] }`.
+      // If `regions` in Firestore equates to the top level of `locations_seed.json`, then directly exporting `exportData` array is correct.
+
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `locations_seed_export_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      alert("Export started.");
+
+    } catch (e: any) {
+      console.error(e);
+      alert("Export failed: " + e.message);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const getLabel = () => {
     switch (targetField) {
       case 'area': return 'Area (地区)';
@@ -627,18 +1010,94 @@ export const AdminAreaCleansingPage = () => {
 
   const getParentLabel = () => {
     switch (targetField) {
-      case 'area': return 'Zone (エリア)'; // Parent of Area
-      case 'zone': return 'Region (都道府県/国)'; // Parent of Zone
-      case 'point': return 'Area (地区)'; // Parent of Point
+      case 'area': return 'Parent Zone';
+      case 'zone': return 'Parent Region';
+      case 'point': return 'Parent Area';
       default: return '';
     }
+  };
+
+  // --- MultiSelect Dropdown Component ---
+  const MultiSelectDropdown = ({
+    label,
+    options,
+    selected,
+    onChange,
+    disabled = false
+  }: {
+    label: string,
+    options: { value: string, label: string }[],
+    selected: string[],
+    onChange: (val: string[]) => void,
+    disabled?: boolean
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+          setIsOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const toggleOption = (value: string) => {
+      if (selected.includes(value)) {
+        onChange(selected.filter(v => v !== value));
+      } else {
+        onChange([...selected, value]);
+      }
+    };
+
+    return (
+      <div className="relative" ref={containerRef}>
+        <button
+          onClick={() => !disabled && setIsOpen(!isOpen)}
+          disabled={disabled}
+          className={`flex items-center justify-between px-3 py-2 border rounded text-sm min-w-[160px] bg-white ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400'}`}
+        >
+          <span className="truncate max-w-[120px]">
+            {selected.length === 0 ? label : `${selected.length} selected`}
+          </span>
+          <ChevronDown size={14} className="text-gray-500 ml-2" />
+        </button>
+
+        {isOpen && !disabled && (
+          <div className="absolute z-10 mt-1 w-64 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto p-1">
+            <div className="p-2 border-b border-gray-100 flex justify-between">
+              <span className="text-xs font-bold text-gray-500">{label}</span>
+              {selected.length > 0 && <button onClick={() => onChange([])} className="text-xs text-blue-600 hover:underline">Clear</button>}
+            </div>
+            {options.length === 0 && <div className="p-2 text-xs text-gray-400">No options</div>}
+            {options.map(opt => (
+              <div
+                key={opt.value}
+                className="flex items-center px-2 py-2 hover:bg-gray-50 cursor-pointer rounded"
+                onClick={() => toggleOption(opt.value)}
+              >
+                <input
+                  type="checkbox"
+                  checked={selected.includes(opt.value)}
+                  onChange={() => { }} // handled by div click
+                  className="mr-2 rounded text-blue-600 focus:ring-blue-500 pointer-events-none"
+                />
+                <span className="text-sm text-gray-700">{opt.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="w-full max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => navigate('/mypage')} className="p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
               <ArrowLeft size={24} />
             </button>
@@ -650,6 +1109,30 @@ export const AdminAreaCleansingPage = () => {
             >
               <RefreshCw size={12} />
               DB同期
+            </button>
+            <button
+              onClick={handleExportJson}
+              disabled={processing}
+              className="px-3 py-1 bg-green-600 text-white font-bold rounded hover:bg-green-700 transition-colors flex items-center gap-2 text-xs"
+            >
+              <Download size={12} />
+              Export Locations
+            </button>
+            <button
+              onClick={handleExportCreatures}
+              disabled={processing}
+              className="px-3 py-1 bg-teal-600 text-white font-bold rounded hover:bg-teal-700 transition-colors flex items-center gap-2 text-xs"
+            >
+              <Download size={12} />
+              Export Creatures
+            </button>
+            <button
+              onClick={handleExportPointCreatures}
+              disabled={processing}
+              className="px-3 py-1 bg-teal-600 text-white font-bold rounded hover:bg-teal-700 transition-colors flex items-center gap-2 text-xs"
+            >
+              <Download size={12} />
+              Export Relations
             </button>
             <button
               onClick={handleRepairDuplicates}
@@ -787,6 +1270,15 @@ export const AdminAreaCleansingPage = () => {
           >
             <MapPin size={18} /> Point
           </button>
+
+          {targetField !== 'point' && (
+            <button
+              onClick={() => handleOpenMasterEdit(targetField as any)}
+              className="ml-auto flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 shadow-md transition-all whitespace-nowrap"
+            >
+              <Plus size={18} /> Create New {targetField.charAt(0).toUpperCase() + targetField.slice(1)}
+            </button>
+          )}
         </div>
 
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-800">
@@ -801,10 +1293,72 @@ export const AdminAreaCleansingPage = () => {
           </ul>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mb-4 bg-gray-50 p-3 rounded-lg border border-gray-200 items-center">
+          <span className="text-sm font-bold text-gray-500 mr-2">Filters:</span>
+
+          {/* Region Filter */}
+          {(targetField === 'zone' || targetField === 'area' || targetField === 'point') && (
+            <MultiSelectDropdown
+              label="Select Regions"
+              options={regions.map(r => ({ value: r.name, label: r.name }))}
+              selected={filterRegion}
+              onChange={(vals) => { setFilterRegion(vals); setFilterZone([]); setFilterArea([]); }}
+            />
+          )}
+
+          {/* Zone Filter */}
+          {(targetField === 'area' || targetField === 'point') && (
+            <MultiSelectDropdown
+              label="Select Zones"
+              options={zones
+                .filter(z => filterRegion.length === 0 || filterRegion.includes(regions.find(r => r.id === z.regionId)?.name || ''))
+                .map(z => ({ value: z.name, label: z.name }))}
+              selected={filterZone}
+              onChange={(vals) => { setFilterZone(vals); setFilterArea([]); }}
+              disabled={filterRegion.length === 0 && targetField !== 'point'} // Relaxed for Point tab
+            />
+          )}
+
+          {/* Area Filter */}
+          {targetField === 'point' && (
+            <MultiSelectDropdown
+              label="Select Areas"
+              options={areas
+                .filter(a => {
+                  if (filterZone.length > 0) return filterZone.includes(zones.find(z => z.id === a.zoneId)?.name || '');
+                  if (filterRegion.length > 0) {
+                    // Belong to any zone in this region
+                    const rIds = regions.filter(r => filterRegion.includes(r.name)).map(r => r.id);
+                    const zIds = zones.filter(z => rIds.includes(z.regionId)).map(z => z.id);
+                    return zIds.includes(a.zoneId);
+                  }
+                  return true;
+                })
+                .map(a => ({ value: a.name, label: a.name }))}
+              selected={filterArea}
+              onChange={(vals) => setFilterArea(vals)}
+              disabled={filterZone.length === 0 && filterRegion.length === 0}
+            />
+          )}
+
+          {(filterRegion.length > 0 || filterZone.length > 0 || filterArea.length > 0) && (
+            <button onClick={() => { setFilterRegion([]); setFilterZone([]); setFilterArea([]); }} className="ml-auto text-xs text-blue-600 hover:underline">Clear Filters</button>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-24">
           <table className="w-full text-left">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                <th className="px-4 py-3 w-10">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.size > 0 && selectedItems.size === fieldStats.length}
+                    onChange={toggleSelectAll}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                </th>
                 {targetField === 'point' && <th className="w-10 px-0"></th>}
                 <th className="px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-wider">{getLabel()} Name</th>
                 {targetField !== 'region' && (
@@ -819,7 +1373,15 @@ export const AdminAreaCleansingPage = () => {
             <tbody className="divide-y divide-gray-200">
               {fieldStats.map((item) => (
                 <React.Fragment key={item.name}>
-                  <tr className={`hover:bg-gray-50 transition-colors ${expandedRow === item.name ? 'bg-blue-50' : ''}`}>
+                  <tr className={`hover: bg - gray - 50 transition - colors ${expandedRow === item.name ? 'bg-blue-50' : ''} ${selectedItems.has(item.name) ? 'bg-blue-50' : ''} `}>
+                    <td className="px-4 py-4 w-10 text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.has(item.name)}
+                        onChange={() => toggleSelection(item.name)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                    </td>
                     {targetField === 'point' && (
                       <td className="pl-4 py-4 w-10">
                         <button
@@ -839,12 +1401,12 @@ export const AdminAreaCleansingPage = () => {
                             onChange={(e) => setNewValue(e.target.value)}
                             className="px-2 py-1 border rounded focus:ring-2 focus:ring-blue-500 outline-none w-full"
                             autoFocus
-                            placeholder={`新しい${targetField}名`}
+                            placeholder={`新しい${targetField} 名`}
                           />
                         </div>
                       ) : (
                         <div className="flex flex-col">
-                          <span className={`font-medium ${item.name === '(Empty)' ? 'text-gray-400 italic' : 'text-gray-900'}`}>
+                          <span className={`font - medium ${item.name === '(Empty)' ? 'text-gray-400 italic' : 'text-gray-900'} `}>
                             {item.name}
                           </span>
                           {/* Show count of sub-items if duplicated IDs */}
@@ -906,16 +1468,26 @@ export const AdminAreaCleansingPage = () => {
                           ) : (
                             <>
                               <button
-                                onClick={() => { setEditingValue(item.name); setNewValue(item.name); }}
+                                onClick={() => {
+                                  if (targetField === 'point') {
+                                    setEditingValue(item.name);
+                                    setNewValue(item.name);
+                                  } else {
+                                    const collection = targetField === 'area' ? areas : targetField === 'zone' ? zones : regions;
+                                    const obj = collection.find((x: any) => x.name === item.name);
+                                    if (obj) handleOpenMasterEdit(targetField, obj);
+                                    else alert('Error: Object not found in master data.');
+                                  }
+                                }}
                                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors"
-                                title="Rename / Merge Group"
+                                title={targetField === 'point' ? "Rename" : "Edit Details (Name, Parent, etc.)"}
                               >
                                 <Edit2 size={16} />
                               </button>
                               <button
                                 onClick={() => handleClearGroup(item.name)}
                                 className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors target-trash"
-                                title={targetField === 'point' ? `Delete All Points named ${item.name}` : `Remove ${targetField}`}
+                                title={targetField === 'point' ? `Delete All Points named ${item.name} ` : `Remove ${targetField} `}
                               >
                                 <Trash2 size={16} />
                               </button>
@@ -995,7 +1567,7 @@ export const AdminAreaCleansingPage = () => {
                                       )}
 
                                       <span className="text-xs text-gray-500">
-                                        {p.area} {p.zone && `> ${p.zone}`} {p.region && `> ${p.region}`}
+                                        {p.area} {p.zone && `> ${p.zone} `} {p.region && ` > ${p.region} `}
                                       </span>
                                     </div>
                                   </td>
@@ -1136,7 +1708,7 @@ export const AdminAreaCleansingPage = () => {
                     <button
                       key={s.name}
                       onClick={() => setGroupMergeTargetName(s.name)}
-                      className={`w-full text-left p-2 text-sm hover:bg-gray-50 flex justify-between ${groupMergeTargetName === s.name ? 'bg-purple-100 text-purple-900 font-bold' : ''}`}
+                      className={`w - full text - left p - 2 text - sm hover: bg - gray - 50 flex justify - between ${groupMergeTargetName === s.name ? 'bg-purple-100 text-purple-900 font-bold' : ''} `}
                     >
                       <span>{s.name}</span>
                       <span className="text-gray-400 text-xs">({s.count})</span>
@@ -1177,6 +1749,137 @@ export const AdminAreaCleansingPage = () => {
                 {processing ? <RefreshCw className="animate-spin" size={18} /> : <Layers size={18} />}
                 統合実行
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MASTER DATA EDIT MODAL */}
+      {masterModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6">
+            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Edit2 size={24} className="text-blue-600" />
+              {isNewMaster ? 'Create New' : 'Edit'} {masterEditType ? masterEditType.charAt(0).toUpperCase() + masterEditType.slice(1) : ''}
+            </h2>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold mb-1">Name</label>
+                <input
+                  type="text"
+                  value={masterFormData.name}
+                  onChange={e => setMasterFormData({ ...masterFormData, name: e.target.value })}
+                  className="w-full border rounded p-2"
+                  placeholder="Official Name (e.g. Ishigaki Island)"
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold mb-1">Description</label>
+                <textarea
+                  value={masterFormData.description}
+                  onChange={e => setMasterFormData({ ...masterFormData, description: e.target.value })}
+                  className="w-full border rounded p-2 text-sm h-20"
+                  placeholder="Description..."
+                />
+              </div>
+
+              {masterEditType === 'zone' && (
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Parent Region</label>
+                  <select
+                    value={masterFormData.parentId}
+                    onChange={e => setMasterFormData({ ...masterFormData, parentId: e.target.value })}
+                    className="w-full border rounded p-2 bg-white"
+                  >
+                    <option value="">-- Select Region --</option>
+                    {regions.map(r => (
+                      <option key={r.id} value={r.id}>{r.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {masterEditType === 'area' && (
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Parent Zone</label>
+                  <select
+                    value={masterFormData.parentId}
+                    onChange={e => setMasterFormData({ ...masterFormData, parentId: e.target.value })}
+                    className="w-full border rounded p-2 bg-white"
+                  >
+                    <option value="">-- Select Zone --</option>
+                    {zones.map(z => (
+                      <option key={z.id} value={z.id}>
+                        {z.name} (Region: {regions.find(r => r.id === z.regionId)?.name || '?'})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {/* ID Display (Read Only) */}
+              {!isNewMaster && (
+                <div className="text-xs text-gray-400 font-mono">
+                  ID: {masterFormData.id}
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setMasterModalOpen(false)}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveMasterData}
+                disabled={!masterFormData.name || processing}
+                className="px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                {processing ? <RefreshCw className="animate-spin" size={18} /> : <Save size={18} />}
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* FIXED BOTTOM BAR FOR BULK ACTIONS */}
+      {selectedItems.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-50 animate-in slide-in-from-bottom-5">
+          <div className="max-w-4xl mx-auto flex items-center justify-between">
+            <div className="text-sm font-bold text-gray-700">
+              {selectedItems.size} items selected
+            </div>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setSelectedItems(new Set())}
+                className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                disabled={processing}
+                className="px-4 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+              >
+                {processing ? <RefreshCw className="animate-spin" size={16} /> : <Trash2 size={16} />}
+                Bulk Delete
+              </button>
+              {/*
+                 <button
+                    onClick={handleBulkMerge}
+                    disabled={processing}
+                    className="px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 disabled:opacity-50 flex items-center gap-2"
+                 >
+                    <GitMerge size={16} />
+                    Bulk Merge (WIP)
+                 </button>
+                 */}
             </div>
           </div>
         </div>

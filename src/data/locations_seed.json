@@ -6,24 +6,26 @@
       {
         "name": "沖縄本島",
         "description": "透明度の高い海と多様な珊瑚礁が魅力",
+        "id": "z_1764956598_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "恩納村",
-            "description": "万座毛周辺のダイビングポイントへのアクセス拠点",
+            "description": "",
             "id": "a_1764956598_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "本部町",
-            "description": "水納島や瀬底島へのアクセス拠点",
+            "description": "",
             "id": "a_1764956598_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "那覇",
-            "description": "慶良間諸島への主要なアクセス港",
+            "description": "",
             "id": "a_1764956598_0_0_2",
             "type": "Area",
             "children": [
@@ -242,78 +244,78 @@
           },
           {
             "name": "読谷村",
-            "description": "残波岬周辺のダイビングポイントへのアクセス拠点",
+            "description": "",
             "id": "a_1764956598_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "名護",
-            "description": "東海岸のダイビングスポットへのアクセス拠点",
+            "description": "",
             "id": "a_1764956598_0_0_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "うるま市",
-            "description": "津堅島、平安座島など離島へのアクセス拠点",
+            "description": "",
             "id": "a_1765003008_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "糸満市",
-            "description": "本島南部のダイビングポイントへのアクセス拠点",
+            "description": "",
             "id": "a_1765003008_0_0_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "宜野湾市",
-            "description": "マリーナが多く、ボートダイビングが盛ん",
+            "description": "",
             "id": "a_1765003008_0_0_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "国頭村",
-            "description": "本島最北端、手付かずの自然が残るエリア",
+            "description": "",
             "id": "a_1765003008_0_0_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "北谷町",
-            "description": "アメリカンビレッジに近く、観光とダイビングを両立できる",
+            "description": "",
             "id": "a_1765003008_0_0_9",
             "type": "Area",
             "children": []
           },
           {
             "name": "名護市",
-            "description": "北部エリアのダイビング拠点",
+            "description": "",
             "id": "a_1765003514_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "豊見城市",
-            "description": "那覇空港に近いダイビングサービスがある",
+            "description": "",
             "id": "a_1765003514_0_0_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956598_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "慶良間諸島",
         "description": "世界有数の透明度を誇る海域",
+        "id": "z_1764956598_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "渡嘉敷島",
-            "description": "阿波連ビーチ周辺のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1764956598_0_1_0",
             "type": "Area",
             "children": [
@@ -536,7 +538,7 @@
           },
           {
             "name": "座間味島",
-            "description": "古座間味ビーチ周辺のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1764956598_0_1_1",
             "type": "Area",
             "children": [
@@ -744,78 +746,78 @@
           },
           {
             "name": "阿嘉島",
-            "description": "慶留間島との間の海域へのアクセス",
+            "description": "",
             "id": "a_1764956598_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "慶良間空港",
-            "description": "周辺の無人島へのダイビングアクセス",
+            "description": "",
             "id": "a_1764956598_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "慶留間島",
-            "description": "阿嘉島と橋で繋がっている、のどかな島",
+            "description": "",
             "id": "a_1765003008_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "前島",
-            "description": "那覇から日帰り可能、手軽に慶良間の海を楽しめる",
+            "description": "",
             "id": "a_1765003008_0_1_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "黒島",
-            "description": "慶良間空港がある島",
+            "description": "",
             "id": "a_1765003514_0_1_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "儀志布島",
-            "description": "無人島でのダイビング体験",
+            "description": "",
             "id": "a_1765003514_0_1_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "外地島",
-            "description": "那覇空港からのアクセスが良い",
+            "description": "",
             "id": "a_1765003514_0_1_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "内離島",
-            "description": "手つかずの自然が残る島",
+            "description": "",
             "id": "a_1765003514_0_1_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "安室島",
-            "description": "無人島でのダイビング体験",
+            "description": "",
             "id": "a_1765003514_0_1_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956598_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "奄美群島",
         "description": "手付かずの自然が残る島々",
+        "id": "z_1764956598_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "奄美大島 (名瀬)",
-            "description": "島北部・南部のダイビングポイントへのアクセス拠点",
+            "description": "",
             "id": "a_1764956598_0_3_0",
             "type": "Area",
             "children": [
@@ -1025,85 +1027,85 @@
           },
           {
             "name": "加計呂麻島",
-            "description": "穏やかな内海のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1764956598_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "請島",
-            "description": "手つかずの自然が残る穴場スポットへのアクセス",
+            "description": "",
             "id": "a_1764956598_0_3_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "与路島",
-            "description": "透明度の高い海と珊瑚礁が美しい",
+            "description": "",
             "id": "a_1764956598_0_3_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "奄美大島",
-            "description": "群島最大の島、多様なダイビングポイントがある",
+            "description": "",
             "id": "a_1765003008_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "喜界島",
-            "description": "サンゴ礁が隆起してできた島、白い砂浜が美しい",
+            "description": "",
             "id": "a_1765003008_0_3_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "徳之島",
-            "description": "闘牛が盛んな島",
+            "description": "",
             "id": "a_1765003514_0_9_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "沖永良部島",
-            "description": "ケイビングが楽しめる",
+            "description": "",
             "id": "a_1765003514_0_9_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "与論島",
-            "description": "百合ヶ浜が有名",
+            "description": "",
             "id": "a_1765003514_0_9_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "古仁屋 (奄美大島)",
-            "description": "加計呂麻島へのアクセス拠点",
+            "description": "",
             "id": "a_1765003514_0_9_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "名瀬 (奄美大島)",
-            "description": "奄美大島の中心都市",
+            "description": "",
             "id": "a_1765003514_0_9_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956598_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "小笠原諸島",
         "description": "固有の生態系が残る世界自然遺産",
+        "id": "z_1764956598_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "父島 (二見港)",
-            "description": "島内の各ダイビングポイントへのアクセス拠点",
+            "description": "",
             "id": "a_1764956598_0_4_0",
             "type": "Area",
             "children": [
@@ -1321,121 +1323,121 @@
           },
           {
             "name": "母島",
-            "description": "手付かずの自然が残る穴場スポットへのアクセス",
+            "description": "",
             "id": "a_1764956598_0_4_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "父島",
-            "description": "小笠原諸島の中心、ダイビングサービスの拠点",
+            "description": "",
             "id": "a_1765003008_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "兄島",
-            "description": "父島からボートでアクセス",
+            "description": "",
             "id": "a_1765003514_0_7_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "弟島",
-            "description": "父島からボートでアクセス",
+            "description": "",
             "id": "a_1765003514_0_7_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "聟島",
-            "description": "無人島",
+            "description": "",
             "id": "a_1765003514_0_7_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "媒島",
-            "description": "無人島",
+            "description": "",
             "id": "a_1765003514_0_7_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "嫁島",
-            "description": "無人島",
+            "description": "",
             "id": "a_1765003514_0_7_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "平島",
-            "description": "無人島",
+            "description": "",
             "id": "a_1765003514_0_7_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "硫黄島",
-            "description": "一般の立ち入りは制限されている",
+            "description": "",
             "id": "a_1765003514_0_7_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "南硫黄島",
-            "description": "一般の立ち入りは制限されている",
+            "description": "",
             "id": "a_1765003514_0_7_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956598_0_4",
-        "type": "Zone"
+        ]
       },
       {
         "name": "九州",
         "description": "多様なダイビングスポットが存在するエリア",
+        "id": "z_1764956598_0_5",
+        "type": "Zone",
         "children": [
           {
             "name": "佐賀関",
-            "description": "豊後水道の潮流に育まれたダイビングスポット",
+            "description": "",
             "id": "a_1764956598_0_5_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "平戸",
-            "description": "玄界灘のダイナミックな海流を体験できるエリア",
+            "description": "",
             "id": "a_1764956598_0_5_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "獅子島",
-            "description": "不知火海の穏やかな海で初心者も安心",
+            "description": "",
             "id": "a_1764956598_0_5_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "天草",
-            "description": "イルカウォッチングとダイビングが楽しめる",
+            "description": "",
             "id": "a_1764956598_0_5_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956598_0_5",
-        "type": "Zone"
+        ]
       },
       {
         "name": "伊豆半島",
         "description": "都心からのアクセスが良く、多様なダイビングポイントが点在",
+        "id": "z_1765003008_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "熱海",
-            "description": "沈船ポイントが有名、温泉地としても人気",
+            "description": "",
             "id": "a_1765003008_0_2_0",
             "type": "Area",
             "children": [
@@ -1654,7 +1656,7 @@
           },
           {
             "name": "伊東",
-            "description": "富戸や八幡野など、初心者から上級者まで楽しめるポイントがある",
+            "description": "",
             "id": "a_1765003008_0_2_1",
             "type": "Area",
             "children": [
@@ -1759,46 +1761,6 @@
                 "image": ""
               },
               {
-                "name": "ヨコバマ",
-                "level": "Beginner",
-                "maxDepth": 18,
-                "entryType": "beach",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "fish"
-                ],
-                "description": "浅場でじっくりマクロ生物観察を楽しめる。クマノミやハゼなどが豊富。",
-                "imageKeyword": "yokobama diving",
-                "id": "p_a_1764956598_0_2_1_5",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "脇の浜",
-                "level": "Beginner",
-                "maxDepth": 10,
-                "entryType": "beach",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "fish",
-                  "beginner friendly"
-                ],
-                "description": "穏やかなビーチエントリー。家族連れにも人気。シュノーケリングにも最適。",
-                "imageKeyword": "wakinohama diving",
-                "id": "p_a_1764956598_0_2_1_6",
-                "type": "Point",
-                "image": ""
-              },
-              {
                 "name": "富戸ホール",
                 "level": "Intermediate",
                 "maxDepth": 25,
@@ -1863,7 +1825,7 @@
           },
           {
             "name": "大瀬崎",
-            "description": "湾内は穏やかで初心者向き、外海はダイナミックな地形が楽しめる",
+            "description": "",
             "id": "a_1765003008_0_2_2",
             "type": "Area",
             "children": [
@@ -2067,7 +2029,7 @@
           },
           {
             "name": "井田",
-            "description": "透明度が高く、生物の種類が豊富",
+            "description": "",
             "id": "a_1765003008_0_2_3",
             "type": "Area",
             "children": [
@@ -2274,14 +2236,14 @@
           },
           {
             "name": "獅子浜",
-            "description": "湾内にあるため、穏やかな環境で潜れる",
+            "description": "",
             "id": "a_1765003008_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "雲見",
-            "description": "洞窟やアーチなど、地形派ダイバーに人気",
+            "description": "",
             "id": "a_1765003008_0_2_5",
             "type": "Area",
             "children": [
@@ -2499,21 +2461,21 @@
           },
           {
             "name": "堂ヶ島",
-            "description": "洞窟クルーズとダイビングが楽しめる",
+            "description": "",
             "id": "a_1765003008_0_2_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "田子",
-            "description": "沖の浮島根は魚影が濃く、回遊魚にも期待できる",
+            "description": "",
             "id": "a_1765003008_0_2_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "下田",
-            "description": "須崎半島周辺には、ビギナーから楽しめるポイントが多い",
+            "description": "",
             "id": "a_1765003008_0_2_8",
             "type": "Area",
             "children": [
@@ -2717,14 +2679,14 @@
           },
           {
             "name": "初島",
-            "description": "日帰りで行ける離島、手軽にボートダイビングを楽しめる",
+            "description": "",
             "id": "a_1765003008_0_2_9",
             "type": "Area",
             "children": []
           },
           {
             "name": "富戸",
-            "description": "ビーチダイビングが楽しめる",
+            "description": "",
             "id": "a_1765003514_0_6_2",
             "type": "Area",
             "children": [
@@ -2944,14 +2906,14 @@
           },
           {
             "name": "妻良",
-            "description": "穴の口などのポイントがある",
+            "description": "",
             "id": "a_1765003514_0_6_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "神子元島",
-            "description": "ハンマーヘッドシャークが見られるポイント",
+            "description": "",
             "id": "a_1765003514_0_6_9",
             "type": "Area",
             "children": [
@@ -3161,95 +3123,260 @@
               }
             ]
           }
-        ],
-        "id": "z_1765003008_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "宮古島",
         "description": "地形ダイビングが人気。透明度抜群の海。",
+        "id": "z_1765003514_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "平良港",
-            "description": "宮古島の中心となる港",
+            "description": "",
             "id": "a_1765003514_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "伊良部島",
-            "description": "下地島空港周辺のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1765003514_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "下地島",
-            "description": "空港周辺のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1765003514_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "池間島",
-            "description": "池間漁港から出航するダイビングサービスがある",
+            "description": "",
             "id": "a_1765003514_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "大神島",
-            "description": "大神港から出航するダイビングサービスがある",
+            "description": "",
             "id": "a_1765003514_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "佐良浜港 (伊良部島)",
-            "description": "伊良部島のダイビングサービスの拠点",
+            "description": "",
             "id": "a_1765003514_0_2_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "狩俣",
-            "description": "宮古島北部のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1765003514_0_2_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "島尻",
-            "description": "宮古島南部のダイビングポイントへのアクセス",
+            "description": "",
             "id": "a_1765003514_0_2_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "佐和田の浜",
-            "description": "ビーチダイビングが楽しめる",
+            "description": "",
             "id": "a_1765003514_0_2_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "来間島",
-            "description": "来間大橋からアクセスできる",
+            "description": "",
             "id": "a_1765003514_0_2_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003514_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "石垣島",
         "description": "マンタやサンゴ礁など、多様な生物に出会える。",
+        "id": "z_1765003514_0_3",
+        "type": "Zone",
         "children": [
           {
+            "name": "市街地・南部",
+            "description": "",
+            "id": "a_ishigaki_city_627141",
+            "type": "Area",
+            "children": [
+              {
+                "name": "竹富島南",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "drift",
+                "topography": [
+                  "reef"
+                ],
+                "features": [
+                  "coral",
+                  "fish"
+                ],
+                "description": "ドリフトダイビングで広範囲を探索。多様な魚影が魅力。",
+                "imageKeyword": "taketomi island south reef",
+                "id": "p_a_1765003514_0_3_0_6",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "パナリ (新城島)  ドロップオフ",
+                "level": "Advanced",
+                "maxDepth": 30,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff"
+                ],
+                "features": [
+                  "shark",
+                  "pelagic"
+                ],
+                "description": "豪快なドロップオフ。回遊魚や大物狙いのダイバーに人気。",
+                "imageKeyword": "panari dropoff",
+                "id": "p_a_1765003514_0_3_0_7",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "黒島V字",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "sand",
+                  "reef"
+                ],
+                "features": [
+                  "turtle",
+                  "coral"
+                ],
+                "description": "V字型の地形が特徴。ウミガメが多く生息。",
+                "imageKeyword": "kuroshima v shape reef",
+                "id": "p_a_1765003514_0_3_0_9",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "屋良部崎",
+                "level": "Intermediate",
+                "maxDepth": 25,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock"
+                ],
+                "features": [
+                  "shark",
+                  "fish"
+                ],
+                "description": "地形がダイナミック。運が良ければハンマーヘッドシャークが見られる。",
+                "imageKeyword": "yarabuzaki",
+                "id": "p_a_1765003514_0_3_4_5",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "ビッグアーチ",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "cave",
+                  "rock"
+                ],
+                "features": [
+                  "cave",
+                  "swimthrough"
+                ],
+                "description": "巨大なアーチ状の地形が特徴。光の差し込む洞窟内は神秘的な雰囲気。",
+                "imageKeyword": "underwater arch",
+                "id": "p_a_1765003514_0_3_9_4",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "トムズパラダイス",
+                "level": "Beginner",
+                "maxDepth": 12,
+                "entryType": "boat",
+                "current": "none",
+                "topography": [
+                  "sand",
+                  "rock"
+                ],
+                "features": [
+                  "macro",
+                  "coral"
+                ],
+                "description": "カラフルなソフトコーラルが広がる癒し系のポイント。写真撮影にも最適。",
+                "imageKeyword": "soft coral garden",
+                "id": "p_a_1765003514_0_3_9_6",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "宮良沖",
+                "level": "Advanced",
+                "maxDepth": 30,
+                "entryType": "boat",
+                "current": "strong",
+                "topography": [
+                  "dropoff",
+                  "rock"
+                ],
+                "features": [
+                  "shark",
+                  "pelagic fish"
+                ],
+                "description": "外洋に面しており、流れが速いことが多い。大物狙いのベテラン向け。",
+                "imageKeyword": "oceanic whitetip shark",
+                "id": "p_a_1765003514_0_3_9_8",
+                "type": "Point",
+                "image": ""
+              },
+              {
+                "name": "石垣島パナリ",
+                "level": "Intermediate",
+                "maxDepth": 20,
+                "entryType": "boat",
+                "current": "weak",
+                "topography": [
+                  "rock",
+                  "coral"
+                ],
+                "features": [
+                  "coral",
+                  "reef fish"
+                ],
+                "description": "ソフトコーラルが豊富で、透明度も高い。様々な種類の熱帯魚が見られる。",
+                "imageKeyword": "coral reef scene",
+                "id": "p_a_1765003514_0_3_9_9",
+                "type": "Point",
+                "image": ""
+              }
+            ]
+          },
+          {
             "name": "川平・石崎",
-            "description": "マンタスクランブルなどがある北部・北西エリア",
+            "description": "",
             "id": "a_ishigaki_kabira_634997",
             "type": "Area",
             "children": [
@@ -3351,7 +3478,7 @@
           },
           {
             "name": "大崎・名蔵",
-            "description": "生物豊富な大崎ハナゴイリーフや名蔵湾など",
+            "description": "",
             "id": "a_ishigaki_osaki_350964",
             "type": "Area",
             "children": [
@@ -3716,7 +3843,7 @@
           },
           {
             "name": "米原・北部",
-            "description": "Wリーフなどサンゴが美しい北部エリア",
+            "description": "",
             "id": "a_ishigaki_yonehara_273695",
             "type": "Area",
             "children": [
@@ -3760,413 +3887,244 @@
                 "image": ""
               }
             ]
-          },
-          {
-            "name": "市街地・南部",
-            "description": "港からのアクセスが良い南部エリアや離島方面",
-            "id": "a_ishigaki_city_627141",
-            "type": "Area",
-            "children": [
-              {
-                "name": "竹富島南",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "drift",
-                "topography": [
-                  "reef"
-                ],
-                "features": [
-                  "coral",
-                  "fish"
-                ],
-                "description": "ドリフトダイビングで広範囲を探索。多様な魚影が魅力。",
-                "imageKeyword": "taketomi island south reef",
-                "id": "p_a_1765003514_0_3_0_6",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "パナリ (新城島)  ドロップオフ",
-                "level": "Advanced",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff"
-                ],
-                "features": [
-                  "shark",
-                  "pelagic"
-                ],
-                "description": "豪快なドロップオフ。回遊魚や大物狙いのダイバーに人気。",
-                "imageKeyword": "panari dropoff",
-                "id": "p_a_1765003514_0_3_0_7",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "黒島V字",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "sand",
-                  "reef"
-                ],
-                "features": [
-                  "turtle",
-                  "coral"
-                ],
-                "description": "V字型の地形が特徴。ウミガメが多く生息。",
-                "imageKeyword": "kuroshima v shape reef",
-                "id": "p_a_1765003514_0_3_0_9",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "屋良部崎",
-                "level": "Intermediate",
-                "maxDepth": 25,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock"
-                ],
-                "features": [
-                  "shark",
-                  "fish"
-                ],
-                "description": "地形がダイナミック。運が良ければハンマーヘッドシャークが見られる。",
-                "imageKeyword": "yarabuzaki",
-                "id": "p_a_1765003514_0_3_4_5",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "ビッグアーチ",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "cave",
-                  "rock"
-                ],
-                "features": [
-                  "cave",
-                  "swimthrough"
-                ],
-                "description": "巨大なアーチ状の地形が特徴。光の差し込む洞窟内は神秘的な雰囲気。",
-                "imageKeyword": "underwater arch",
-                "id": "p_a_1765003514_0_3_9_4",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "トムズパラダイス",
-                "level": "Beginner",
-                "maxDepth": 12,
-                "entryType": "boat",
-                "current": "none",
-                "topography": [
-                  "sand",
-                  "rock"
-                ],
-                "features": [
-                  "macro",
-                  "coral"
-                ],
-                "description": "カラフルなソフトコーラルが広がる癒し系のポイント。写真撮影にも最適。",
-                "imageKeyword": "soft coral garden",
-                "id": "p_a_1765003514_0_3_9_6",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "宮良沖",
-                "level": "Advanced",
-                "maxDepth": 30,
-                "entryType": "boat",
-                "current": "strong",
-                "topography": [
-                  "dropoff",
-                  "rock"
-                ],
-                "features": [
-                  "shark",
-                  "pelagic fish"
-                ],
-                "description": "外洋に面しており、流れが速いことが多い。大物狙いのベテラン向け。",
-                "imageKeyword": "oceanic whitetip shark",
-                "id": "p_a_1765003514_0_3_9_8",
-                "type": "Point",
-                "image": ""
-              },
-              {
-                "name": "石垣島パナリ",
-                "level": "Intermediate",
-                "maxDepth": 20,
-                "entryType": "boat",
-                "current": "weak",
-                "topography": [
-                  "rock",
-                  "coral"
-                ],
-                "features": [
-                  "coral",
-                  "reef fish"
-                ],
-                "description": "ソフトコーラルが豊富で、透明度も高い。様々な種類の熱帯魚が見られる。",
-                "imageKeyword": "coral reef scene",
-                "id": "p_a_1765003514_0_3_9_9",
-                "type": "Point",
-                "image": ""
-              }
-            ]
           }
-        ],
-        "id": "z_1765003514_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "西表島",
         "description": "手つかずの自然が残る島。マングローブ林でのカヌーも人気。",
+        "id": "z_1765003514_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "大原港",
-            "description": "石垣島からのフェリーが発着",
+            "description": "",
             "id": "a_1765003514_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "上原港",
-            "description": "島の北部に位置する港",
+            "description": "",
             "id": "a_1765003514_0_4_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "白浜",
-            "description": "船浮集落へのアクセス",
+            "description": "",
             "id": "a_1765003514_0_4_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "祖納",
-            "description": "島の西部に位置する集落",
+            "description": "",
             "id": "a_1765003514_0_4_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "浦内川",
-            "description": "浦内川クルーズの発着",
+            "description": "",
             "id": "a_1765003514_0_4_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "船浮",
-            "description": "陸路でアクセスできない集落",
+            "description": "",
             "id": "a_1765003514_0_4_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "豊原",
-            "description": "島の中央部に位置する",
+            "description": "",
             "id": "a_1765003514_0_4_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "中野",
-            "description": "島の南部に位置する",
+            "description": "",
             "id": "a_1765003514_0_4_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "古見",
-            "description": "マングローブ林がある",
+            "description": "",
             "id": "a_1765003514_0_4_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "美原",
-            "description": "島の西部に位置する",
+            "description": "",
             "id": "a_1765003514_0_4_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003514_0_4",
-        "type": "Zone"
+        ]
       },
       {
         "name": "与那国島",
         "description": "海底遺跡が有名。ハンマーヘッドシャークとの遭遇率が高い。",
+        "id": "z_1765003514_0_5",
+        "type": "Zone",
         "children": [
           {
             "name": "久部良港",
-            "description": "海底遺跡へのアクセス拠点",
+            "description": "",
             "id": "a_1765003514_0_5_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "祖納港",
-            "description": "島の中心部にある港",
+            "description": "",
             "id": "a_1765003514_0_5_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "比川",
-            "description": "空港近くの集落",
+            "description": "",
             "id": "a_1765003514_0_5_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "東崎",
-            "description": "島の東端にある岬",
+            "description": "",
             "id": "a_1765003514_0_5_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "西崎",
-            "description": "島の西端にある岬",
+            "description": "",
             "id": "a_1765003514_0_5_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "南牧場",
-            "description": "与那国馬が見られる場所",
+            "description": "",
             "id": "a_1765003514_0_5_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "宇良部岳",
-            "description": "島の最高峰",
+            "description": "",
             "id": "a_1765003514_0_5_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "ダンヌ浜",
-            "description": "島の北側にあるビーチ",
+            "description": "",
             "id": "a_1765003514_0_5_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "ナーマ浜",
-            "description": "島の南側にあるビーチ",
+            "description": "",
             "id": "a_1765003514_0_5_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "与那国空港",
-            "description": "島への空の玄関口",
+            "description": "",
             "id": "a_1765003514_0_5_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003514_0_5",
-        "type": "Zone"
+        ]
       },
       {
         "name": "紀伊半島",
         "description": "黒潮の影響を受ける豊かな海。",
+        "id": "z_1765003514_0_8",
+        "type": "Zone",
         "children": [
           {
             "name": "串本",
-            "description": "本州最南端の海。サンゴ礁が美しい",
+            "description": "",
             "id": "a_1765003514_0_8_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "須江",
-            "description": "透明度が高く、魚影が濃い",
+            "description": "",
             "id": "a_1765003514_0_8_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "白浜",
-            "description": "ビーチダイビングも楽しめる",
+            "description": "",
             "id": "a_1765003514_0_8_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "田辺",
-            "description": "湾内の穏やかなポイントが多い",
+            "description": "",
             "id": "a_1765003514_0_8_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "古座",
-            "description": "海中景観が美しい",
+            "description": "",
             "id": "a_1765003514_0_8_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "浦神",
-            "description": "ダイナミックな地形が魅力",
+            "description": "",
             "id": "a_1765003514_0_8_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "勝浦",
-            "description": "マグロの水揚げで有名",
+            "description": "",
             "id": "a_1765003514_0_8_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "那智",
-            "description": "那智の滝があるエリア",
+            "description": "",
             "id": "a_1765003514_0_8_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "太地",
-            "description": "鯨の博物館がある",
+            "description": "",
             "id": "a_1765003514_0_8_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "新宮",
-            "description": "熊野速玉大社がある",
+            "description": "",
             "id": "a_1765003514_0_8_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003514_0_8",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956598_0",
-    "type": "Region"
+    ]
   },
   {
     "name": "パラオ",
@@ -4175,272 +4133,270 @@
       {
         "name": "コロール",
         "description": "パラオの中心地。多くのホテルやレストラン、ショップが集まる。",
+        "id": "z_1764956607_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "マラカル港",
-            "description": "コロール島にある主要な港。多くのダイビング船が出航する。",
+            "description": "",
             "id": "a_1764956607_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "Ngerbeched Ranch",
-            "description": "コロール島西岸のエリア。ダイビングサービスやリゾートがある。",
+            "description": "",
             "id": "a_1764956607_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "Dolphin Bay Resort",
-            "description": "コロール島南部に位置し、ダイビングサービスを提供するリゾート周辺エリア。",
+            "description": "",
             "id": "a_1764956607_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "コロール市街中心部",
-            "description": "コロール市街に宿泊するダイバー向けのピックアップポイント。",
+            "description": "",
             "id": "a_1764956607_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "アイライ",
-            "description": "コロール国際空港のある地域。ダイビングサービスも点在。",
+            "description": "",
             "id": "a_1765003017_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "バベルダオブ島南部",
-            "description": "コロールと橋で繋がっているバベルダオブ島の南部エリア。アクセスしやすいダイビングポイントへの拠点。",
+            "description": "",
             "id": "a_1765003017_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "エピソンミュージアム周辺",
-            "description": "パラオ国立博物館周辺のエリア。ダイビングサービスへのアクセスも便利。",
+            "description": "",
             "id": "a_1765003017_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "Ngemelis Island（ンゲルミス島）周辺",
-            "description": "ロックアイランドに隣接する島で、ダイビングサービスが利用可能。",
+            "description": "",
             "id": "a_1765003017_0_0_4",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956607_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ロックアイランド",
         "description": "コロール州に属する無人島群。世界遺産に登録されている。",
+        "id": "z_1764956607_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "Eil Malk Island (ジェリーフィッシュレイク周辺)",
-            "description": "ジェリーフィッシュレイクがある島。ダイビング船が立ち寄る。",
+            "description": "",
             "id": "a_1764956607_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "Ngemelis Island",
-            "description": "ロックアイランド南部に位置し、多くの有名ダイビングポイントへのアクセス拠点。",
+            "description": "",
             "id": "a_1764956607_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "Ulong Island",
-            "description": "ロックアイランド北部に位置し、ウーロンチャネルなどのダイビングポイントに近い。",
+            "description": "",
             "id": "a_1764956607_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロックアイランド南部エリア",
-            "description": "ロックアイランド南部のダイビングポイントへ向かう船の発着地",
+            "description": "",
             "id": "a_1764956607_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ジャーマンチャネル周辺",
-            "description": "ロックアイランド内の有名なダイビングポイントへのアクセス拠点。",
+            "description": "",
             "id": "a_1765003017_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ビッグドロップオフ周辺",
-            "description": "ロックアイランド内の有名なダイビングポイントへのアクセス拠点。",
+            "description": "",
             "id": "a_1765003017_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ブルーコーナー周辺",
-            "description": "ロックアイランド内の有名なダイビングポイントへのアクセス拠点。",
+            "description": "",
             "id": "a_1765003017_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ジェリーフィッシュレイク周辺",
-            "description": "ジェリーフィッシュレイク観光の拠点となるエリア。ダイビングポイントへのアクセスも可能。",
+            "description": "",
             "id": "a_1765003017_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "セブンティアイランド周辺",
-            "description": "ロックアイランド南部に位置し、手つかずの自然が残るエリア。",
+            "description": "",
             "id": "a_1765003017_0_1_4",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956607_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ペリリュー島",
         "description": "パラオの最南端に位置する島。第二次世界大戦の激戦地としても知られる。",
+        "id": "z_1764956607_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "ペリリュー港",
-            "description": "ペリリュー島にある港。ダイビング船が発着する。",
+            "description": "",
             "id": "a_1764956607_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ペリリュー島西海岸",
-            "description": "ペリリュー島西海岸に位置するダイビングサービス周辺。",
+            "description": "",
             "id": "a_1764956607_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ペリリュー島南部",
-            "description": "ダイビングサービスや宿泊施設が点在するエリア。",
+            "description": "",
             "id": "a_1765003017_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "オレンジビーチ周辺",
-            "description": "歴史的な場所として知られるオレンジビーチ周辺のダイビングスポットへのアクセス拠点。",
+            "description": "",
             "id": "a_1765003017_0_2_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956607_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ガラツマオ州 (北パラオ)",
         "description": "パラオ最北端の州で、手つかずの自然が残る。",
+        "id": "z_1764956607_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "カヤンゲル港",
-            "description": "カヤンゲル島にある港。北パラオのダイビング拠点。",
+            "description": "",
             "id": "a_1764956607_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "Ngaruangel Reserve周辺",
-            "description": "Ngaruangel Reserveへのアクセスポイント。",
+            "description": "",
             "id": "a_1764956607_0_3_1",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956607_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "Ngaremlengui (ンガレムレンギ)",
         "description": "バベルダオブ島の州。マングローブの森が広がる。",
+        "id": "z_1764956607_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "Ngaremlengui州内のダイビングサービス",
-            "description": "Ngaremlengui州内のダイビングポイントへのアクセス。",
+            "description": "",
             "id": "a_1764956607_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "バベルダオブ島西海岸の港",
-            "description": "バベルダオブ島西海岸の主要な港。",
+            "description": "",
             "id": "a_1764956607_0_4_1",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956607_0_4",
-        "type": "Zone"
+        ]
       },
       {
         "name": "バベルダオブ島",
         "description": "パラオ最大の島。手つかずの自然が残る。ダイビングサービスは限られる。",
+        "id": "z_1765003017_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "メレケオク",
-            "description": "パラオの首都が位置するエリア。ダイビングポイントへのアクセス拠点。",
+            "description": "",
             "id": "a_1765003017_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ガラルド",
-            "description": "バベルダオブ島北部に位置し、自然豊かなエリア。",
+            "description": "",
             "id": "a_1765003017_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ンガルパン",
-            "description": "バベルダオブ島東部に位置する地域。",
+            "description": "",
             "id": "a_1765003017_0_3_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003017_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "カープ島",
         "description": "パラオ最南端に位置する島。手付かずの自然が残るダイビングスポットとして知られる。",
+        "id": "z_1765003017_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "カープ島リゾート周辺",
-            "description": "カープ島で唯一のリゾート施設周辺。ダイビングサービスを提供。",
+            "description": "",
             "id": "a_1765003017_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "カープ島南岸",
-            "description": "手付かずの自然が残るカープ島南岸のダイビングスポットへのアクセス。",
+            "description": "",
             "id": "a_1765003017_0_4_1",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003017_0_4",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956607_0",
-    "type": "Region"
+    ]
   },
   {
     "name": "モルディブ",
@@ -4449,537 +4405,493 @@
       {
         "name": "北マーレ環礁",
         "description": "モルディブで最も人気のある環礁の一つで、首都マレに近く、多くのリゾートやダイビングスポットがあります。",
+        "id": "z_1764956618_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "マレ",
-            "description": "モルディブの首都であり、主要な港。多くのダイビングクルーズが出発します。",
+            "description": "",
             "id": "a_1764956618_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "フルマーレ",
-            "description": "マレに隣接する人工島。ホテルやリゾートが多く、ダイビングサービスも充実しています。",
+            "description": "",
             "id": "a_1764956618_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "バンドス島",
-            "description": "リゾートアイランド。周辺には多くのダイビングポイントがあります。",
+            "description": "",
             "id": "a_1764956618_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "フドゥランフシ島",
-            "description": "リゾートアイランド。サーフィンやダイビングが楽しめます。",
+            "description": "",
             "id": "a_1764956618_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "フラヴェリ",
-            "description": "ローカル島。リゾートアイランドへのアクセスも便利。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ギリーランカンフシ",
-            "description": "高級リゾートがある島。周辺には有名なダイビングポイントが点在。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "バンドス",
-            "description": "老舗リゾートがある島。ハウスリーフも充実している。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "エンブドゥ",
-            "description": "経済的なリゾートが多く、初心者ダイバーにも人気。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "フヴァフェンフシ",
-            "description": "高級リゾートがあり、贅沢なダイビング体験ができる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "バロス",
-            "description": "隠れ家のようなリゾートがある島。静かにダイビングを楽しみたい人に。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "カヌフラ",
-            "description": "美しいビーチと高級リゾートが魅力。手軽にダイビングも楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "ナラドゥ",
-            "description": "ラグジュアリーリゾートが多く、ハネムーンにも人気。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_0_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956618_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "南マーレ環礁",
         "description": "北マーレ環礁に隣接し、比較的静かで美しい環礁。ジンベイザメウォッチングも人気です。",
+        "id": "z_1764956618_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "マアフシ",
-            "description": "ローカル島であり、手頃な価格で滞在できるゲストハウスが多くあります。ダイビングサービスも充実。",
+            "description": "",
             "id": "a_1764956618_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "グライドゥ",
-            "description": "ローカル島。静かな環境でダイビングを楽しみたい方に適しています。",
+            "description": "",
             "id": "a_1764956618_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ビヤドゥ島",
-            "description": "リゾートアイランド。ハウスリーフが美しいことで知られています。",
+            "description": "",
             "id": "a_1764956618_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ヴァドゥ島",
-            "description": "リゾートアイランド。夜光虫が見られるビーチで有名です。",
+            "description": "",
             "id": "a_1764956618_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "グライドゥー",
-            "description": "漁業が盛んな島。周辺には多様な魚影が見られるダイビングポイントがある。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ビヤドゥ",
-            "description": "手付かずの自然が残る島。ハウスリーフも美しい。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ボドゥモラ",
-            "description": "周囲を美しい海に囲まれた小さな島。リゾートでのんびり過ごせる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ヴァドゥ",
-            "description": "星の砂ビーチで有名な島。夜の海もロマンチック。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "オボルフ",
-            "description": "自然豊かな島。ダイビングやシュノーケリングに最適。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "フィハフホヒ",
-            "description": "美しいラグーンが広がる島。穏やかな海でダイビングを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "エンブドゥビレッジ",
-            "description": "手軽な価格で滞在できるリゾート。初心者ダイバーにもおすすめ。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "カンドゥーマ",
-            "description": "サーフポイントとしても有名。ダイビングも楽しめるリゾート。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "ココアイランド",
-            "description": "高級リゾートがあり、プライベートな空間でダイビングを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_1_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956618_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "アリ環礁",
         "description": "南北に長い環礁で、多様な海洋生物が生息しています。マンタやジンベイザメの遭遇率が高いことで知られています。",
+        "id": "z_1764956618_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "ラスドゥ環礁",
-            "description": "アリ環礁北部に位置し、マダラトビエイのクリーニングステーションが有名です。",
+            "description": "",
             "id": "a_1764956618_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "アリフシ",
-            "description": "リゾートアイランド。周辺には多様なダイビングポイントがあります。",
+            "description": "",
             "id": "a_1764956618_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "トゥドゥフシ",
-            "description": "リゾートアイランド。ダイビングやシュノーケリングに最適な環境です。",
+            "description": "",
             "id": "a_1764956618_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ディッガルー",
-            "description": "高級リゾートアイランド。周辺の海域は海洋生物の宝庫です。",
+            "description": "",
             "id": "a_1764956618_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "マーミギリ",
-            "description": "ローカル島。ジンベイザメウォッチングツアーの拠点となります。",
+            "description": "",
             "id": "a_1764956618_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ラスドゥー",
-            "description": "アリ環礁北部にある島。ダイビングクルーズの拠点となる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ドンマフーシ",
-            "description": "美しいビーチが広がる島。ダイビングやシュノーケリングに最適。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ヴィラメンドゥ",
-            "description": "手軽な価格で滞在できるリゾート。ハウスリーフも充実している。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "コンスタンス・ハラヴェリ",
-            "description": "高級リゾートがあり、贅沢なダイビング体験ができる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "ウクルフス",
-            "description": "ローカル島。ダイビングショップも充実している。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "トドゥー",
-            "description": "農業が盛んな島。島内観光も楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "ディグラ",
-            "description": "手付かずの自然が残る島。静かにダイビングを楽しみたい人に。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "マチコリ",
-            "description": "ローカルな雰囲気の島。ダイビングやシュノーケリングを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_2_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956618_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ヴァーヴ環礁",
         "description": "モルディブ中央部に位置し、手付かずの自然が残る環礁。回遊魚が多く見られます。",
+        "id": "z_1764956618_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "フェリドゥ",
-            "description": "ヴァーヴ環礁の主要な島。ローカルの生活に触れながらダイビングを楽しめます。",
+            "description": "",
             "id": "a_1764956618_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "アルマティ",
-            "description": "リゾートアイランド。美しいビーチと豊富な海洋生物が魅力です。",
+            "description": "",
             "id": "a_1764956618_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "キーミミリ",
-            "description": "ヴァーヴ環礁に位置する島。開発が進んでいない自然が魅力です。",
+            "description": "",
             "id": "a_1764956618_0_3_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "フォトゥミヨ",
-            "description": "ヴァーヴ環礁にある島。",
+            "description": "",
             "id": "a_1764956618_0_3_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956618_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ラーム環礁",
         "description": "モルディブ南部に位置する環礁。高級リゾートが多く、静かで贅沢なダイビングを楽しめます。",
+        "id": "z_1764956618_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "レガンディ",
-            "description": "ラーム環礁に位置する島。手付かずの自然が魅力です。",
+            "description": "",
             "id": "a_1764956618_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "カドゥー",
-            "description": "ラーム環礁に位置する島。空港があります。",
+            "description": "",
             "id": "a_1764956618_0_4_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "イスドゥ",
-            "description": "ラーム環礁に位置する島。古代の遺跡があります。",
+            "description": "",
             "id": "a_1764956618_0_4_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "マームティリ",
-            "description": "ラーム環礁に位置する島。周辺の海は豊かな生態系を持っています。",
+            "description": "",
             "id": "a_1764956618_0_4_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "マームティラ",
-            "description": "美しいビーチとラグーンが広がる島。ダイビングやシュノーケリングに最適。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "シックスセンシズ・ラーム",
-            "description": "高級リゾートがあり、贅沢なダイビング体験ができる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "イズドゥー",
-            "description": "ローカル島。ダイビングショップもある。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "フォノアヅー",
-            "description": "のどかな雰囲気のローカル島。ダイビングやシュノーケリングを楽しめます。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ガン",
-            "description": "長い歴史を持つ島。文化的な観光も楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "ヒタドゥー",
-            "description": "美しい自然が残る島。静かにリゾートライフを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "フヴァドゥ環礁",
-            "description": "手つかずの自然が残る環礁。ダイビングやシュノーケリングに最適。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_4_7",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956618_0_4",
-        "type": "Zone"
+        ]
       },
       {
         "name": "バア環礁",
         "description": "ユネスコ生物圏保護区に指定された環礁。ハンマーヘッドシャークやマンタの群れが見られる。",
+        "id": "z_1765003036_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "エダフシ",
-            "description": "空港があり、アクセスが良い。ダイビングクルーズの出発地としても利用される。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "フォノニ",
-            "description": "ローカルな雰囲気の島。ダイビングやシュノーケリングを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ゴイデゥー",
-            "description": "美しいビーチが広がる島。のんびりとリゾートライフを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "キハアド",
-            "description": "手軽な価格で滞在できるリゾート。ハウスリーフも充実している。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "フォーシーズンズ・ランダー・ギラヴァル",
-            "description": "高級リゾートがあり、贅沢なダイビング体験ができる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ミリーム",
-            "description": "高級リゾートがあり、プライベートな空間でダイビングを楽しめる。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "リヒベリ",
-            "description": "ローカル島。ダイビングショップも充実している。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "ダーラヴァンドゥー",
-            "description": "ハンザ・パルー・マリーン保護区がある島。マンタのクリーニングステーションとしても有名。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "フルアドゥー",
-            "description": "美しいビーチと緑豊かな自然が魅力の島。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "カムドゥー",
-            "description": "のどかな雰囲気のローカル島。ダイビングやシュノーケリングを楽しめます。",
-            "dive_sites": [],
+            "description": "",
             "id": "a_1765003036_0_3_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003036_0_3",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956618_0",
-    "type": "Region"
+    ]
   },
   {
     "name": "バリ",
@@ -4988,242 +4900,240 @@
       {
         "name": "レンボンガン島",
         "description": "レンボンガン島エリア",
+        "id": "z_1764956627_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "ジュンバトゥ",
-            "description": "ジュンバトゥ港、島の北西部",
+            "description": "",
             "id": "a_1764956627_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "マングローブポイントエリア",
-            "description": "マングローブポイント周辺、ポイントへのアクセス",
+            "description": "",
             "id": "a_1764956627_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "マッシュルームベイ",
-            "description": "マッシュルームベイ周辺、ポイントへのアクセス",
+            "description": "",
             "id": "a_1764956627_0_3_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956627_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ペニダ島",
         "description": "ペニダ島エリア",
+        "id": "z_1764956627_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "トヤパケ",
-            "description": "トヤパケ、ペニダ島の北東部",
+            "description": "",
             "id": "a_1764956627_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "バイユンガンベイ",
-            "description": "バイユンガンベイ周辺",
+            "description": "",
             "id": "a_1764956627_0_4_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "サムパラン",
-            "description": "サムパラン周辺",
+            "description": "",
             "id": "a_1764956627_0_4_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンティカ",
-            "description": "サンティカ港",
+            "description": "",
             "id": "a_1765003044_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ブユック",
-            "description": "ブユック港",
+            "description": "",
             "id": "a_1765003044_0_3_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "クンバ",
-            "description": "クンバ港",
+            "description": "",
             "id": "a_1765003044_0_3_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956627_0_4",
-        "type": "Zone"
+        ]
       },
       {
         "name": "南部バリ",
         "description": "バリ島南部エリア",
+        "id": "z_1765003044_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "サヌール",
-            "description": "サヌール港",
+            "description": "",
             "id": "a_1765003044_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "パダンバイ",
-            "description": "パダンバイ港",
+            "description": "",
             "id": "a_1765003044_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ブノア",
-            "description": "ブノア港",
+            "description": "",
             "id": "a_1765003044_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "クタ",
-            "description": "クタ地区 (ダイビングサービスは少ない)",
+            "description": "",
             "id": "a_1765003044_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ジンバラン",
-            "description": "ジンバラン地区 (ダイビングサービスは少ない)",
+            "description": "",
             "id": "a_1765003044_0_0_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ヌサドゥア",
-            "description": "ヌサドゥア地区 (ダイビングサービスは少ない)",
+            "description": "",
             "id": "a_1765003044_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "タンジュンブノア",
-            "description": "ウォータースポーツとダイビングサービス",
+            "description": "",
             "id": "a_1765003044_0_0_6",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003044_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "東部バリ",
         "description": "バリ島東部エリア",
+        "id": "z_1765003044_0_1",
+        "type": "Zone",
         "children": [
           {
-            "name": "アメッド",
-            "description": "アメッド地区",
-            "id": "a_1765003044_0_1_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "トランベン",
-            "description": "トランベン地区",
-            "id": "a_1765003044_0_1_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "シデメン",
-            "description": "シデメン地区",
-            "id": "a_1765003044_0_1_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "チャンディダサ",
-            "description": "チャンディダサ港",
-            "id": "a_1765003044_0_1_3",
-            "type": "Area",
-            "children": []
-          },
-          {
             "name": "パダンバイ",
-            "description": "パダンバイ港、レンボンガン島、ギリテペコン島へのアクセス",
+            "description": "",
             "id": "a_1764956627_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "トランバン",
-            "description": "トランバン港、アメッド方面へのアクセス",
+            "description": "",
             "id": "a_1764956627_0_1_1",
             "type": "Area",
             "children": []
+          },
+          {
+            "name": "アメッド",
+            "description": "",
+            "id": "a_1765003044_0_1_0",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "トランベン",
+            "description": "",
+            "id": "a_1765003044_0_1_1",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "シデメン",
+            "description": "",
+            "id": "a_1765003044_0_1_2",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "チャンディダサ",
+            "description": "",
+            "id": "a_1765003044_0_1_3",
+            "type": "Area",
+            "children": []
           }
-        ],
-        "id": "z_1765003044_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "北西部バリ",
         "description": "バリ島北西部エリア",
+        "id": "z_1765003044_0_2",
+        "type": "Zone",
         "children": [
           {
-            "name": "ムンジャンガン",
-            "description": "ムンジャンガン島 (ダイビング船はラブアンララング港から)",
-            "id": "a_1765003044_0_2_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "ラブアンララング",
-            "description": "ラブアンララング港 (ムンジャンガンへの出発港)",
-            "id": "a_1765003044_0_2_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "プムテルン",
-            "description": "プムテルン地区",
-            "id": "a_1765003044_0_2_2",
-            "type": "Area",
-            "children": []
-          },
-          {
             "name": "プラムスラン",
-            "description": "プラムスラン, ムンジャンガン島への主要な出発地点",
+            "description": "",
             "id": "a_1764956627_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ラブハンララン",
-            "description": "ラブハンララン港、ムンジャンガン島方面へのアクセス",
+            "description": "",
             "id": "a_1764956627_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ペムテラン",
-            "description": "ペムテラン地区、リゾートホテルが多い",
+            "description": "",
             "id": "a_1764956627_0_2_2",
             "type": "Area",
             "children": []
+          },
+          {
+            "name": "ムンジャンガン",
+            "description": "",
+            "id": "a_1765003044_0_2_0",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "ラブアンララング",
+            "description": "",
+            "id": "a_1765003044_0_2_1",
+            "type": "Area",
+            "children": []
+          },
+          {
+            "name": "プムテルン",
+            "description": "",
+            "id": "a_1765003044_0_2_2",
+            "type": "Area",
+            "children": []
           }
-        ],
-        "id": "z_1765003044_0_2",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956627_0",
-    "type": "Region"
+    ]
   },
   {
     "name": "メキシコ",
@@ -5232,313 +5142,311 @@
       {
         "name": "コスメル",
         "description": "カリブ海に浮かぶ島、透明度抜群のドリフトダイビングが有名",
+        "id": "z_1764956636_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "サンミゲル",
-            "description": "コスメル島の主要な港町、多くのダイビングサービスが集まる",
+            "description": "",
             "id": "a_1764956636_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "パランカルリーフ周辺",
-            "description": "島南部に位置する、有名なリーフ群へのアクセスポイント",
+            "description": "",
             "id": "a_1764956636_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンタローサウォール周辺",
-            "description": "島の西側に位置する、垂直な壁が続くダイビングポイントへのアクセスポイント",
+            "description": "",
             "id": "a_1764956636_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "コロンビアリーフ周辺",
-            "description": "島の南部に位置する、カラフルな魚影が濃いリーフへのアクセスポイント",
+            "description": "",
             "id": "a_1764956636_0_0_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956636_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ユカタン半島（カリブ海側）",
         "description": "セノーテやカリブ海の多様なダイビングポイントが存在",
+        "id": "z_1764956636_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "プラヤデルカルメン",
-            "description": "カリブ海沿いの人気リゾート地、コスメルへのアクセスも容易",
+            "description": "",
             "id": "a_1764956636_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "トゥルム",
-            "description": "古代マヤ遺跡が隣接するエリア、セノーテダイビングが人気",
+            "description": "",
             "id": "a_1764956636_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "カンクン",
-            "description": "大型リゾートホテルが立ち並ぶ、手軽なダイビングツアーが豊富",
+            "description": "",
             "id": "a_1764956636_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "プエルトモレロス",
-            "description": "小さな漁村、手付かずの自然が残るリーフダイビングが楽しめる",
+            "description": "",
             "id": "a_1764956636_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "コスメル",
-            "description": "ドリフトダイビングで有名。サンミゲル港が拠点。",
+            "description": "",
             "id": "a_1765003060_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "マハワル",
-            "description": "コスタマヤクルーズターミナルがある。手付かずの自然が残る。",
+            "description": "",
             "id": "a_1765003060_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "シアンカアン",
-            "description": "手付かずの自然が残る保護区。ボートツアーでアクセス。",
+            "description": "",
             "id": "a_1765003060_0_0_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "チェトゥマル",
-            "description": "バカル湖へのアクセス拠点。スキューバダイビングツアーが出発。",
+            "description": "",
             "id": "a_1765003060_0_0_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "イスラムヘーレス",
-            "description": "手軽に楽しめるダイビングスポットがある。",
+            "description": "",
             "id": "a_1765003060_0_0_8",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956636_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "バハ・カリフォルニア半島（太平洋側/コルテス海側）",
         "description": "ジンベエザメやアシカとの遭遇率が高い",
+        "id": "z_1764956636_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "ラパス",
-            "description": "コルテス海に面する、ジンベエザメウォッチングやアシカダイビングが人気",
+            "description": "",
             "id": "a_1764956636_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "カボ・サン・ルーカス",
-            "description": "太平洋とコルテス海が交わる場所、ハンマーヘッドシャークが見られることも",
+            "description": "",
             "id": "a_1764956636_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンタ・ロサリア",
-            "description": "カリフォルニア湾に面した静かな町。ダイビングスポットへのアクセス拠点",
+            "description": "",
             "id": "a_1764956636_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロレト",
-            "description": "カリフォルニア湾に面した歴史ある町。周辺の島々へのダイビング拠点。",
+            "description": "",
             "id": "a_1764956636_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "カボサンルーカス",
-            "description": "有名な観光地。エル・アルコなどのダイビングスポットがある。",
+            "description": "",
             "id": "a_1765003060_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンホセデルカボ",
-            "description": "カボサンルーカスより落ち着いた雰囲気。ダイビングツアーも催行。",
+            "description": "",
             "id": "a_1765003060_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロレート",
-            "description": "歴史的な街。穏やかな海でダイビングを楽しめる。",
+            "description": "",
             "id": "a_1765003060_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンタ・ロザリア",
-            "description": "ユニークな風景。ダイビングスポットは限られる。",
+            "description": "",
             "id": "a_1765003060_0_1_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ムヘーレ",
-            "description": "ジンベイザメのツアーが有名。ボートで移動。",
+            "description": "",
             "id": "a_1765003060_0_1_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "エンセナダ",
-            "description": "バハ・カリフォルニア州最大の都市。ダイビングスポットは限られる。",
+            "description": "",
             "id": "a_1765003060_0_1_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "ゲレロネグロ",
-            "description": "ザトウクジラの観察ツアーが有名。ダイビングスポットは少ない。",
+            "description": "",
             "id": "a_1765003060_0_1_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロス・バレレス",
-            "description": "未開拓の魅力が残る穴場。",
+            "description": "",
             "id": "a_1765003060_0_1_8",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956636_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "レビリャヒヘド諸島",
         "description": "外洋に浮かぶ島々、ハンマーヘッドシャークやマンタとの遭遇率が高い",
+        "id": "z_1764956636_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "ソコロ島周辺",
-            "description": "ハンマーヘッドシャーク、マンタ、イルカとの遭遇が期待できる",
+            "description": "",
             "id": "a_1764956636_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンベネディクト島周辺",
-            "description": "マンタ、イルカ、クジラが見られることもある",
+            "description": "",
             "id": "a_1764956636_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロカ・パルティーダ周辺",
-            "description": "ジンベエザメ、ハンマーヘッドシャーク、イソマグロが集まる場所",
+            "description": "",
             "id": "a_1764956636_0_3_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956636_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "太平洋（本土）",
         "description": "メキシコ本土沿岸の太平洋",
+        "id": "z_1765003060_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "プエルトバヤルタ",
-            "description": "観光地。マリエッタス諸島へのツアーが人気。",
+            "description": "",
             "id": "a_1765003060_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "イスタパ/シワタネホ",
-            "description": "のんびりした雰囲気。ダイビングサービスもある。",
+            "description": "",
             "id": "a_1765003060_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "アカプルコ",
-            "description": "歴史的な観光地。ダイビングスポットは限られる。",
+            "description": "",
             "id": "a_1765003060_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "マンサニージョ",
-            "description": "重要な港湾都市。ダイビングスポットは少ない。",
+            "description": "",
             "id": "a_1765003060_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "サユリータ",
-            "description": "サーフィンの町。周辺でダイビングも楽しめる。",
+            "description": "",
             "id": "a_1765003060_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンブラス",
-            "description": "自然豊かな漁村。ダイビングサービスは少ない。",
+            "description": "",
             "id": "a_1765003060_0_2_5",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003060_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "コルテス海",
         "description": "バハカリフォルニア半島とメキシコ本土に挟まれた海",
+        "id": "z_1765003060_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "グアイマス",
-            "description": "本土側にある、穏やかな海。",
+            "description": "",
             "id": "a_1765003060_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "トポロバンポ",
-            "description": "穏やかな湾内でのダイビングが楽しめる。",
+            "description": "",
             "id": "a_1765003060_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "サンカルロス",
-            "description": "本土側のダイビングエリア。",
+            "description": "",
             "id": "a_1765003060_0_3_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003060_0_3",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956636_0",
-    "type": "Region"
+    ]
   },
   {
     "name": "オーストラリア",
@@ -5547,319 +5455,317 @@
       {
         "name": "クイーンズランド州",
         "description": "グレートバリアリーフへの玄関口",
+        "id": "z_1764956647_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "ケアンズ",
-            "description": "グレートバリアリーフへのアクセス拠点となる主要都市",
+            "description": "",
             "id": "a_1764956647_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ポートダグラス",
-            "description": "高級リゾートが立ち並ぶ、グレートバリアリーフへのアクセスに便利な港町",
+            "description": "",
             "id": "a_1764956647_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "タウンズビル",
-            "description": "ヨーク岬半島へのアクセス拠点、難破船ダイビングも楽しめる",
+            "description": "",
             "id": "a_1764956647_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ウィットサンデー諸島",
-            "description": "74の島々からなる群島、美しいビーチとリーフが魅力",
+            "description": "",
             "id": "a_1764956647_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "マッケイ",
-            "description": "ウィットサンデー諸島南部へのアクセスポイント",
+            "description": "",
             "id": "a_1764956647_0_0_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "エアリービーチ (ウィットサンデー諸島)",
-            "description": "ウィットサンデー諸島へのアクセスと周辺のダイビング",
+            "description": "",
             "id": "a_1765003071_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ミッションビーチ",
-            "description": "手付かずの自然が残るエリアへのアクセス",
+            "description": "",
             "id": "a_1765003071_0_0_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ハービーベイ",
-            "description": "フレーザー島へのアクセスと周辺のダイビング",
+            "description": "",
             "id": "a_1765003071_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "バンダーバーグ",
-            "description": "レディーエリオット島へのアクセス拠点",
+            "description": "",
             "id": "a_1765003071_0_0_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "グレイト・ケッペル島",
-            "description": "グレートバリアリーフ南端に近い島",
+            "description": "",
             "id": "a_1765003071_0_0_7",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956647_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "西オーストラリア州",
         "description": "手つかずの自然が残る、多様な海洋生物の宝庫",
+        "id": "z_1764956647_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "エクスマウス",
-            "description": "ニンガルーリーフへのアクセス拠点、ジンベイザメとのスイムが人気",
+            "description": "",
             "id": "a_1764956647_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ブルーム",
-            "description": "キンバリー地域の観光拠点、ダイビングも楽しめる",
+            "description": "",
             "id": "a_1764956647_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "アルバニー",
-            "description": "歴史的な港町、周辺海域には沈船や豊かな海洋生物が生息",
+            "description": "",
             "id": "a_1764956647_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "コーラルベイ",
-            "description": "ニンガルーリーフへのアクセスに便利な小さな町",
+            "description": "",
             "id": "a_1764956647_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "パース",
-            "description": "都市部から手軽にダイビングを楽しめる",
+            "description": "",
             "id": "a_1764956647_0_1_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "フリーマントル",
-            "description": "パース郊外の港町、周辺の沈船ダイビング",
+            "description": "",
             "id": "a_1765003071_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロイヤル・チャロッテ湾",
-            "description": "アバロン・パス島周辺",
+            "description": "",
             "id": "a_1765003071_0_1_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "モンキー・ミア",
-            "description": "イルカの餌付けで有名。周辺のダイビングスポット",
+            "description": "",
             "id": "a_1765003071_0_1_6",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956647_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ニューサウスウェールズ州",
         "description": "温暖な気候でダイビングを楽しめる",
+        "id": "z_1764956647_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "シドニー",
-            "description": "市内近郊で手軽にダイビングを楽しめる",
+            "description": "",
             "id": "a_1764956647_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ジャービスベイ",
-            "description": "イルカウォッチングやダイビングが人気",
+            "description": "",
             "id": "a_1764956647_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ポートスティーブンス",
-            "description": "砂丘やイルカウォッチング、ダイビングを楽しめる",
+            "description": "",
             "id": "a_1764956647_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ソルタリー諸島",
-            "description": "多様な海洋生物が生息するダイビングスポット",
+            "description": "",
             "id": "a_1764956647_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "バイロンベイ",
-            "description": "ケープ・バイロン海洋公園、多様な海洋生物に出会える",
+            "description": "",
             "id": "a_1764956647_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "コーフスハーバー",
-            "description": "ソルティーケーブなど多様なダイビングポイント",
+            "description": "",
             "id": "a_1765003071_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ロード・ハウ島",
-            "description": "世界遺産の島、手付かずの自然が残るダイビングスポット",
+            "description": "",
             "id": "a_1765003071_0_2_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "バテマンズベイ",
-            "description": "南海岸の穏やかなダイビングスポット",
+            "description": "",
             "id": "a_1765003071_0_2_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "メリムブラ",
-            "description": "鯨の回遊ルートに近いダイビングスポット",
+            "description": "",
             "id": "a_1765003071_0_2_6",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956647_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "南オーストラリア州",
         "description": "グレートオーストラリア湾に面し、手つかずの自然が残る",
+        "id": "z_1764956647_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "エア半島",
-            "description": "シーライオンとのスイムが人気",
+            "description": "",
             "id": "a_1764956647_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "カンガルー島",
-            "description": "固有の動植物が生息する島、ダイビングも楽しめる",
+            "description": "",
             "id": "a_1764956647_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ポートリンカーン",
-            "description": "グレートホワイトシャークのケージダイビングが有名",
+            "description": "",
             "id": "a_1764956647_0_3_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "アデレード",
-            "description": "都市部から手軽にダイビングを楽しめる",
+            "description": "",
             "id": "a_1764956647_0_3_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "イネス国立公園",
-            "description": "ヨーク半島にある自然豊かな国立公園、周辺のダイビング",
+            "description": "",
             "id": "a_1765003071_0_4_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956647_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ビクトリア州",
         "description": "バラエティ豊かなダイビングポイントが存在する",
+        "id": "z_1764956647_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "メルボルン",
-            "description": "都市部から手軽にダイビングを楽しめる",
+            "description": "",
             "id": "a_1764956647_0_4_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ベルズビーチ",
-            "description": "サーフィンの名所としても知られる",
+            "description": "",
             "id": "a_1764956647_0_4_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ポート・フェアリー",
-            "description": "歴史的な港町、周辺海域には沈船や豊かな海洋生物が生息",
+            "description": "",
             "id": "a_1764956647_0_4_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ウィリアムズタウン",
-            "description": "メルボルン近郊の港町",
+            "description": "",
             "id": "a_1764956647_0_4_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ポートフェアリー",
-            "description": "多くの沈船が眠るダイビングスポット",
+            "description": "",
             "id": "a_1765003071_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ソレント",
-            "description": "ポートフィリップ湾の入口にある街",
+            "description": "",
             "id": "a_1765003071_0_3_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ウォランブール",
-            "description": "歴史的な港町、周辺のダイビング",
+            "description": "",
             "id": "a_1765003071_0_3_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956647_0_4",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956647_0",
-    "type": "Region"
+    ]
   },
   {
     "name": "フレンチポリネシア",
@@ -5868,399 +5774,369 @@
       {
         "name": "タヒチ島",
         "description": "フレンチポリネシア最大の島であり、首都パペーテがある。",
+        "id": "z_1764956658_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "パペーテ",
-            "description": "タヒチ島の首都であり、主要な港。",
-            "latitude": -17.5373,
-            "longitude": -149.5669,
+            "description": "",
             "id": "a_1764956658_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "パエア",
-            "description": "タヒチ島西海岸の地区。",
-            "latitude": -17.5833,
-            "longitude": -149.6167,
+            "description": "",
             "id": "a_1764956658_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ピライ",
-            "description": "タヒチ島東部の地区。",
-            "latitude": -17.55,
-            "longitude": -149.5,
+            "description": "",
             "id": "a_1764956658_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "ティアレイ",
-            "description": "タヒチ島北東部の地区。",
-            "latitude": -17.4833,
-            "longitude": -149.4,
+            "description": "",
             "id": "a_1764956658_0_0_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956658_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ボラボラ島",
         "description": "「南洋の真珠」と称される美しい島。",
+        "id": "z_1764956658_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "バイタペ",
-            "description": "ボラボラ島の主要な村であり港。",
-            "latitude": -16.55,
-            "longitude": -151.74,
+            "description": "",
             "id": "a_1764956658_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "マトイ",
-            "description": "ボラボラ島の北端近くの地区。",
-            "latitude": -16.5,
-            "longitude": -151.74,
+            "description": "",
             "id": "a_1764956658_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ファンヌイ",
-            "description": "ボラボラ島東部の地区。",
-            "latitude": -16.55,
-            "longitude": -151.7,
+            "description": "",
             "id": "a_1764956658_0_1_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956658_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "モーレア島",
         "description": "タヒチ島から近く、美しい山々と湾が特徴。",
+        "id": "z_1764956658_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "パオパオ",
-            "description": "モーレア島の主要な村の一つ。",
-            "latitude": -17.4833,
-            "longitude": -149.8333,
+            "description": "",
             "id": "a_1764956658_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "オプノフ",
-            "description": "モーレア島の北海岸にある湾。",
-            "latitude": -17.4833,
-            "longitude": -149.8833,
+            "description": "",
             "id": "a_1764956658_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "テマエ",
-            "description": "モーレア島東海岸の地区。",
-            "latitude": -17.5333,
-            "longitude": -149.7667,
+            "description": "",
             "id": "a_1764956658_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "マハレパ",
-            "description": "モーレア島の南海岸にある地区。",
-            "latitude": -17.5667,
-            "longitude": -149.8167,
+            "description": "",
             "id": "a_1764956658_0_2_3",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956658_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ランギロア環礁",
         "description": "世界で2番目に大きい環礁。",
+        "id": "z_1764956658_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "アヴァトル",
-            "description": "ランギロア環礁の主要な村。",
-            "latitude": -15.0667,
-            "longitude": -147.65,
+            "description": "",
             "id": "a_1764956658_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ティプタ",
-            "description": "ランギロア環礁北部の村。",
-            "latitude": -14.9667,
-            "longitude": -147.6,
+            "description": "",
             "id": "a_1764956658_0_3_1",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956658_0_3",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ファカラヴァ環礁",
         "description": "ユネスコ生物圏保護区に指定されている環礁。",
+        "id": "z_1764956658_0_4",
+        "type": "Zone",
         "children": [
           {
             "name": "ロトアヴァ",
-            "description": "ファカラヴァ環礁の主要な村。",
-            "latitude": -16.05,
-            "longitude": -145.62,
+            "description": "",
             "id": "a_1764956658_0_4_0",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1764956658_0_4",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ソシエテ諸島",
         "description": "フレンチポリネシアで最も大きな島々が集まる地域",
+        "id": "z_1765003082_0_0",
+        "type": "Zone",
         "children": [
           {
             "name": "パペーテ (タヒチ島)",
-            "description": "タヒチ島の首都であり、国際空港がある主要港。",
+            "description": "",
             "id": "a_1765003082_0_0_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ファアア (タヒチ島)",
-            "description": "タヒチ島西海岸の主要港。",
+            "description": "",
             "id": "a_1765003082_0_0_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "パオパオ (モーレア島)",
-            "description": "モーレア島北部の主要港。",
+            "description": "",
             "id": "a_1765003082_0_0_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "バイアレ (モーレア島)",
-            "description": "モーレア島北西部の港。",
+            "description": "",
             "id": "a_1765003082_0_0_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "タプム (モーレア島)",
-            "description": "モーレア島南部の港。",
+            "description": "",
             "id": "a_1765003082_0_0_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "ボラボラ島",
-            "description": "ボラボラ島北部の主要エリア。リゾートが集まる。",
+            "description": "",
             "id": "a_1765003082_0_0_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "バイタペ (ボラボラ島)",
-            "description": "ボラボラ島の主要な町であり、港。",
+            "description": "",
             "id": "a_1765003082_0_0_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "トゥパイ島",
-            "description": "ボラボラ島北方の環礁島",
+            "description": "",
             "id": "a_1765003082_0_0_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "ライアテア島",
-            "description": "ソシエテ諸島でタヒチ島に次ぐ規模の島",
+            "description": "",
             "id": "a_1765003082_0_0_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "タハア島",
-            "description": "ライアテア島に隣接する島。",
+            "description": "",
             "id": "a_1765003082_0_0_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003082_0_0",
-        "type": "Zone"
+        ]
       },
       {
         "name": "ツアモツ諸島",
         "description": "100以上の環礁からなる、世界最大の環礁群。",
+        "id": "z_1765003082_0_1",
+        "type": "Zone",
         "children": [
           {
             "name": "ランギロア島",
-            "description": "ツアモツ諸島最大の環礁の一つ。",
+            "description": "",
             "id": "a_1765003082_0_1_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ティケハウ島",
-            "description": "ピンクサンドビーチで有名な環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ファカラバ島",
-            "description": "ユネスコ生物圏保護区に指定されている環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "マニヒ島",
-            "description": "真珠養殖で有名な環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "アルタエア環礁",
-            "description": "ツアモツ諸島に位置する環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_4",
             "type": "Area",
             "children": []
           },
           {
             "name": "カウクラ環礁",
-            "description": "ツアモツ諸島に位置する環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_5",
             "type": "Area",
             "children": []
           },
           {
             "name": "ニヒルの環礁",
-            "description": "ツアモツ諸島に位置する環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_6",
             "type": "Area",
             "children": []
           },
           {
             "name": "タタコト環礁",
-            "description": "ツアモツ諸島に位置する環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_7",
             "type": "Area",
             "children": []
           },
           {
             "name": "アヘ環礁",
-            "description": "ツアモツ諸島に位置する環礁。",
+            "description": "",
             "id": "a_1765003082_0_1_8",
             "type": "Area",
             "children": []
           },
           {
             "name": "パッセル島",
-            "description": "ランギロア島にある集落。",
+            "description": "",
             "id": "a_1765003082_0_1_9",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003082_0_1",
-        "type": "Zone"
+        ]
       },
       {
         "name": "マルケサス諸島",
         "description": "フレンチポリネシア北部に位置する島々。",
+        "id": "z_1765003082_0_2",
+        "type": "Zone",
         "children": [
           {
             "name": "ヌクヒバ島",
-            "description": "マルケサス諸島最大の島。",
+            "description": "",
             "id": "a_1765003082_0_2_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ヒバオア島",
-            "description": "芸術家ポール・ゴーギャンが晩年を過ごした島。",
+            "description": "",
             "id": "a_1765003082_0_2_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "ウアポウ島",
-            "description": "特異な地形が特徴的な島。",
+            "description": "",
             "id": "a_1765003082_0_2_2",
             "type": "Area",
             "children": []
           },
           {
             "name": "アツオナ島",
-            "description": "マルケサス諸島に位置する島。",
+            "description": "",
             "id": "a_1765003082_0_2_3",
             "type": "Area",
             "children": []
           },
           {
             "name": "ハケアウ湾",
-            "description": "ウアポウ島にある湾。",
+            "description": "",
             "id": "a_1765003082_0_2_4",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003082_0_2",
-        "type": "Zone"
+        ]
       },
       {
         "name": "オーストラル諸島",
         "description": "フレンチポリネシア最南端の島々。",
+        "id": "z_1765003082_0_3",
+        "type": "Zone",
         "children": [
           {
             "name": "ルルツ島",
-            "description": "オーストラル諸島で最も観光客が多い島。",
+            "description": "",
             "id": "a_1765003082_0_3_0",
             "type": "Area",
             "children": []
           },
           {
             "name": "ライババエ島",
-            "description": "クジラの繁殖地として知られる島。",
+            "description": "",
             "id": "a_1765003082_0_3_1",
             "type": "Area",
             "children": []
           },
           {
             "name": "トゥブアイ島",
-            "description": "オーストラル諸島の主要な島。",
+            "description": "",
             "id": "a_1765003082_0_3_2",
             "type": "Area",
             "children": []
           }
-        ],
-        "id": "z_1765003082_0_3",
-        "type": "Zone"
+        ]
       }
-    ],
-    "id": "r_1764956658_0",
-    "type": "Region"
+    ]
   }
 ]
