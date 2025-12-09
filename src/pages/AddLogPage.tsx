@@ -53,19 +53,8 @@ export const AddLogPage = () => {
 
   // Note: points and creatures should be loaded in AppContext
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 shadow-sm text-center max-w-sm w-full">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">ログインが必要です</h2>
-          <p className="text-gray-500 mb-6">ログを登録するにはログインしてください。</p>
-          <Link to="/" className="block w-full py-3 rounded-xl font-bold text-white bg-blue-500 hover:bg-blue-600 transition-colors">
-            トップページへ戻る
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  // Authentication check moved to render phase to avoiding conditional hooks
+  const showAccessDenied = !isAuthenticated;
 
   // Help Popups
   const [activeHelp, setActiveHelp] = useState<string | null>(null);
@@ -160,6 +149,7 @@ export const AddLogPage = () => {
         }));
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUser, points]); // Run once on load (deps ensure data is ready)
 
   // Creature Search State
@@ -345,6 +335,20 @@ export const AddLogPage = () => {
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
+
+  if (showAccessDenied) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-2xl p-8 shadow-sm text-center max-w-sm w-full">
+          <h2 className="text-xl font-bold text-gray-900 mb-2">ログインが必要です</h2>
+          <p className="text-gray-500 mb-6">ログを登録するにはログインしてください。</p>
+          <Link to="/" className="block w-full py-3 rounded-xl font-bold text-white bg-blue-500 hover:bg-blue-600 transition-colors">
+            トップページへ戻る
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">

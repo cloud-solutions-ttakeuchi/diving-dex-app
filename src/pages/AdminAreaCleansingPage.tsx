@@ -692,7 +692,7 @@ export const AdminAreaCleansingPage = () => {
       // Stage E: Delete Source Point
       await deleteDoc(doc(db, 'points', mergeSource.id));
 
-      alert(`統合完了:\n- 生物情報: 移行 ${pcMigrated}件\n- ログ更新: ${logsSnapshot.size}件\n- お気に入り更新: ${usersBookmarkSnapshot.size}件\n- Wanted更新: ${usersWantedSnapshot.size}件\n\nソースポイントを削除しました。`);
+      alert(`統合完了:\n- 生物情報: 移行 ${pcMigrated}件 / 削除(重複) ${pcDeleted}件\n- ログ更新: ${logsSnapshot.size}件\n- お気に入り更新: ${usersBookmarkSnapshot.size}件\n- Wanted更新: ${usersWantedSnapshot.size}件\n\nソースポイントを削除しました。`);
 
       setMergeModalOpen(false);
       setMergeSource(null);

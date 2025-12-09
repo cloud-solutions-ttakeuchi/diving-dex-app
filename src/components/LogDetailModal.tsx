@@ -41,7 +41,7 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
         {/* Header Image */}
         <div className="relative h-64 flex-shrink-0">
           <img
-            src={log.photos[0] || (creatures.find(c => c.id === log.creatureId)?.imageUrl || '/images/no-image-creature.png') || (points.find(p => p.id === log.spotId)?.imageUrl || '/images/no-image-point.png') || '/images/no-image.png'}
+            src={log.photos[0] || creatures.find(c => c.id === log.creatureId)?.imageUrl || points.find(p => p.id === log.spotId)?.imageUrl || '/images/no-image-point.png' || '/images/no-image.png'}
             alt="Log Header"
             className="w-full h-full object-cover"
           />
