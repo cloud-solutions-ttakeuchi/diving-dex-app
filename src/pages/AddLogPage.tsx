@@ -211,10 +211,11 @@ export const AddLogPage = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
+      // ... (existing code omitted for brevity in prompt, but replacing block)
       const selectedPoint = points.find(p => p.id === formData.pointId);
       const membersArray = formData.members.split(',').map(m => m.trim()).filter(Boolean);
 
@@ -277,7 +278,8 @@ export const AddLogPage = () => {
         likedBy: [],
       };
 
-      addLog(logData);
+      console.log("[AddLog] Adding log with:", logData);
+      await addLog(logData);
       alert('ログが正常に保存されました！');
       navigate('/mypage');
     } catch (error) {

@@ -24,6 +24,28 @@ export const googleProvider = new GoogleAuthProvider();
 export const db = getFirestore(app);
 export const analytics = getAnalytics(app);
 
+// Remote Config
+import { getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
+
+export const remoteConfig = getRemoteConfig(app);
+
+// Default configs (Development: fetch immediately, Production: cache for 1 hour)
+remoteConfig.settings.minimumFetchIntervalMillis = import.meta.env.DEV ? 0 : 3600000;
+
+// Set default values here or in the console.
+// Ideally, set safety defaults here in case fetch fails.
+remoteConfig.defaultConfig = {
+  // "feature_xxx": false,
+};
+
+// Initial fetch (optional to await here, or let components fetch)
+fetchAndActivate(remoteConfig).then(() => {
+  console.log('Remote Config fetched!');
+}).catch((err) => {
+  console.warn('Remote Config fetch failed', err);
+});
+
+
 // Enable Offline Persistence
 enableIndexedDbPersistence(db).catch((err: any) => {
   if (err.code == 'failed-precondition') {

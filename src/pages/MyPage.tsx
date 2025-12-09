@@ -50,7 +50,7 @@ export const MyPage = () => {
 
   // Refactor: logs is already the user's logs
   const userLogs = logs;
-  const uniqueCreatureIds = Array.from(new Set(userLogs.map(l => l.creatureId)));
+  const uniqueCreatureIds = Array.from(new Set(userLogs.flatMap(l => [l.creatureId, ...(l.sightedCreatures || [])]).filter(Boolean)));
   const uniqueCreatures = uniqueCreatureIds.length;
   // Refactor: use creatures from context
   const totalCreatures = creatures.length;
@@ -102,7 +102,9 @@ export const MyPage = () => {
 
     const validPointCreatures = pointCreatures.filter(pc => pc.pointId === point.id && (pc.status === 'approved' || pc.status === undefined));
     const totalInhabitants = validPointCreatures.length;
-    const discoveredInhabitants = new Set(pointLogs.map(l => l.creatureId)).size;
+    const discoveredInhabitants = new Set(
+      pointLogs.flatMap(l => [l.creatureId, ...(l.sightedCreatures || [])]).filter(Boolean)
+    ).size;
     const masteryRate = totalInhabitants > 0 ? Math.round((discoveredInhabitants / totalInhabitants) * 100) : 0;
 
     return {

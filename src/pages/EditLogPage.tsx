@@ -100,16 +100,16 @@ export const EditLogPage = () => {
       title: log.title || '',
       date: log.date,
       diveNumber: String(log.diveNumber),
-      pointId: log.location.pointId,
+      pointId: log.location.pointId || '',
       shopName: log.location.shopName || '',
-      region: log.location.region,
+      region: log.location.region || '',
       buddy: log.team?.buddy || '',
       guide: log.team?.guide || '',
       members: log.team?.members?.join(', ') || '',
       entryTime: log.time.entry || '',
       exitTime: log.time.exit || '',
-      maxDepth: String(log.depth.max),
-      avgDepth: String(log.depth.average),
+      maxDepth: String(log.depth.max || ''),
+      avgDepth: String(log.depth.average || ''),
       weather: log.condition?.weather || 'sunny',
       airTemp: String(log.condition?.airTemp || ''),
       waterTempSurface: String(log.condition?.waterTemp?.surface || ''),
@@ -128,9 +128,9 @@ export const EditLogPage = () => {
       entryType: log.entryType || 'boat',
       creatureId: log.creatureId || '',
       sightedCreatures: log.sightedCreatures || [],
-      comment: log.comment,
-      isPrivate: log.isPrivate,
-      photos: log.photos,
+      comment: log.comment || '',
+      isPrivate: log.isPrivate || false,
+      photos: log.photos || [],
     });
   }, [id, isAuthenticated, logs, navigate]);
 
@@ -166,20 +166,6 @@ export const EditLogPage = () => {
   const [activeHelp, setActiveHelp] = useState<string | null>(null);
   const toggleHelp = (key: string) => setActiveHelp(prev => prev === key ? null : key);
 
-  if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        <div className="bg-white rounded-2xl p-8 shadow-sm text-center max-w-sm w-full">
-          <h2 className="text-xl font-bold text-gray-900 mb-2">ログインが必要です</h2>
-          <p className="text-gray-500 mb-6">ログを編集するにはログインしてください。</p>
-          <Link to="/" className="block w-full py-3 rounded-xl font-bold text-white bg-blue-500 hover:bg-blue-600 transition-colors">
-            トップページへ戻る
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
   const handleSightedCreatureToggle = (creatureId: string) => {
     setFormData(prev => {
       const newSighted = prev.sightedCreatures.includes(creatureId)
@@ -189,7 +175,7 @@ export const EditLogPage = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id) return;
 
@@ -245,15 +231,17 @@ export const EditLogPage = () => {
           }
         },
         entryType: formData.entryType as any,
-        creatureId: formData.creatureId || undefined,
+        creatureId: formData.creatureId || '', // Use empty string instead of undefined
         sightedCreatures: formData.sightedCreatures,
-        comment: formData.comment,
+        comment: formData.comment || '',
         isPrivate: formData.isPrivate,
         photos: formData.photos,
         spotId: formData.pointId, // Legacy compatibility
       };
 
-      updateLog(id, logData);
+      console.log("[EditLog] Updating log with:", logData);
+
+      await updateLog(id, logData);
       alert('ログが正常に更新されました！');
       navigate('/mypage');
     } catch (error) {
@@ -391,6 +379,10 @@ export const EditLogPage = () => {
                   <HierarchicalPointSelector
                     value={formData.pointId}
                     onChange={(pointId) => setFormData(prev => ({ ...prev, pointId }))}
+                    onHierarchyChange={(region, zone, area) => {
+                      // Only update hierarchy fields if pointId is explicitly cleared or changed from selector
+                      setFormData(prev => ({ ...prev, region, zone, area }));
+                    }}
                   />
                 </div>
               </div>

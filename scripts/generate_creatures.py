@@ -104,7 +104,8 @@ def generate_creatures(target: str, total_count: int, mode: str = "area") -> Lis
                 item["id"] = f"c_{unique_hash}"
 
                 keyword = item.get("imageKeyword", "underwater").replace(" ", "")
-                item["image"] = f"https://loremflickr.com/400/400/{keyword},underwater"
+                # item["image"] = f"https://loremflickr.com/400/400/{keyword},underwater"
+                item["image"] = ""
 
                 if "regions" not in item:
                     item["regions"] = []

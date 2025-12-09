@@ -181,49 +181,6 @@
         "type": "Zone"
       },
       {
-        "name": "伊豆",
-        "description": "首都圏からアクセスしやすい多様なダイビングスポット",
-        "children": [
-          {
-            "name": "熱海",
-            "description": "沈船や近隣の島へのアクセス拠点",
-            "id": "a_1764956598_0_2_0",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "伊東",
-            "description": "富戸や八幡野へのアクセス拠点",
-            "id": "a_1764956598_0_2_1",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "大瀬崎",
-            "description": "湾内の穏やかなダイビングスポット",
-            "id": "a_1764956598_0_2_2",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "井田",
-            "description": "透明度の高い海とマクロ生物が豊富",
-            "id": "a_1764956598_0_2_3",
-            "type": "Area",
-            "children": []
-          },
-          {
-            "name": "雲見",
-            "description": "洞窟やアーチなどの地形が特徴",
-            "id": "a_1764956598_0_2_4",
-            "type": "Area",
-            "children": []
-          }
-        ],
-        "id": "z_1764956598_0_2",
-        "type": "Zone"
-      },
-      {
         "name": "奄美群島",
         "description": "手付かずの自然が残る島々",
         "children": [

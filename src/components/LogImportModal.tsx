@@ -111,7 +111,7 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
             tank: raw.gear?.tank || {}
           },
           photos: [],
-          privacy: 'public'
+          isPrivate: false
         };
 
         await addLog(logData);

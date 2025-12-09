@@ -91,6 +91,7 @@ export const BulkEditModal = ({ isOpen, onClose, selectedCount, onSave }: BulkEd
     // Point Logic
     if (pointId) {
       updates['location.pointId'] = pointId;
+      updates['spotId'] = pointId; // Sync spotId
       const p = points.find(pt => pt.id === pointId);
       if (p) {
         updates['location.pointName'] = p.name;

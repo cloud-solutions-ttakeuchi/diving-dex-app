@@ -128,9 +128,10 @@ def generate_locations(region: str) -> List[Dict]:
                                     # Point
                                     if "id" not in point: point["id"] = f"p_{base_time}_{r_idx}_{z_idx}_{a_idx}_{p_idx}"
 
-                                    # 画像URL生成
-                                    keyword = point.get("imageKeyword", "diving").replace(" ", "")
-                                    point["image"] = f"https://loremflickr.com/400/300/{keyword},underwater"
+                                    # 画像URL生成 (廃止: 猫が出るため)
+                                    # keyword = point.get("imageKeyword", "diving").replace(" ", "")
+                                    # point["image"] = f"https://loremflickr.com/400/300/{keyword},underwater"
+                                    point["image"] = ""
 
         return data
 
