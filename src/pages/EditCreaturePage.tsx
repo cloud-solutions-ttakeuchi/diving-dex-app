@@ -47,6 +47,7 @@ export const EditCreaturePage = () => {
   // Load data into form when creature is found
   useEffect(() => {
     if (existingCreature) {
+      // eslint-disable-next-line react-hooks/exhaustive-deps
       setFormData({
         name: existingCreature.name,
         scientificName: existingCreature.scientificName || '',
