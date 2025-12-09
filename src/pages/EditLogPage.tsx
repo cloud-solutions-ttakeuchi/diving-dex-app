@@ -96,6 +96,7 @@ export const EditLogPage = () => {
       return;
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     setFormData({
       title: log.title || '',
       date: log.date,
