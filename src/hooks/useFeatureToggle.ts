@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getValue, fetchAndActivate } from 'firebase/remote-config';
+import { getValue } from 'firebase/remote-config';
 import { remoteConfig } from '../lib/firebase';
 
 /**
