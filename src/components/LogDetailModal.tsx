@@ -178,6 +178,22 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
                 <span className="text-gray-500 text-xs">うねり</span>
                 <span className="font-bold text-gray-900 capitalize">{log.condition?.surge || 'None'}</span>
               </div>
+              {log.condition?.waterType && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-xs">水域</span>
+                  <span className="font-bold text-gray-900 capitalize">
+                    {log.condition.waterType === 'salt' ? '海水' : '淡水'}
+                  </span>
+                </div>
+              )}
+              {log.entryType && (
+                <div className="flex flex-col">
+                  <span className="text-gray-500 text-xs">エントリー</span>
+                  <span className="font-bold text-gray-900 capitalize">
+                    {log.entryType === 'beach' ? 'ビーチ' : 'ボート'}
+                  </span>
+                </div>
+              )}
             </div>
           </section>
 
@@ -206,6 +222,9 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
                   <span className="font-bold text-gray-900 capitalize">
                     {log.gear?.tank?.material === 'steel' ? 'スチール' : log.gear?.tank?.material === 'aluminum' ? 'アルミ' : '--'}
                     {log.gear?.tank?.capacity && ` ${log.gear.tank.capacity}L`}
+                    {log.gear?.tank?.oxygen && <span className="text-blue-500 ml-1">({log.gear.tank.oxygen}%)</span>}
+                    {/* Fallback for GasType if oxygen not set but string exists */}
+                    {!log.gear?.tank?.oxygen && log.gear?.tank?.gasType && ` (${log.gear.tank.gasType})`}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -217,6 +236,25 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
               </div>
             </div>
           </section>
+
+          {/* New Map Section */}
+          {log.location?.lat && log.location?.lng && (
+            <section>
+              <h3 className="font-bold text-deepBlue-900 mb-3 flex items-center gap-2 border-b pb-2 border-gray-100">
+                <MapPin size={18} className="text-orange-500" /> ロケーション
+              </h3>
+              <div className="w-full h-48 rounded-xl overflow-hidden shadow-sm border border-gray-100">
+                <iframe
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  style={{ border: 0 }}
+                  src={`https://maps.google.com/maps?q=${log.location.lat},${log.location.lng}&z=15&output=embed`}
+                  allowFullScreen
+                ></iframe>
+              </div>
+            </section>
+          )}
 
           {/* 4. Team - PRIVACY PROTECTED: Only visible to Owner */}
           {isOwner && (

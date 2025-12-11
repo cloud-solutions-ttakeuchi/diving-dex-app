@@ -27,11 +27,24 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
     if (!file) return;
 
     setError(null);
+    setStep('saving'); // Show loading spinner temporarily while parsing
+
     try {
-      const text = await file.text();
-      const results = await parseCSV(text);
+      let results: ParsedLog[] = [];
+
+      if (file.name.endsWith('.zip')) {
+        // ZIP Parser
+        const { parseGarminZip } = await import('../utils/garminParser');
+        results = await parseGarminZip(file);
+      } else {
+        // CSV Parser (Legacy)
+        const text = await file.text();
+        results = await parseCSV(text);
+      }
+
       if (results.length === 0) {
-        setError('有効なデータが見つかりませんでした。CSVフォーマットを確認してください。');
+        setError('有効なデータが見つかりませんでした。ファイル形式を確認してください。');
+        setStep('upload');
         return;
       }
       setParsedLogs(results);
@@ -41,6 +54,7 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
     } catch (err) {
       console.error(err);
       setError('ファイルの解析に失敗しました。');
+      setStep('upload');
     }
   };
 
@@ -91,6 +105,7 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
 
         const logData: any = {
           date: raw.date,
+          diveNumber: raw.diveNumber, // [NEW]
           title: raw.title,
           time: {
             entry: raw.time?.entry || '',
@@ -100,16 +115,29 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
           },
           depth: raw.depth || { max: 0, average: 0 },
           location: {
-            pointId: pointId || '', // Optional now
+            pointId: pointId || '',
             pointName: point?.name || raw.title || raw.location?.pointName || 'Unknown Point',
-            region: point?.areaId || ''
+            region: point?.areaId || '',
+            lat: raw.location?.lat, // [NEW] Use Parsed Lat
+            lng: raw.location?.lng  // [NEW] Use Parsed Lng
           },
-          spotId: pointId || '',  // Optional now
+          spotId: pointId || '',
           condition: raw.condition || {},
           gear: {
             suitType: 'wet',
             tank: raw.gear?.tank || {}
           },
+          entryType: raw.entryType, // [NEW]
+
+          // Notes to Comment
+          comment: raw.comment || '',
+
+          // Buddy
+          team: raw.team,
+
+          // Garmin-specific metadata for duplicate prevention
+          garminActivityId: raw.garminActivityId,
+
           photos: [],
           isPrivate: false
         };
@@ -162,7 +190,7 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
         <div className="p-4 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white z-10">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
             <Upload size={24} className="text-blue-500" />
-            ログのインポート (Garmin簡易版)
+            ログのインポート (Garmin詳細データ / CSV)
           </h2>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-gray-600">
             <X size={20} />
@@ -182,18 +210,22 @@ export const LogImportModal = ({ isOpen, onClose, onImportComplete }: Props) => 
             <div className="border-2 border-dashed border-gray-300 rounded-3xl p-12 text-center hover:border-blue-400 hover:bg-blue-50 transition-all group cursor-pointer relative">
               <input
                 type="file"
-                accept=".csv"
+                accept=".csv,.zip"
                 onChange={handleFileUpload}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
               />
               <div className="w-16 h-16 bg-blue-100 text-blue-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <FileText size={32} />
               </div>
-              <h3 className="text-lg font-bold text-gray-700 mb-2">CSVファイルを選択またはドラッグ&ドロップ</h3>
+              <h3 className="text-lg font-bold text-gray-700 mb-2">Garminデータ(Zip) または CSVを選択</h3>
               <p className="text-gray-500 text-sm">
-                Garmin Connect などのCSV形式に対応<br />
-                <span className="text-xs text-gray-400 mt-2 inline-block">※ AquaLang対応やGarminの詳細データの取込は、将来提供予定です</span>
+                対応形式: <span className="font-bold">.zip (Garmin詳細)</span>, .csv (簡易)<br />
+                <span className="text-xs text-gray-400 mt-2 inline-block">※ Garmin ConnectからエクスポートしたZipファイルをそのままアップロードしてください</span>
               </p>
+              <div className="mt-6 p-3 bg-gray-50 rounded-lg text-xs text-gray-500 text-left">
+                <p className="font-bold mb-1">⚠️ プライバシーに関するご注意</p>
+                アップロードされたデータにはGarminが取得したお客様自身の情報が含まれている可能性があります。本サービスではダイビングのログ機能の出力の目的でログ機能の出力に必要な情報のみを取得し、本サービスが管理するデータベース内の、お客様のアカウント専用の保存領域に保存されます。
+              </div>
             </div>
           )}
 

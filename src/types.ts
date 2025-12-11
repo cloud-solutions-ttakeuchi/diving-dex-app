@@ -197,6 +197,8 @@ export interface DiveLog {
     pointName: string;
     region: string;
     shopName?: string;
+    lat?: number;
+    lng?: number;
   };
 
   team?: {
@@ -228,6 +230,7 @@ export interface DiveLog {
     wave?: 'none' | 'low' | 'high';
     current?: 'none' | 'weak' | 'strong';
     surge?: 'none' | 'weak' | 'strong';
+    waterType?: 'salt' | 'fresh';
   };
 
   gear?: {
@@ -240,6 +243,7 @@ export interface DiveLog {
       pressureStart?: number;
       pressureEnd?: number;
       gasType?: string; // e.g. "Air", "EANx32"
+      oxygen?: number;
     };
   };
 
@@ -261,6 +265,14 @@ export interface DiveLog {
 
   // Import Metadata
   title?: string; // Original title from import (e.g. Garmin activity name)
+  garminActivityId?: string; // To prevent duplicates
+
+  profile?: {
+    depth?: number;
+    temp?: number;
+    hr?: number;
+    time: number; // seconds from start
+  }[];
 
 }
 
