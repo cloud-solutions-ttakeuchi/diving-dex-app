@@ -53,7 +53,7 @@ export const LogCard = ({ log, currentUser, creature, point, onLike, onClick, se
   } else if (!mainImage && point) {
     mainImage = point.imageUrl || '/images/no-image-point.png';
   } else if (!mainImage) {
-    mainImage = '/images/no-image.png';
+    mainImage = '/images/no-image-point.png';
   }
 
   return (
