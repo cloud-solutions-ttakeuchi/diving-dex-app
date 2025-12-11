@@ -145,3 +145,7 @@ firebase-debug.log
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Garmin Analysis Files
+germin_description.zip
+temp_garmin_analysis/

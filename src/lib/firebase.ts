@@ -35,7 +35,7 @@ remoteConfig.settings.minimumFetchIntervalMillis = import.meta.env.DEV ? 0 : 360
 // Set default values here or in the console.
 // Ideally, set safety defaults here in case fetch fails.
 remoteConfig.defaultConfig = {
-  // "feature_xxx": false,
+  "enable_garmin_import": false,
 };
 
 // Initial fetch (optional to await here, or let components fetch)
