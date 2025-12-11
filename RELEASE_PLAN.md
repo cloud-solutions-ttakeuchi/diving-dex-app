@@ -27,9 +27,10 @@ Diving Dex App のリリーススケジュールとロードマップです。
 **目的: ユーザー体験の向上とソーシャル要素**
 
 - [ ] **バルク編集機能 (Bulk Edit)**: 複数のログを一括で編集・場所設定する機能
-- [/] **インポート機能の強化 (Garmin Import)**:
+- [x] **インポート機能の強化 (Garmin Import V1)**:
     - Garminなどのダイコンデータ（詳細データ含む）を一括で取り込む機能の実装
-    - **Status**: Planning & Preparation
+    - ZIPファイル解析、詳細メタデータの抽出、地図表示、詳細項目のUI表示
+    - **Status**: Completed (V1)
 - [ ] **利用規約（同意書）の作成**: 初回利用時等の同意フロー実装
 
 ### v1.3.0 (Community Features) - Planning
