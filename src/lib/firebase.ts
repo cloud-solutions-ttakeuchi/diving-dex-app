@@ -1,12 +1,14 @@
-
-// Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
-import { getAnalytics } from "firebase/analytics";
+import {
+  getFirestore,
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager
+} from "firebase/firestore";
+import { getAnalytics, isSupported } from "firebase/analytics";
+import { getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
@@ -19,40 +21,52 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
+// ---------------------------------------------------------
+// 1. Firestore: 初期化と同時に永続化設定を行う (推奨される新しい書き方)
+// ---------------------------------------------------------
+// もし古いSDK(v9初期)を使っているなら元のままでも動きますが、
+// v10以降ならこちらの方が確実です。
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: persistentMultipleTabManager() // 複数タブでの同期を管理
+  })
+});
+
+// ---------------------------------------------------------
+// 2. Auth
+// ---------------------------------------------------------
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
-export const db = getFirestore(app);
-export const analytics = getAnalytics(app);
 
-// Remote Config
-import { getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
+// ---------------------------------------------------------
+// 3. Analytics: 環境によっては動かないので安全策をとる
+// ---------------------------------------------------------
+export let analytics: ReturnType<typeof getAnalytics> | null = null;
+isSupported().then((supported) => {
+  if (supported) {
+    analytics = getAnalytics(app);
+  }
+});
 
+// ---------------------------------------------------------
+// 4. Remote Config
+// ---------------------------------------------------------
 export const remoteConfig = getRemoteConfig(app);
 
-// Default configs (Development: fetch immediately, Production: cache for 1 hour)
+// 開発環境なら0秒(即時)、本番なら1時間キャッシュ
 remoteConfig.settings.minimumFetchIntervalMillis = import.meta.env.DEV ? 0 : 3600000;
 
-// Set default values here or in the console.
-// Ideally, set safety defaults here in case fetch fails.
+// デフォルト値の設定
 remoteConfig.defaultConfig = {
-  "enable_garmin_import": false,
+  "enable_garmin_import": false, // ここでfalseにしておけば、fetch完了前はfalseが返る
 };
 
-// Initial fetch (optional to await here, or let components fetch)
+// フェッチ実行
+// ※ 注意: これは非同期なので、アプリの初回レンダリング時にはまだ完了していない可能性があります。
+// その場合、getValue() は上記の defaultConfig の値を返します。
 fetchAndActivate(remoteConfig).then(() => {
   console.log('Remote Config fetched!');
 }).catch((err) => {
   console.warn('Remote Config fetch failed', err);
-});
-
-
-// Enable Offline Persistence
-enableIndexedDbPersistence(db).catch((err: any) => {
-  if (err.code == 'failed-precondition') {
-    // Multiple tabs open, persistence can only be enabled in one tab at a a time.
-    console.warn('Firestore persistence enabled in another tab');
-  } else if (err.code == 'unimplemented') {
-    // The current browser does not support all of the features required to enable persistence
-    console.warn('Firestore persistence not supported in this browser');
-  }
 });

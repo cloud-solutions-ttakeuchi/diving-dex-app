@@ -15,7 +15,7 @@ import { useState } from 'react';
 
 import { CERTIFICATION_MASTER, BADGE_MASTER, TRUST_RANKS } from '../data/mockData';
 import { remoteConfig } from '../lib/firebase';
-import { getValue } from 'firebase/remote-config';
+import { getBoolean } from 'firebase/remote-config';
 
 export const MyPage = () => {
   const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, updateUser, toggleLikeLog, deleteLogs, updateLogs } = useApp();
@@ -412,7 +412,7 @@ export const MyPage = () => {
                 </div>
               </Link>
 
-              {(import.meta.env.DEV || getValue(remoteConfig, 'enable_garmin_import').asBoolean()) && (
+              {(import.meta.env.DEV || getBoolean(remoteConfig, 'enable_garmin_import')) && (
                 <button
                   onClick={() => setIsImportOpen(true)}
                   className="group relative bg-gray-50 hover:bg-white text-gray-700 py-6 px-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center gap-2 min-w-[120px]"
