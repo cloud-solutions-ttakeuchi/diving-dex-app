@@ -160,7 +160,7 @@ export const Home = () => {
 
         {recentLogs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {recentLogs.map(log => {
+            {recentLogs.slice(0, 8).map(log => {
               const mainPhoto = log.photos.length > 0 ? log.photos[0] :
                 (creatures.find(c => c.id === log.creatureId)?.imageUrl ||
                   points.find(p => p.id === log.location.pointId)?.imageUrl); // Fallback handled by ImageWithFallback

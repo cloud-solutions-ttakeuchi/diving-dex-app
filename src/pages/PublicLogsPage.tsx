@@ -12,13 +12,11 @@ export const PublicLogsPage = () => {
   const [logs, setLogs] = useState<Log[]>([]);
   const [selectedLog, setSelectedLog] = useState<Log | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLogs = async () => {
       try {
-        // Fetch public logs (assuming isPrivate field exists and false by default or explicitly false)
-        // Note: collectionGroup queries require an index. If it fails, check console for index creation link.
-        // For now, simpler query.
         const q = query(
           collectionGroup(db, 'logs'),
           where('isPrivate', '==', false),
@@ -28,13 +26,10 @@ export const PublicLogsPage = () => {
 
         const snapshot = await getDocs(q);
         const loadedLogs = snapshot.docs.map(doc => doc.data() as Log);
-        // Filter purely client side if needed for safety, but firestore rules should handle it ideally.
-        // Assuming 'isPrivate' is the flag.
-        // const publicLogs = loadedLogs.filter(l => !l.isPrivate); // Filtered by query
-
         setLogs(loadedLogs);
-      } catch (error) {
-        console.error("Error fetching public logs:", error);
+      } catch (err: any) {
+        console.error("Error fetching public logs:", err);
+        setError(err.message || 'Failed to fetch logs');
       } finally {
         setLoading(false);
       }
@@ -58,7 +53,12 @@ export const PublicLogsPage = () => {
           <p className="text-gray-500">みんなのダイビングログ ({logs.length}件)</p>
         </div>
 
-        {logs.length > 0 ? (
+        {error ? (
+          <div className="p-4 rounded-lg bg-red-50 border border-red-100 text-red-600 mb-6">
+            <p className="font-bold">Error loading logs:</p>
+            <p className="text-sm font-mono mt-1">{error}</p>
+          </div>
+        ) : logs.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {logs.map(log => {
               const mainPhoto = log.photos.length > 0 ? log.photos[0] :
