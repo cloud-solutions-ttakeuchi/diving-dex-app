@@ -152,20 +152,7 @@ export const MyPage = () => {
               </button>
             </div>
 
-            {/* Development Only: Bootstrap Admin */}
-            {import.meta.env.DEV && currentUser.role !== 'admin' && (
-              <button
-                onClick={() => {
-                  if (window.confirm('開発用: あなたのアカウントを管理者にしますか？')) {
-                    updateUser({ role: 'admin' } as any);
-                    alert('管理者になりました！');
-                  }
-                }}
-                className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded border border-red-200 hover:bg-red-200 ml-2"
-              >
-                Dev: Become Admin
-              </button>
-            )}
+
 
             <div className="flex items-center justify-center md:justify-start gap-3 text-ocean-600 font-medium">
               <div className="flex items-center gap-1.5 bg-ocean-50 px-3 py-1 rounded-full border border-ocean-100">
