@@ -153,7 +153,7 @@ export const MyPage = () => {
             </div>
 
             {/* Development Only: Bootstrap Admin */}
-            {currentUser.role !== 'admin' && (
+            {import.meta.env.DEV && currentUser.role !== 'admin' && (
               <button
                 onClick={() => {
                   if (window.confirm('開発用: あなたのアカウントを管理者にしますか？')) {
