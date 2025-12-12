@@ -61,6 +61,13 @@ Diving Dex App のリリーススケジュールとロードマップです。
 
 ---
 
+### 4. Feature Toggles Inventory
+現在管理されているフィーチャートグルの一覧です。Firebase Remote Configで管理されます。
+
+| Key (Parameter Name) | Type | Default | Description | Status |
+|---|---|---|---|---|
+| `enable_garmin_import` | Boolean | `false` | Garminデータインポート機能（V1: ZIP取込）の有効化。<br>MyPageに「Garmin取込」ボタンを表示する。 | **Ready** (Prod: OFF) |
+
 ## Project Management & Release Workflow
 
 本プロジェクトでは**Trunk-Based Development**を採用し、**フィーチャートグル (Feature Toggle)** を活用して「デプロイ」と「リリース」を分離します。
