@@ -1,43 +1,45 @@
-import { useEffect, useState } from 'react';
-import { getValue } from 'firebase/remote-config';
-import { remoteConfig } from '../lib/firebase';
+import { useState, useEffect } from 'react';
+import { getBoolean } from 'firebase/remote-config';
+import { remoteConfig, remoteConfigPromise } from '../lib/firebase';
 
 /**
- * Hook to get the boolean value of a feature toggle from Firebase Remote Config.
+ * リモート設定の値を取得するカスタムフック。
+ * fetchAndActivate の完了を待ってから値を更新します。
  *
- * @param key The key defined in Remote Config (e.g., 'feature_bulk_edit')
- * @param defaultValue Fallback value if config is not yet fetched or key missing (default: false)
- * @returns boolean
+ * @param key Remote Config のパラメータキー
+ * @param defaultValue デフォルト値（fetch完了までの値）
+ * @returns boolean 値
  */
-export const useFeatureToggle = (key: string, defaultValue: boolean = false): boolean => {
-  const [isEnabled, setIsEnabled] = useState<boolean>(defaultValue);
+export const useFeatureToggle = (key: string, defaultValue = false): boolean => {
+  // 初期値は現在のSDKキャッシュの値を取得（まだfetch完了前ならdefaultConfigの値になる）
+  const [value, setValue] = useState<boolean>(() => {
+    try {
+      return getBoolean(remoteConfig, key);
+    } catch {
+      return defaultValue;
+    }
+  });
 
   useEffect(() => {
-    // 1. Get value safely
-    const checkValue = () => {
-      try {
-        const val = getValue(remoteConfig, key);
-        // Remote Config values are strings ("true"/"false") or numbers.
-        // .asBoolean() method handles "true", "1", "on" as true.
-        setIsEnabled(val.asBoolean());
-      } catch (e) {
-        console.warn(`Error getting feature toggle ${key}:`, e);
-        setIsEnabled(defaultValue);
+    let mounted = true;
+
+    // fetchAndActivate が完了したら、最新の値を取得しなおして State を更新する
+    remoteConfigPromise.then(() => {
+      if (mounted) {
+        try {
+          // fetch完了後は最新のサーバー値（またはキャッシュ）が確実に取れる
+          const newValue = getBoolean(remoteConfig, key);
+          setValue(newValue);
+        } catch (e) {
+          console.warn('Failed to get remote config value', e);
+        }
       }
+    });
+
+    return () => {
+      mounted = false;
     };
+  }, [key]);
 
-    // 2. Fetch latest (optional: simplified here to just check current active config)
-    // Real-world apps might use a context to avoid fetching locally in every component,
-    // but firebase SDK handles caching, so calling fetchAndActivate often is generally safe if interval is set.
-    // However, to avoid flickering, we usually rely on the initial fetch in firebase.ts
-    // or just listen to the activated values.
-
-    // For now, checks purely strictly on mount.
-    checkValue();
-
-    // Note: Remote Config does not provide a real-time listener like Firestore.
-    // You typically fetch at startup.
-  }, [key, defaultValue]);
-
-  return isEnabled;
+  return value;
 };

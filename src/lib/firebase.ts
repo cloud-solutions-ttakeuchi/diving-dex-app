@@ -65,8 +65,13 @@ remoteConfig.defaultConfig = {
 // フェッチ実行
 // ※ 注意: これは非同期なので、アプリの初回レンダリング時にはまだ完了していない可能性があります。
 // その場合、getValue() は上記の defaultConfig の値を返します。
-fetchAndActivate(remoteConfig).then(() => {
+// フェッチ実行
+// ※ 注意: これは非同期なので、アプリの初回レンダリング時にはまだ完了していない可能性があります。
+// その場合、getValue() は上記の defaultConfig の値を返します。
+export const remoteConfigPromise = fetchAndActivate(remoteConfig).then(() => {
   console.log('Remote Config fetched!');
+  return true;
 }).catch((err) => {
   console.warn('Remote Config fetch failed', err);
+  return false;
 });
