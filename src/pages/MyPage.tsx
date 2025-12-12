@@ -14,6 +14,8 @@ import clsx from 'clsx';
 import { useState } from 'react';
 
 import { CERTIFICATION_MASTER, BADGE_MASTER, TRUST_RANKS } from '../data/mockData';
+import { remoteConfig } from '../lib/firebase';
+import { getValue } from 'firebase/remote-config';
 
 export const MyPage = () => {
   const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, updateUser, toggleLikeLog, deleteLogs, updateLogs } = useApp();
@@ -423,15 +425,17 @@ export const MyPage = () => {
                 </div>
               </Link>
 
-              <button
-                onClick={() => setIsImportOpen(true)}
-                className="group relative bg-gray-50 hover:bg-white text-gray-700 py-6 px-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center gap-2 min-w-[120px]"
-              >
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
-                  <Upload size={20} />
-                </div>
-                <div className="font-bold text-sm">Garmin取込</div>
-              </button>
+              {(import.meta.env.DEV || getValue(remoteConfig, 'enable_garmin_import').asBoolean()) && (
+                <button
+                  onClick={() => setIsImportOpen(true)}
+                  className="group relative bg-gray-50 hover:bg-white text-gray-700 py-6 px-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col items-center justify-center gap-2 min-w-[120px]"
+                >
+                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 shadow-sm group-hover:scale-110 transition-transform">
+                    <Upload size={20} />
+                  </div>
+                  <div className="font-bold text-sm">Garmin取込</div>
+                </button>
+              )}
             </div>
 
             {userLogs.length === 0 ? (

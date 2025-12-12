@@ -39,6 +39,20 @@ service cloud.firestore {
       allow write: if isAuthenticated();
     }
 
+    // Zones and Areas (Master Data)
+    match /zones/{zoneId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /areas/{areaId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+    match /regions/{regionId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
+
     // Proposals
     match /creature_proposals/{propId} {
       allow read: if isAuthenticated();
