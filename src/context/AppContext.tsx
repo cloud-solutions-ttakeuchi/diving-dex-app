@@ -86,18 +86,20 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
+const GUEST_USER: User = {
+  id: 'guest',
+  name: 'Guest',
+  role: 'user',
+  trustScore: 0,
+  logs: [],
+  favoriteCreatureIds: [],
+  favorites: { points: [], areas: [], shops: [], gear: { tanks: [] } },
+  wanted: [],
+  bookmarkedPointIds: []
+};
+
 export const AppProvider = ({ children }: { children: ReactNode }) => {
-  const [currentUser, setCurrentUser] = useState<User>({
-    id: 'guest',
-    name: 'Guest',
-    role: 'user',
-    trustScore: 0,
-    logs: [],
-    favoriteCreatureIds: [],
-    favorites: { points: [], areas: [], shops: [], gear: { tanks: [] } },
-    wanted: [],
-    bookmarkedPointIds: []
-  });
+  const [currentUser, setCurrentUser] = useState<User>(GUEST_USER);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const isDeletingRef = useRef(false); // Guard to prevent auto-recreation during deletion
@@ -361,10 +363,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           if (docSnap.exists()) {
             setCurrentUser(docSnap.data() as User);
           } else {
-            console.log("[AppContext] User doc missing. Guard:", isDeletingRef.current);
             // Guard: Do NOT create if we are in process of deleting
             if (isDeletingRef.current) {
-              console.warn("[AppContext] Skipping user recreation - Deletion in progress");
               return;
             }
 
@@ -388,7 +388,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               createdAt: new Date().toISOString(),
               status: 'provisional' // Initial status before Terms Agreement
             };
-            console.log("[AppContext] Creating new user with status:", newUser.status);
             setDoc(userDocRef, newUser).catch(console.error);
             setCurrentUser(newUser);
           }
@@ -408,7 +407,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       } else {
         setIsAuthenticated(false);
         setIsLoading(false);
-        setCurrentUser(INITIAL_DATA.users[0]);
+        setCurrentUser(GUEST_USER);
         setAllLogs([]);
       }
     });
@@ -445,7 +444,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const uid = auth.currentUser.uid;
 
     setIsLoading(true);
-    console.log("[AppContext] Starting Delete Account. Setting Guard=TRUE");
     isDeletingRef.current = true; // Set Guard
 
     try {
@@ -460,14 +458,10 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (count > 0) await batch.commit();
 
       // 2. Delete User Data
-      console.log("[AppContext] Deleting User Doc...");
       await deleteDoc(doc(firestore, 'users', uid));
-      console.log("[AppContext] User Doc Deleted.");
 
       // 3. Delete Auth Account
-      console.log("[AppContext] Deleting Auth...");
       await auth.currentUser.delete();
-      console.log("[AppContext] Auth Deleted.");
 
     } catch (error: any) {
       console.error("Delete Account failed:", error);

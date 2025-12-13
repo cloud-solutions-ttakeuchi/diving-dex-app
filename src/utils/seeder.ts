@@ -59,6 +59,10 @@ export const seedFirestore = async (force: boolean = false, targetCollections?: 
 
     // 3. Users -> Logs (Subcollection)
     // NEVER touch users if force=true (Update Mode)
+    // 3. Users -> Logs (Subcollection)
+    // [SECURITY] Disabled to prevent accidental creation of Mock Admin (u1).
+    // Real users should be created via Auth flow.
+    /*
     if (!force) {
       const usersSnapshot = await getDocs(collection(db, 'users'));
       if (usersSnapshot.empty) {
@@ -84,6 +88,7 @@ export const seedFirestore = async (force: boolean = false, targetCollections?: 
     } else {
       console.log('Skipping users (force update mode active)');
     }
+    */
 
     await commitBatch();
     console.log('Seeding completed!');
