@@ -224,7 +224,8 @@ const mapGarminJsonToLog = (json: any): ParsedLog | null => {
   const startTime = new Date(json.startTime);
 
   // Date YYYY-MM-DD
-  const dateStr = startTime.toISOString().split('T')[0];
+  // Date YYYY-MM-DD (Parse string directly to avoid UTC shift)
+  const dateStr = json.startTime ? json.startTime.split('T')[0] : startTime.toISOString().split('T')[0];
 
   // Time HH:mm
   const timeStr = startTime.toTimeString().split(' ')[0].substring(0, 5);
@@ -317,7 +318,8 @@ const mapGarminJsonDataToLog = (data: any): ParsedLog => {
   const startTimeIndex = data.startTime; // "2025-09-22T12:43:05+09:00"
   const startTime = new Date(startTimeIndex);
 
-  const dateStr = startTime.toISOString().split('T')[0];
+  // Date YYYY-MM-DD (Parse string directly to avoid UTC shift)
+  const dateStr = typeof startTimeIndex === 'string' ? startTimeIndex.split('T')[0] : startTime.toISOString().split('T')[0];
   const timeStr = startTime.toTimeString().split(' ')[0].substring(0, 5);
 
   const activityName = data.name || 'Garmin Dive';
@@ -366,7 +368,7 @@ const mapGarminJsonDataToLog = (data: any): ParsedLog => {
   return {
     date: dateStr,
     title: activityName,
-    garminActivityId: String(data.id),
+    garminActivityId: String(data.connectActivityId || data.activityId || data.id),
     diveNumber: data.number, // "number": 1
 
     time: {

@@ -481,13 +481,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const ref = doc(firestore, 'users', currentUser.id, 'logs', newLogId);
         await setDoc(ref, payload);
 
-        // Optimistic Update
-        // Note: use the sanitized payload + original undefineds if needed?
-        // Actually for local state, undefined is fine usually, but let's be consistent.
-        const logWithId = payload as Log;
-        setAllLogs(prev => [logWithId, ...prev]);
+        // Optimistic Update removed to prevent duplication with onSnapshot
+        // setAllLogs(prev => [logWithId, ...prev]);
         if (!newLog.isPrivate) {
-          setRecentLogs(prev => [logWithId, ...prev]);
+          // For global/recent logs, we might still want it if the query doesn't catch local immediately?
+          // But usually onSnapshot covers local latency too.
+          // setRecentLogs(prev => [logWithId, ...prev]);
         }
       } catch (e) {
         console.error("Error adding log:", e);
