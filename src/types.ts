@@ -151,7 +151,9 @@ export interface User {
 
   // System
   createdAt?: string;
+  status?: UserStatus;
 }
+export type UserStatus = 'provisional' | 'active' | 'suspended' | 'withdrawn';
 
 export interface Creature {
   id: string;

@@ -90,6 +90,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User>(INITIAL_DATA.users[0]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const isDeletingRef = useRef(false); // Guard to prevent auto-recreation during deletion
 
   // Data State
   const [creatures, setCreatures] = useState<Creature[]>(INITIAL_DATA.creatures);
@@ -348,6 +349,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
           if (docSnap.exists()) {
             setCurrentUser(docSnap.data() as User);
           } else {
+            // Guard: Do NOT create if we are in process of deleting
+            if (isDeletingRef.current) {
+              console.log("Skipping user recreation - Deletion in progress");
+              return;
+            }
+
             // Create if not exists (should be handled by seeder or here)
             const newUser: User = {
               id: user.uid,
@@ -365,7 +372,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               },
               wanted: [],
               bookmarkedPointIds: [],
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              status: 'provisional' // Initial status before Terms Agreement
             };
             setDoc(userDocRef, newUser).catch(console.error);
             setCurrentUser(newUser);
@@ -425,6 +433,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const uid = auth.currentUser.uid;
 
     setIsLoading(true);
+    isDeletingRef.current = true; // Set Guard
+
     try {
       // 1. Delete all logs
       const logsRef = collection(firestore, 'users', uid, 'logs');
@@ -445,6 +455,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       if (count > 0) await batch.commit();
 
       // 2. Delete User Data
+      // This will trigger onSnapshot -> which will trigger the Guard logic
       await deleteDoc(doc(firestore, 'users', uid));
 
       // 3. Delete Auth Account
@@ -454,6 +465,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     } catch (error: any) {
       console.error("Delete Account failed:", error);
+      isDeletingRef.current = false; // Reset Guard on error
 
       // Fallback: Ensure logout happens even if deletion fails (e.g. requires-recent-login)
       if (error.code === 'auth/requires-recent-login') {

@@ -17,13 +17,13 @@ export const TermsAgreementModal = () => {
   if (!isAuthenticated || !currentUser || hasAgreedToLatest || ['/terms', '/privacy'].includes(location.pathname)) return null;
 
   // Detect if "New User" flow or "Update" flow
-  // A user is "New" if they don't have a createdAt timestamp (legacy users are "existing")
-  // OR if their createdAt is very very recent (e.g. within last 5 minutes).
-  // However, we just added createdAt for new users.
-  // Existing users have NO createdAt.
-  // So: if (!createdAt) -> Existing (Update Terms).
-  // if (createdAt) -> New (Registration).
-  const isNewUser = !!currentUser.createdAt;
+  // "Update" (Existing User) if:
+  // 1. Status is 'active' or 'suspended'
+  // 2. OR Legacy user (no status) who has agreed to previous versions
+  // "New" (Registration) only if:
+  // 1. Status is 'provisional'
+  // 2. OR (Fallback) has createdAt but no agreed version (caught in previous bug fix)
+  const isNewUser = currentUser.status === 'provisional' || (!currentUser.status && !!currentUser.createdAt && !currentUser.agreedTermsVersion);
 
   const handleAgree = async () => {
     setIsLoading(true);
@@ -31,7 +31,8 @@ export const TermsAgreementModal = () => {
       await updateUser({
         isTermsAgreed: true, // Keep legacy flag true
         agreedAt: new Date().toISOString(),
-        agreedTermsVersion: CURRENT_TERMS_VERSION
+        agreedTermsVersion: CURRENT_TERMS_VERSION,
+        status: 'active' // Activate user
       });
     } catch (e) {
       console.error('Failed to agree terms', e);
