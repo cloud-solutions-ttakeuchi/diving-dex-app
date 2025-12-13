@@ -14,7 +14,7 @@ export const TermsAgreementModal = () => {
   // If not logged in, or already agreed to LATEST, or on legal pages, don't show
   const hasAgreedToLatest = currentUser?.agreedTermsVersion === CURRENT_TERMS_VERSION;
 
-  if (!isAuthenticated || !currentUser || hasAgreedToLatest || ['/terms', '/privacy'].includes(location.pathname)) return null;
+  if (isLoading || !isAuthenticated || !currentUser || hasAgreedToLatest || ['/terms', '/privacy'].includes(location.pathname)) return null;
 
   // Detect if "New User" flow or "Update" flow
   // "Update" (Existing User) if:
@@ -122,6 +122,15 @@ export const TermsAgreementModal = () => {
           >
             {isNewUser ? '同意せずログアウト' : '同意せず退会する'}
           </button>
+
+          {import.meta.env.DEV && (
+            <button
+              onClick={() => logout()}
+              className="w-full py-2 text-gray-300 hover:text-gray-500 text-xs transition-colors"
+            >
+              強制ログアウト (デバッグ用 - Dev Only)
+            </button>
+          )}
         </div>
       </div>
     </div>
