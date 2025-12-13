@@ -55,7 +55,7 @@ export const parseGarminZip = async (file: any): Promise<ParsedLog[]> => {
     try {
       const content = await loadedZip.files[path].async('string');
       const json = JSON.parse(content);
-      let parsed = mapGarminJsonToLog(json);
+      const parsed = mapGarminJsonToLog(json);
 
       if (parsed) {
         // Try to link FIT data
@@ -214,6 +214,8 @@ const mapGarminJsonToLog = (json: any): ParsedLog | null => {
       pointId: '',
       pointName: activityName, // User often names the activity as the point name
       region: '',
+      lat: lat,
+      lng: lng
     },
 
     gear: {

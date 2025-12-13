@@ -17,7 +17,7 @@ import { CERTIFICATION_MASTER, BADGE_MASTER, TRUST_RANKS } from '../data/mockDat
 import { useFeatureToggle } from '../hooks/useFeatureToggle';
 
 export const MyPage = () => {
-  const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, updateUser, toggleLikeLog, deleteLogs, updateLogs } = useApp();
+  const { currentUser, logs, points, zones, areas, creatures, pointCreatures, isAuthenticated, toggleLikeLog, deleteLogs, updateLogs } = useApp();
   const { t } = useLanguage();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'logbook' | 'collection' | 'favorites' | 'wanted' | 'bookmarks'>('dashboard');
