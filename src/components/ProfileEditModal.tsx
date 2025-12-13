@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, X, Star, Plus, Trash2 } from 'lucide-react';
+import { Camera, X, Star, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { CERTIFICATION_MASTER } from '../data/mockData';
 import clsx from 'clsx';
@@ -12,10 +12,10 @@ interface Props {
 }
 
 export const ProfileEditModal = ({ isOpen, onClose }: Props) => {
-  const { currentUser, updateUser, points } = useApp();
+  const { currentUser, updateUser, points, deleteAccount } = useApp();
 
   // Tabs
-  const [activeTab, setActiveTab] = useState<'basic' | 'points' | 'gear' | 'shops'>('basic');
+  const [activeTab, setActiveTab] = useState<'basic' | 'points' | 'gear' | 'shops' | 'account'>('basic');
 
   // Basic Info State
   const [name, setName] = useState(currentUser.name);
@@ -155,7 +155,7 @@ export const ProfileEditModal = ({ isOpen, onClose }: Props) => {
 
         {/* Tabs */}
         <div className="flex border-b border-gray-100 overflow-x-auto">
-          {['basic', 'points', 'gear', 'shops'].map(tab => (
+          {['basic', 'points', 'gear', 'shops', 'account'].map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab as any)}
@@ -170,6 +170,7 @@ export const ProfileEditModal = ({ isOpen, onClose }: Props) => {
               {tab === 'points' && 'お気に入りポイント'}
               {tab === 'gear' && '器材設定'}
               {tab === 'shops' && 'ショップ'}
+              {tab === 'account' && 'その他'}
             </button>
           ))}
         </div>
@@ -456,6 +457,35 @@ export const ProfileEditModal = ({ isOpen, onClose }: Props) => {
                       <span className="ml-1">登録</span>
                     </button>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* --- ACCOUNT TAB --- */}
+            {activeTab === 'account' && (
+              <div className="space-y-6">
+                <div className="bg-red-50 p-6 rounded-xl border border-red-100">
+                  <h4 className="font-bold text-red-900 mb-2 flex items-center gap-2">
+                    <AlertTriangle size={20} className="text-red-600" />
+                    退会手続き (Danger Zone)
+                  </h4>
+                  <p className="text-sm text-red-800 mb-6 bg-white/50 p-4 rounded-lg">
+                    退会すると、これまでに記録した<strong>すべてのダイビングログ、お気に入り、統計データが完全に削除</strong>され、復元することはできません。<br /><br />
+                    本当に退会しますか？
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('【最終確認】\n本当に退会しますか？\nこの操作は取り消せません。\n\nすべてのログデータが永遠に削除されます。')) {
+                        deleteAccount();
+                      }
+                    }}
+                    className="flex items-center gap-2 px-6 py-3 bg-white text-red-600 border border-red-200 rounded-lg font-bold hover:bg-red-600 hover:text-white transition-all w-full justify-center shadow-sm"
+                  >
+                    <Trash2 size={20} />
+                    <span>同意の上、アカウントを削除する</span>
+                  </button>
                 </div>
               </div>
             )}
