@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import type { User, Log, Rarity, Creature, Point, PointCreature } from '../types';
 import { INITIAL_DATA, TRUST_RANKS } from '../data/mockData';
 import { auth, googleProvider, db as firestore } from '../lib/firebase';
