@@ -365,7 +365,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               },
               wanted: [],
               bookmarkedPointIds: [],
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
+              status: 'provisional' // Initial status before Terms Agreement
             };
             setDoc(userDocRef, newUser).catch(console.error);
             setCurrentUser(newUser);
