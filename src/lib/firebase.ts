@@ -58,8 +58,7 @@ remoteConfig.settings.minimumFetchIntervalMillis = import.meta.env.DEV ? 0 : 360
 
 // デフォルト値の設定
 remoteConfig.defaultConfig = {
-  "enable_garmin_import": true,
-  "enable_garmin_graph": true, // V2: Depth Profile Graph
+
 };
 
 // フェッチ実行

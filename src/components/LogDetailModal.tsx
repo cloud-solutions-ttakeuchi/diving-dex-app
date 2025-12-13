@@ -7,7 +7,7 @@ import clsx from 'clsx';
 import type { Log } from '../types';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-import { useFeatureToggle } from '../hooks/useFeatureToggle';
+
 
 type Props = {
   log: Log | null;
@@ -20,7 +20,7 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
   const { points, creatures, currentUser, toggleLikeLog, deleteLog } = useApp();
   const [isLiked, setIsLiked] = React.useState(false);
   const [likeCount, setLikeCount] = React.useState(0);
-  const showDepthGraph = useFeatureToggle('enable_garmin_graph');
+
   const [activeGraph, setActiveGraph] = React.useState<'depth' | 'temp' | 'hr'>('depth');
 
   React.useEffect(() => {
@@ -174,7 +174,7 @@ export const LogDetailModal = ({ log, isOpen, onClose, isOwner }: Props) => {
           </section>
 
           {/* New 1.5 Detailed Graph */}
-          {showDepthGraph && log.profile && log.profile.length > 0 && (
+          {log.profile && log.profile.length > 0 && (
             <section>
               <div className="flex items-center justify-between mb-3 border-b pb-2 border-gray-100">
                 <h3 className="font-bold text-deepBlue-900 flex items-center gap-2">
