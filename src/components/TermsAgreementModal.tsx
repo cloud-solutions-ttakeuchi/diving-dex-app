@@ -106,7 +106,7 @@ export const TermsAgreementModal = () => {
           <button
             onClick={handleAgree}
             disabled={!isAgreed || isLoading}
-            className="w-full py-3 bg-ocean-600 text-white rounded-xl font-bold hover:bg-ocean-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-ocean-200"
+            className="w-full py-3 bg-gray-50 text-gray-900 border border-gray-300 rounded-xl font-bold hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {isLoading ? '処理中...' : (isNewUser ? '同意して登録' : '同意して続ける')}
           </button>
