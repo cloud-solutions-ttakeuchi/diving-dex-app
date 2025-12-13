@@ -21,6 +21,9 @@ import { AdminProposalsPage } from './pages/AdminProposalsPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
 import { AdminAreaCleansingPage } from './pages/AdminAreaCleansingPage';
 import { PublicLogsPage } from './pages/PublicLogsPage';
+import { TermsPage } from './pages/TermsPage';
+import { PrivacyPage } from './pages/PrivacyPage';
+import { TermsAgreementModal } from './components/TermsAgreementModal';
 import { LanguageProvider } from './context/LanguageContext';
 
 function App() {
@@ -29,6 +32,7 @@ function App() {
       <AppProvider>
         <LanguageProvider>
           <Layout>
+            <TermsAgreementModal />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/pokedex" element={<Pokedex />} />
@@ -50,6 +54,8 @@ function App() {
               <Route path="/points" element={<PointSearchPage />} />
               <Route path="/logs" element={<PublicLogsPage />} />
               <Route path="/point/:id" element={<PointDetailPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
             </Routes>
           </Layout>
         </LanguageProvider>

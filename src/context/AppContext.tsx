@@ -81,6 +81,7 @@ interface AppContextType {
   // Admin
   allUsers: User[];
   updateUserRole: (uid: string, newRole: 'user' | 'moderator' | 'admin') => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -364,6 +365,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
               },
               wanted: [],
               bookmarkedPointIds: [],
+              createdAt: new Date().toISOString()
             };
             setDoc(userDocRef, newUser).catch(console.error);
             setCurrentUser(newUser);
@@ -378,14 +380,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         });
 
         // 4. Global Recent Public Logs (for Home)
-        // Note: collectionGroup requires an index for compound queries (isPrivate + date).
-        // If it fails, check console and create link.
         try {
-          // Simplified query to avoid index requirement if possible (fetch all public then sort? No, too much data)
-          // For now, let's assume index exists or we fallback to single collection if structure was flat.
-          // Since it's subcollection, collectionGroup is needed.
-          // const publicLogsQuery = query(collectionGroup(firestore, 'logs'), where('isPrivate', '==', false), orderBy('date', 'desc'), limit(10));
-          // onSnapshot(publicLogsQuery, ...);
+          // ...
         } catch (e) { console.error(e); }
 
       } else {
@@ -420,6 +416,46 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       await signOut(auth);
     } catch (error) {
       console.error("Logout failed:", error);
+      setIsLoading(false);
+    }
+  };
+
+  const deleteAccount = async () => {
+    if (!auth.currentUser || !isAuthenticated) return;
+    const uid = auth.currentUser.uid;
+
+    setIsLoading(true);
+    try {
+      // 1. Delete all logs
+      const logsRef = collection(firestore, 'users', uid, 'logs');
+      // We need to fetch ID first to delete
+      // Note: Client SDK cannot delete collection directly.
+      // Since we have allLogs in state, we can use that IDs or fetch fresh.
+      // Fetch fresh to be safe.
+      // const q = query(logsRef); // all
+      // const snapshot = await getDocs(q); // need getDocs import
+      // Actually we have `allLogs` state synced. Use it.
+
+      const batch = writeBatch(firestore);
+      let count = 0;
+      allLogs.forEach(log => {
+        batch.delete(doc(firestore, 'users', uid, 'logs', log.id));
+        count++;
+      });
+      if (count > 0) await batch.commit();
+
+      // 2. Delete User Data
+      await deleteDoc(doc(firestore, 'users', uid));
+
+      // 3. Delete Auth Account
+      await auth.currentUser.delete(); // This also signs out
+
+      // State reset handled by onAuthStateChanged
+
+    } catch (error) {
+      console.error("Delete Account failed:", error);
+      // If requires recent login, might fail.
+      alert("退会処理に失敗しました。再ログインしてから試してください。");
       setIsLoading(false);
     }
   };
@@ -867,49 +903,52 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const value = {
+    // db, // Removed
+    currentUser,
+    isAuthenticated,
+    isLoading,
+    login,
+    logout,
+    calculateRarity,
+    addLog,
+    addCreature,
+    addPoint,
+    addPointCreature,
+    removePointCreature,
+    updateLog,
+    updateCreature,
+    updatePoint,
+    deleteLog,
+    deleteLogs,
+    updateLogs,
+    updateUser,
+    toggleLikeLog,
+    toggleFavorite,
+    toggleWanted,
+    toggleBookmarkPoint,
+    // Expose Data
+    creatures,
+    points,
+    pointCreatures, // New
+    logs: allLogs,
+    recentLogs, // Added to value
+    proposalCreatures,
+    proposalPoints,
+    regions,
+    zones,
+    areas,
+    addCreatureProposal,
+    addPointProposal,
+    approveProposal,
+    rejectProposal,
+    allUsers,
+    updateUserRole,
+    deleteAccount
+  };
+
   return (
-    <AppContext.Provider value={{
-      // db, // Removed
-      currentUser,
-      isAuthenticated,
-      isLoading,
-      login,
-      logout,
-      calculateRarity,
-      addLog,
-      addCreature,
-      addPoint,
-      addPointCreature,
-      removePointCreature,
-      updateLog,
-      updateCreature,
-      updatePoint,
-      deleteLog,
-      deleteLogs,
-      updateLogs,
-      updateUser,
-      toggleLikeLog,
-      toggleFavorite,
-      toggleWanted,
-      toggleBookmarkPoint,
-      // Expose Data
-      creatures,
-      points,
-      pointCreatures, // New
-      logs: allLogs,
-      recentLogs, // Added to value
-      proposalCreatures,
-      proposalPoints,
-      regions,
-      zones,
-      areas,
-      addCreatureProposal,
-      addPointProposal,
-      approveProposal,
-      rejectProposal,
-      allUsers,
-      updateUserRole,
-    }}>
+    <AppContext.Provider value={value}>
       {children}
     </AppContext.Provider>
   );

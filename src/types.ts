@@ -141,9 +141,16 @@ export interface User {
     earnedAt: string;
   }[];
   subscription?: {
-    plan: 'free' | 'pro';
     status: 'active' | 'inactive';
   };
+
+  // Legal
+  isTermsAgreed?: boolean; // Deprecated but kept for backward compat if needed? Or just rely on version.
+  agreedAt?: string;
+  agreedTermsVersion?: string;
+
+  // System
+  createdAt?: string;
 }
 
 export interface Creature {
