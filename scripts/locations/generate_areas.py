@@ -5,7 +5,24 @@ import google.generativeai as genai
 from typing import List, Dict
 
 # --- 設定 ---
-API_KEY = os.environ.get("GOOGLE_API_KEY", "YOUR_API_KEY_HERE")
+# API Key Handling
+API_KEYS = os.environ.get("GOOGLE_API_KEY", "").split(",")
+if not API_KEYS or not API_KEYS[0]:
+    raise ValueError("GOOGLE_API_KEY environment variable is not set.")
+
+current_key_index = 0
+
+def get_current_key():
+    return API_KEYS[current_key_index]
+
+def rotate_key():
+    global current_key_index
+    if len(API_KEYS) > 1:
+        current_key_index = (current_key_index + 1) % len(API_KEYS)
+        print(f"    🔄 Switching to API Key #{current_key_index + 1}/{len(API_KEYS)}")
+        return True
+    return False
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CONFIG_DIR = os.path.join(BASE_DIR, "scripts/config")
 DATA_DIR = os.path.join(BASE_DIR, "src/data")
@@ -13,59 +30,75 @@ INPUT_FILE = os.path.join(CONFIG_DIR, "target_zones.json")
 OUTPUT_FILE = os.path.join(DATA_DIR, "locations_seed.json")
 PRODUCED_AREAS_FILE = os.path.join(CONFIG_DIR, "target_areas.json")
 
-SCHEMA_PROMPT = """
-出力フォーマットは以下のJSON配列（Array of Objects）のみにしてください。
-Markdownのバッククォートは不要です。
-
-Object Schema:
-[
-  {
-    "name": "Area Name (e.g. 恩納村)",
-    "type": "Area",
-    "description": "Area description (e.g. Major diving hub in Okinawa)"
-  }
+# Models to cycle through
+CANDIDATE_MODELS = [
+    'gemini-2.5-flash',
+    'gemini-2.5-flash-lite',
+    'gemma-3-27b-it',
+    'gemma-3-12b-it',
+    'gemma-3-4b-it',
+    'gemma-3-2b-it',
+    'gemma-3-1b-it',
 ]
-"""
 
 def generate_areas(region: str, zone: str) -> List[Dict]:
-    genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    global current_key_index
 
     prompt = f"""
     あなたはベテランのダイビングガイドです。
-    ダイビングエリア「{region}」の「{zone}」にある、主要なダイビングエリア（Area/地区/港）をリストアップしてください。
+    指定された「Zone（地域）」に含まれる、具体的な「Area（ダイビングスポットの集まり）」をリストアップしてください。
 
-    例:
-    Region: 日本, Zone: 沖縄本島 -> Area: [恩納村, 北谷, 本部, 糸満]
-    Region: 日本, Zone: 伊豆半島 -> Area: [伊豆海洋公園, 富戸, 大瀬崎, 神子元]
+    Region: {region}
+    Zone: {zone}
 
-    条件:
-    1. {zone}の中に、代表的なAreaを2〜4個選定してください。
-    2. JSON形式のみ出力してください。
+    出力フォーマット（JSON）:
+    [
+      {{
+        "name": "Area名（例: 嘉比島, マンタスクランブル周辺）",
+        "description": "そのエリアのダイビングの特徴を100文字以内で"
+      }}
+    ]
 
-    {SCHEMA_PROMPT}
-
-    Context: {region} > {zone}
+    注意点:
+    - Zoneをさらに細分化したエリアです。
+    - 3〜5個程度挙げてください。
+    - コードブロックは含めないでください。
     """
 
-    for attempt in range(5):
-        try:
-            response = model.generate_content(prompt)
-            text = response.text.strip()
-            if text.startswith("```json"): text = text[7:]
-            if text.startswith("```"): text = text[3:]
-            if text.endswith("```"): text = text[:-3]
-            if text.strip().endswith("}"): text += "]"
+    for model_name in CANDIDATE_MODELS:
+        for attempt in range(len(API_KEYS) * 2):
+            try:
+                # Configure with current key
+                genai.configure(api_key=get_current_key())
+                model = genai.GenerativeModel(model_name)
 
-            return json.loads(text)
-        except Exception as e:
-            if "429" in str(e):
-                wait_time = 5
-                print(f"    ⚠️ Quota exceeded. Retrying in {wait_time}s... ({attempt+1}/5)")
-                time.sleep(wait_time)
-            else:
-                print(f"Error generating areas for {zone}: {e}")
-                return []
+                response = model.generate_content(prompt)
+                text = response.text.strip()
+                # Remove markdown if present
+                if text.startswith("```json"):
+                    text = text[7:]
+                if text.endswith("```"):
+                    text = text[:-3]
+
+                result = json.loads(text)
+                if result:
+                    print(f"    ✅ Success with {model_name}")
+                    return result
+
+            except Exception as e:
+                error_str = str(e)
+                if "429" in error_str:
+                    print(f"    ⚠️ Quota exceeded: {model_name} (Key #{current_key_index + 1})")
+                    if rotate_key(): continue
+                    time.sleep(1)
+                elif "404" in error_str or "not found" in error_str.lower():
+                    print(f"    ℹ️ Model {model_name} not found/supported. Skipping.")
+                    break
+                else:
+                    print(f"    ❌ Error with {model_name}: {e}")
+                    break
+
+    print(f"    💀 All models failed for {zone}")
     return []
 
 import argparse
@@ -153,18 +186,20 @@ def main():
                 produced_areas_list.append({"region": region_name, "zone": zone_name, "area": new_a["name"]})
 
         zone_node["children"] = existing_areas
+
+        # Save Main Data Incrementally
+        os.makedirs(DATA_DIR, exist_ok=True)
+        with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+            json.dump(all_locations, f, indent=2, ensure_ascii=False)
+        print(f"    💾 Progress saved to {OUTPUT_FILE}")
+
         time.sleep(2)
 
-    # Save Main Data
-    os.makedirs(DATA_DIR, exist_ok=True)
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        json.dump(all_locations, f, indent=2, ensure_ascii=False)
-
-    # Save Config for Next Step
+    # Save Config for Next Step (Final)
     with open(PRODUCED_AREAS_FILE, 'w', encoding='utf-8') as f:
         json.dump(produced_areas_list, f, indent=2, ensure_ascii=False)
 
-    print(f"\n✅ Done! Saved locations to {OUTPUT_FILE}")
+    print(f"\n✅ All Done!")
     print(f"📝 Generated next step config: {PRODUCED_AREAS_FILE}")
 
 if __name__ == "__main__":
