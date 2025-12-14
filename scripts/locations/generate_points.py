@@ -63,7 +63,7 @@ def get_existing_point_names(data: List[Dict]) -> Set[str]:
 
 def generate_points(region: str, zone: str, area: str) -> List[Dict]:
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     prompt = f"""
     あなたはベテランのダイビングガイドです。
@@ -80,20 +80,32 @@ def generate_points(region: str, zone: str, area: str) -> List[Dict]:
     Context: {region} > {zone} > {area}
     """
 
-    try:
-        response = model.generate_content(prompt)
-        text = response.text.strip()
-        if text.startswith("```json"): text = text[7:]
-        if text.startswith("```"): text = text[3:]
-        if text.endswith("```"): text = text[:-3]
-        if text.strip().endswith("}"): text += "]"
+    for attempt in range(5):
+        try:
+            response = model.generate_content(prompt)
+            text = response.text.strip()
+            if text.startswith("```json"): text = text[7:]
+            if text.startswith("```"): text = text[3:]
+            if text.endswith("```"): text = text[:-3]
+            if text.strip().endswith("}"): text += "]"
 
-        return json.loads(text)
-    except Exception as e:
-        print(f"Error generating points for {area}: {e}")
-        return []
+            return json.loads(text)
+        except Exception as e:
+            if "429" in str(e):
+                wait_time = 5
+                print(f"    ⚠️ Quota exceeded. Retrying in {wait_time}s... ({attempt+1}/5)")
+                time.sleep(wait_time)
+            else:
+                print(f"Error generating points for {area}: {e}")
+                return []
+    return []
 
 def main():
+    parser = argparse.ArgumentParser(description="Generate Points data.")
+    parser.add_argument("--mode", choices=["append", "overwrite", "clean"], default="append",
+                        help="Execution mode: append (skip existing), overwrite (replace existing), clean (start fresh)")
+    args = parser.parse_args()
+
     if not os.path.exists(INPUT_FILE):
         print(f"❌ Config file not found: {INPUT_FILE}")
         return
@@ -102,7 +114,15 @@ def main():
         target_areas = json.load(f)
 
     all_locations = []
-    if os.path.exists(OUTPUT_FILE):
+
+    # Mode: Clean
+    if args.mode == "clean":
+        if os.path.exists(OUTPUT_FILE):
+            shutil.copy(OUTPUT_FILE, OUTPUT_FILE + ".bak")
+            print(f"📦 Backed up existing file to {OUTPUT_FILE}.bak")
+        all_locations = []
+    # Mode: Append / Overwrite
+    elif os.path.exists(OUTPUT_FILE):
         with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
             try:
                 all_locations = json.load(f)
@@ -113,7 +133,7 @@ def main():
     global_existing_points = get_existing_point_names(all_locations)
     print(f"ℹ️  Existing unique points: {len(global_existing_points)}")
 
-    print(f"🚀 Generating Points for {len(target_areas)} areas...")
+    print(f"🚀 Generating Points for {len(target_areas)} areas... [Mode: {args.mode.upper()}]")
 
     for target in target_areas:
         region_name = target["region"]
@@ -132,9 +152,23 @@ def main():
             print(f"    ⚠️ Area {area_name} not found. Skipping.")
             continue
 
-        new_points = generate_points(region_name, zone_name, area_name)
-
         existing_points = area_node.get("children", [])
+
+        # Mode: Append - Skip if points exist
+        if args.mode == "append" and len(existing_points) > 0:
+             print(f"    ⏭️  Skipping (Points already exist).")
+             continue
+
+        # Mode: Overwrite - Clear existing points
+        if args.mode == "overwrite" and len(existing_points) > 0:
+             print(f"    ♻️  Overwriting points...")
+             # Remove removed points from global tracker to allow recreation if names match
+             for p in existing_points:
+                 if p["name"] in global_existing_points:
+                     global_existing_points.remove(p["name"])
+             existing_points = []
+
+        new_points = generate_points(region_name, zone_name, area_name)
 
         for new_p in new_points:
             sim_name = check_duplicate(new_p["name"], global_existing_points)

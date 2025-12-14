@@ -34,7 +34,7 @@ def get_target_regions() -> List[str]:
 def map_regions_batch(creatures: List[Dict], region_list: List[str]) -> List[Dict]:
     """Geminiにバッチで生息域を判定させる"""
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     names = [c["name"] for c in creatures]
 

@@ -43,7 +43,7 @@ Object Schema:
 def _call_gemini_api(target: str, count: int) -> List[Dict]:
     """Gemini APIを叩く"""
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-2.0-flash')
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
     prompt = f"""
     あなたは海洋生物学者です。

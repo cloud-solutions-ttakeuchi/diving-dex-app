@@ -1,75 +1,62 @@
 # Test Scenarios v1.4.0: Data Generation Optimization
 
-v1.4.0で実装されたデータ生成スクリプト群（Point重複対策、生物データ構造化）の動作検証を行うためのテストシナリオです。
+v1.4.0で実装されたデータ生成スクリプト群（Point重複対策、生物データ構造化、実行モード）の動作検証を行うためのテストシナリオです。
 
-## 🧪 Pre-conditions (Reset Data)
+## 🧪 Pre-conditions (API Key)
 
-テストを正確に行うため、既存のSeedデータをバックアップ（または削除）し、クリーンな状態から開始します。
-※ 本番環境や手動で重要データを追加している場合はバックアップ必須。
-
+レート制限回避のため、有料版APIキーの設定を推奨します。
 ```bash
-# Backup existing data
-mv src/data/locations_seed.json src/data/locations_seed.bak.json
-mv src/data/creatures_seed.json src/data/creatures_seed.bak.json
+export GOOGLE_API_KEY="AIzaSy..."
 ```
 
 ---
 
-## 📍 Scenario 1: Location Generation Pipeline
+## 📍 Scenario 1: Location Generation Modes
 
-階層ごとの生成と、最終的な重複チェック機能を確認します。
+新しく実装された3つのモード（Append, Overwrite, Clean）の挙動を確認します。
 
-### Step 1: Zones Generation
-- **Action**: `python scripts/locations/generate_zones.py`
+### Case 1: Clean Mode (初期構築)
+- **Condition**: 既存データがある状態でもOK。
+- **Action**: `python scripts/locations/generate_zones.py --mode clean`
 - **Expected Result**:
-  - `src/data/locations_seed.json` が作成される。
-  - 日本、パラオ等のRegionとその配下のZone（沖縄本島など）が含まれている。
-  - `scripts/config/target_zones.json` が生成され、Zoneリストが記載されている。
+  - 既存の `src/data/locations_seed.json` がバックアップされる（`.bak`）。
+  - 新しいファイルが作成され、`target_regions.json` にある全RegionのZoneが生成される。
 
-### Step 2: Areas Generation
-- **Action**: `python scripts/locations/generate_areas.py`
+### Case 2: Append Mode (追記確認 - Default)
+- **Condition**: `config/target_regions.json` に新しいRegion（例: "ハワイ"など未生成のもの）を追加する。または手動で `locations_seed.json` に空のRegionを追加しておく。
+- **Action**: `python scripts/locations/generate_zones.py --mode append`
 - **Expected Result**:
-  - `src/data/locations_seed.json` が更新され、Zoneの下にArea（恩納村など）が追加されている。
-  - `scripts/config/target_areas.json` が生成され、Areaリストが記載されている。
+  - **既存のRegion/Zoneはスキップ**される（ログに `Skipping...` と出る）。
+  - **新しく追加したRegionのみ**、Zone生成処理が実行される。
+  - API消費が最小限に抑えられること。
 
-### Step 3: Points Generation (Deduplication Check)
-- **Action**: `python scripts/locations/generate_points.py`
+### Case 3: Overwrite Mode (特定箇所再生成)
+- **Condition**: 既存の `locations_seed.json` にある特定のRegion（例: "日本"）のデータが気に入らないとする。
+- **Action**: `config/target_regions.json` を "日本" だけにした状態で、`python scripts/locations/generate_zones.py --mode overwrite`
 - **Expected Result**:
-  - `src/data/locations_seed.json` が更新され、Areaの下にPoint（青の洞窟など）が追加されている。
-  - **Check**: 各Pointに `latitude`, `longitude` が含まれていること。
-  - **Deduplication Test**:
-    1. もう一度 `python scripts/locations/generate_points.py` を実行する。
-    2. ログに `⚠️ SKIPPING: 'xxx' (Similar to 'xxx')` と表示され、同じポイントが二重登録されないことを確認する。
+  - "日本" の既存データが削除され、新しいデータで上書きされる。
+  - IDが変わる（タイムスタンプベースのため）。
+  - 他のRegion（パラオなど）は影響を受けない（※設定ファイルに記載なければ処理されないが、記載ある場合は順番にOverwriteされるので注意）。
 
 ---
 
-## 🐠 Scenario 2: Creature Generation Pipeline
+## 📍 Scenario 2: Granular Pipeline Flow
 
-生物分類に基づく生成と、画像・生息域のマッピングを確認します。
+中間ファイル生成の流れを確認します。
 
-### Step 1: Creature List Generation
-- **Action**: `python scripts/creatures/generate_creatures_by_family.py`
-- **Expected Result**:
-  - `src/data/creatures_seed.json` が作成される。
-  - `scripts/config/target_families.json` で定義された科目の生物が含まれている。
-  - `scientificName` が埋まっている。
-  - `image` は空文字（またはnull）である。
-
-### Step 2: Image Fetching
-- **Action**: `python scripts/creatures/fetch_creature_images.py`
-- **Expected Result**:
-  - `src/data/creatures_seed.json` が更新される。
-  - `image` フィールドにWikipediaのURL（`https://upload.wikimedia.org/...`）が入る。
-  - ログに `✅ Found!` が表示される。
-
-### Step 3: Region Mapping
-- **Action**: `python scripts/creatures/map_creatures_to_regions.py`
-- **Expected Result**:
-  - `src/data/creatures_seed.json` が更新される。
-  - `regions` フィールドに、`Scenario 1` で生成されたエリア名（日本、沖縄など）が含まれる。
+### Step 1 -> 2 -> 3
+1. **Zones**: `python scripts/locations/generate_zones.py --mode append`
+   - `config/target_zones.json` が生成/更新される。
+2. **Areas**: `python scripts/locations/generate_areas.py --mode append`
+   - `target_zones.json` を読み込み、Area未定義のZoneに対してのみ生成される。
+   - `config/target_areas.json` が生成/更新される。
+3. **Points**: `python scripts/locations/generate_points.py --mode append`
+   - `target_areas.json` を読み込み、Point未定義のAreaに対してのみ生成される。
+   - 重複がある場合はスキップされる。
 
 ---
 
-## ✅ Cleanup (Optional)
-テスト完了後、データを採用する場合はそのままでOK。
-やり直す場合は `src/data/*.json` を削除して再度実行。
+## 🐠 Scenario 3: Creature Generation Pipeline
+
+（変更なし、既存シナリオ通り）
+...
