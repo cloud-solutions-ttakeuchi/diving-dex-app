@@ -2,6 +2,23 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [v1.4.0] - 2025-12-15
+
+### Added (追加)
+- **Point & Creature Data Optimization**:
+    - **Granular Generation**: ロケーション生成プロセスを `Zone` -> `Area` -> `Point` の3段階に分割し、Levenshtein距離チェックによる厳密な重複排除を実現。
+    - **Family-Based Generation**: 生物データ生成を「科目（Family）」単位に再構築し、学名（Scientific Name）をキーとすることでデータの網羅性と正確性を向上。
+    - **Local Rarity Logic**: ポイントごとの生物出現レアリティ（Local Rarity）を、その生物が生息するエリア数に基づいて自動計算するロジック（Common >= 12, Rare >= 5, Epic >= 2, Legendary < 2）を実装。
+    - **Robust API Handling**: データ生成スクリプトに、レート制限（429 Error）を回避するためのインテリジェントな待機・ローテーションロジック（Flash/Liteモデルの使い分け）を導入。
+
+### Changed (変更)
+- **Rarity UI/UX Refinement**:
+    - **Separation of Concerns**: 「その生物自体のレア度（Global Rarity）」と「ポイントでの出現レアリティ（Local Rarity）」の管理を分離。Global Rarityはシステム管理値とし、ユーザーによる編集を制限。
+    - **Edit Restriction**: 生物提案時のレアリティ選択を廃止し、生物編集時のレアリティ変更を管理者（Admin）に限定。
+    - **Data Correction**: 既存の全生物データに対し、エリア数に基づいた正しいGlobal Rarityを一括適用して整合性を確保。
+
+- **Data Integrity**: 過去のデータ生成プロセスで一部欠損していた生物データ（`season` 等）のスプリット・マージによる完全復旧を実施。
+
 ## [Unreleased]
 
 ### Added (追加)

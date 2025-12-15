@@ -150,3 +150,8 @@ Thumbs.db
 # Garmin Analysis Files
 germin_description.zip
 temp_garmin_analysis/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
