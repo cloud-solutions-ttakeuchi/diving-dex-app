@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import hashlib
 import difflib
 import google.generativeai as genai
 import argparse
@@ -67,32 +68,62 @@ def get_existing_point_names(data: List[Dict]) -> Set[str]:
                     names.add(point["name"])
     return names
 
-# Models to cycle through
-CANDIDATE_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemma-3-27b-it',
-    'gemma-3-12b-it',
-    'gemma-3-4b-it',
-    'gemma-3-2b-it',
-    'gemma-3-1b-it',
-]
+# --- Class Definitions for Robust API Handling ---
 
-# Flattened Resource Pool: [(model, key), (model, key)...]
-RESOURCE_POOL = [(m, k) for m in CANDIDATE_MODELS for k in API_KEYS]
-current_resource_index = 0
+class APIResource:
+    def __init__(self, api_key: str, model_name: str, priority: int):
+        self.api_key = api_key
+        self.model_name = model_name
+        self.priority = priority
+        self.status = 'stand-by' # 'stand-by' | 'active' | 'stop'
+        self.quota_exceed_dt = 0.0
 
-def get_current_resource():
-    return RESOURCE_POOL[current_resource_index]
+RESOURCE_POOL: List[APIResource] = []
 
-def rotate_resource():
-    global current_resource_index
-    current_resource_index = (current_resource_index + 1) % len(RESOURCE_POOL)
-    print(f"    🔄 Switching to Resource #{current_resource_index + 1}/{len(RESOURCE_POOL)}")
+# Initialize Pool
+# Priority: Flash > Flash-Lite
+# Distribute keys: Key1-Flash(1), Key2-Flash(1), Key1-Lite(2), Key2-Lite(2)
+for key in API_KEYS:
+    if not key: continue
+    # Primary models (Priority 1)
+    RESOURCE_POOL.append(APIResource(key, 'gemini-2.5-flash', 1))
+
+for key in API_KEYS:
+    if not key: continue
+    # Secondary models (Priority 2)
+    RESOURCE_POOL.append(APIResource(key, 'gemini-2.5-flash-lite', 2))
+
+def get_best_resource() -> APIResource:
+    """Design: Priority & Status based selection"""
+    current_time = time.time()
+
+    # 1. Check for release from 'stop' state
+    for r in RESOURCE_POOL:
+        if r.status == 'stop':
+            # Check if 65 seconds (safe margin) have passed since quota exceeded
+            if current_time - r.quota_exceed_dt > 65:
+                # Be careful: if it was a key-level limit, other models with same key might also need release?
+                # For simplicity, we check individually, or we could link them.
+                # User design implies model-level check or key-level.
+                # Let's simple check: if time passed, set to stand-by
+                r.status = 'stand-by'
+                r.quota_exceed_dt = 0.0
+
+    # 2. Select 'stand-by' with highest priority (lowest number)
+    candidates = [r for r in RESOURCE_POOL if r.status == 'stand-by']
+    if candidates:
+        # Sort by priority
+        candidates.sort(key=lambda x: x.priority)
+        best = candidates[0]
+        best.status = 'active'
+        return best
+
+    # 3. If no stand-by, check 'active'. (Should be empty if we are single-threaded properly,
+    # but practically we return None if all are 'stop')
+    # If all stopped, we need to wait.
+    return None
 
 def generate_points(region: str, zone: str, area: str) -> List[Dict]:
-    global current_resource_index
-
     prompt = f"""
     あなたはベテランのダイビングガイドです。
     指定された「Area（エリア）」にある、個別の「Point（ダイビングスポット）」をリストアップしてください。
@@ -118,15 +149,45 @@ def generate_points(region: str, zone: str, area: str) -> List[Dict]:
     - コードブロックは含めないでください。
     """
 
-    max_attempts = len(RESOURCE_POOL)
-    attempts = 0
+    # Retry loop based on pool status
+    # We loop until success or absolute failure of logic
 
-    while attempts < max_attempts:
-        model_name, api_key = get_current_resource()
+    while True:
+        resource = get_best_resource()
+
+        if not resource:
+            # All resources are 'stop'.
+            # Find the one that expires soonest and wait for it.
+            stopped_resources = [r for r in RESOURCE_POOL if r.status == 'stop']
+            if not stopped_resources:
+                print("    ❌ All resources invalid/stopped but no timer set. Aborting.")
+                return []
+
+            # Find max wait needed (or min wait to get ONE resource back)
+            # We want to get at least one back, so find min remaining time
+            current_time = time.time()
+            # rem_times = [65 - (current_time - r.quota_exceed_dt) for r in stopped_resources]
+            # wait_seconds = min(rem_times)
+
+            # Logic from user: "Check quota_exceed_dt... if no models > 65s, wait 65s (or diff)"
+            # Let's find the earliest expire time
+            earliest_release = min(r.quota_exceed_dt for r in stopped_resources) + 65
+            wait_seconds = earliest_release - current_time
+
+            if wait_seconds > 0:
+                print(f"    ⏳ All resources exhausted. Waiting {wait_seconds:.1f}s for rate limit release...")
+                time.sleep(wait_seconds + 1) # +1 buffer
+                continue # Retry loop to refresh statuses
+            else:
+                # Should be released instantly by get_best_resource next loop
+                time.sleep(1)
+                continue
 
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(model_name)
+            # Execute Request
+            # print(f"    🚀 Requesting with {resource.model_name} (Key ends {resource.api_key[-4:]})...") # Debug
+            genai.configure(api_key=resource.api_key)
+            model = genai.GenerativeModel(resource.model_name)
 
             response = model.generate_content(prompt)
             text = response.text.strip()
@@ -138,29 +199,48 @@ def generate_points(region: str, zone: str, area: str) -> List[Dict]:
 
             result = json.loads(text)
             if result:
-                # Success! Keep the current index as is (it's working).
-                # Identify which key index this matches for display (just for info)
-                key_display_idx = API_KEYS.index(api_key) + 1
-                print(f"    ✅ Success with {model_name} (Key #{key_display_idx})")
+                # Success
+                key_display_idx = API_KEYS.index(resource.api_key) + 1
+                print(f"    ✅ Success with {resource.model_name} (Key #{key_display_idx})")
+
+                # Release resource to stand-by
+                resource.status = 'stand-by'
+
+                # 🛑 RATE LIMIT HANDLING: Wait 5 seconds after success
+                time.sleep(5)
                 return result
 
         except Exception as e:
             error_str = str(e)
             if "429" in error_str:
-                print(f"    ⚠️ Quota exceeded: {model_name} (Key index in pool: {current_resource_index})")
-                rotate_resource()
-                time.sleep(1)
+                print(f"    ⚠️ Quota exceeded (429): {resource.model_name} (Key ends {resource.api_key[-4:]})")
+                # 3. Error: Set quota_exceed_dt, status='stop'
+                resource.status = 'stop'
+                resource.quota_exceed_dt = time.time()
+
+                # PREVIOUSLY: We stopped all models with this key.
+                # CHANGE: Only stop THIS specific model/key combo to allow fallback to Lite.
+                # for r in RESOURCE_POOL:
+                #    if r.api_key == resource.api_key:
+                #        r.status = 'stop'
+                #        r.quota_exceed_dt = time.time()
+
             elif "404" in error_str or "not found" in error_str.lower():
-                print(f"    ℹ️ Model {model_name} not found/supported. Skipping.")
-                rotate_resource()
+                print(f"    ℹ️ Model {resource.model_name} not found. Removing from pool.")
+                # Permanently remove or stop? Let's just stop effectively forever or remove
+                if resource in RESOURCE_POOL:
+                    RESOURCE_POOL.remove(resource)
             else:
-                print(f"    ❌ Error with {model_name}: {e}")
-                rotate_resource()
+                print(f"    ❌ Error with {resource.model_name}: {e}")
+                # Unknown error, maybe temporary? Move to stand-by to retry later or stop briefly?
+                # Let's treat as 'stop' for safety but short duration?
+                # Or just rotate. User logic: "Resume from standby".
+                # Let's set to stand-by (give up this turn) but allow other key.
+                resource.status = 'stand-by'
+                # But to avoid infinite loop on same error, maybe sleep?
+                time.sleep(1)
 
-        attempts += 1
-
-    print(f"    💀 All resources failed for {area}")
-    return []
+        # Loop continues to pick next 'best' resource
 
 def main():
     parser = argparse.ArgumentParser(description="Generate Points data.")
@@ -238,7 +318,9 @@ def main():
             if sim_name:
                 print(f"    ⚠️ SKIPPING: '{new_p['name']}' (Similar to '{sim_name}')")
             else:
-                new_p["id"] = f"p_{int(time.time())}_{new_p['name']}"
+                # ID generation: standardized to ASCII (timestamp + hash)
+                name_hash = hashlib.md5(new_p['name'].encode()).hexdigest()[:6]
+                new_p["id"] = f"p_{int(time.time())}_{name_hash}"
                 new_p["image"] = ""
                 existing_points.append(new_p)
                 global_existing_points.add(new_p["name"])

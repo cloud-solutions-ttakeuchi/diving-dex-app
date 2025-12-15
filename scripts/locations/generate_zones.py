@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import hashlib
 import google.generativeai as genai
 from typing import List, Dict
 
@@ -17,31 +18,52 @@ INPUT_FILE = os.path.join(CONFIG_DIR, "target_regions.json")
 OUTPUT_FILE = os.path.join(DATA_DIR, "locations_seed.json")
 PRODUCED_ZONES_FILE = os.path.join(CONFIG_DIR, "target_zones.json")
 
-# Models to cycle through
-CANDIDATE_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemma-3-27b-it',
-    'gemma-3-12b-it',
-    'gemma-3-4b-it',
-    'gemma-3-2b-it',
-    'gemma-3-1b-it',
-]
+# --- Class Definitions for Robust API Handling ---
 
-# Flattened Resource Pool: [(model, key), (model, key)...]
-RESOURCE_POOL = [(m, k) for m in CANDIDATE_MODELS for k in API_KEYS]
-current_resource_index = 0
+class APIResource:
+    def __init__(self, api_key: str, model_name: str, priority: int):
+        self.api_key = api_key
+        self.model_name = model_name
+        self.priority = priority
+        self.status = 'stand-by' # 'stand-by' | 'active' | 'stop'
+        self.quota_exceed_dt = 0.0
 
-def get_current_resource():
-    return RESOURCE_POOL[current_resource_index]
+RESOURCE_POOL: List[APIResource] = []
 
-def rotate_resource():
-    global current_resource_index
-    current_resource_index = (current_resource_index + 1) % len(RESOURCE_POOL)
-    print(f"    🔄 Switching to Resource #{current_resource_index + 1}/{len(RESOURCE_POOL)}")
+# Initialize Pool
+# Priority: Flash > Flash-Lite
+for key in API_KEYS:
+    if not key: continue
+    RESOURCE_POOL.append(APIResource(key, 'gemini-2.5-flash', 1))
 
-def generate_zones(region: str) -> List[Dict]:
-    global current_resource_index
+for key in API_KEYS:
+    if not key: continue
+    RESOURCE_POOL.append(APIResource(key, 'gemini-2.5-flash-lite', 2))
+
+def get_best_resource() -> APIResource:
+    """Design: Priority & Status based selection"""
+    current_time = time.time()
+
+    # 1. Check for release from 'stop' state
+    for r in RESOURCE_POOL:
+        if r.status == 'stop':
+            if current_time - r.quota_exceed_dt > 65:
+                r.status = 'stand-by'
+                r.quota_exceed_dt = 0.0
+
+    # 2. Select 'stand-by' with highest priority
+    candidates = [r for r in RESOURCE_POOL if r.status == 'stand-by']
+    if candidates:
+        candidates.sort(key=lambda x: x.priority)
+        best = candidates[0]
+        best.status = 'active'
+        return best
+
+    return None
+
+def generate_zones(region: str, zone: str) -> List[Dict]:
+    # Note: `zone` parameter here seems redundant or misused potentially based on variable name,
+    # but maintaining signature. The prompt uses 'region'.
 
     prompt = f"""
     あなたはダイビング旅行プランナーです。
@@ -52,26 +74,41 @@ def generate_zones(region: str) -> List[Dict]:
     出力フォーマット（JSON）:
     [
       {{
-        "name": "Zone名（例: ケアンズ, 慶良間諸島）",
-        "description": "ダイビングの特徴を100文字以内で"
+        "name": "Zone名（例: ケラマ諸島, 石垣島, 本島北部）",
+        "description": "そのエリアの特徴を100文字以内で",
+        "id": "一意なID（英数字）"
       }}
     ]
 
     注意点:
-    - ダイバーに人気のある主要なエリアに絞ってください。
-    - 1つのRegionにつき、3〜5個程度のZoneを挙げてください。
+    - Regionを代表する主要なダイビングエリアを3〜5個程度。
     - 決してMarkdownのコードブロック(```json ... ```)を含めないでください。純粋なJSON文字列のみを返してください。
     """
 
-    max_attempts = len(RESOURCE_POOL)
-    attempts = 0
+    while True:
+        resource = get_best_resource()
 
-    while attempts < max_attempts:
-        model_name, api_key = get_current_resource()
+        if not resource:
+            stopped_resources = [r for r in RESOURCE_POOL if r.status == 'stop']
+            if not stopped_resources:
+                print("    ❌ All resources invalid/stopped but no timer set. Aborting.")
+                return []
+
+            earliest_release = min(r.quota_exceed_dt for r in stopped_resources) + 65
+            wait_seconds = earliest_release - time.time()
+
+            if wait_seconds > 0:
+                print(f"    ⏳ All resources exhausted. Waiting {wait_seconds:.1f}s for rate limit release...")
+                time.sleep(wait_seconds + 1)
+                continue
+            else:
+                time.sleep(1)
+                continue
 
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(model_name)
+            # Execute Request
+            genai.configure(api_key=resource.api_key)
+            model = genai.GenerativeModel(resource.model_name)
 
             response = model.generate_content(prompt)
             text = response.text.strip()
@@ -83,29 +120,31 @@ def generate_zones(region: str) -> List[Dict]:
 
             result = json.loads(text)
             if result:
-                # Success! Keep the current index as is (it's working).
-                # Identify which key index this matches for display (just for info)
-                key_display_idx = API_KEYS.index(api_key) + 1
-                print(f"    ✅ Success with {model_name} (Key #{key_display_idx})")
+                # Success
+                key_display_idx = API_KEYS.index(resource.api_key) + 1
+                print(f"    ✅ Success with {resource.model_name} (Key #{key_display_idx})")
+
+                resource.status = 'stand-by'
+
+                # 🛑 RATE LIMIT HANDLING: Wait 5 seconds after success
+                time.sleep(5)
                 return result
 
         except Exception as e:
             error_str = str(e)
             if "429" in error_str:
-                print(f"    ⚠️ Quota exceeded: {model_name} (Key index in pool: {current_resource_index})")
-                rotate_resource()
-                time.sleep(1)
+                print(f"    ⚠️ Quota exceeded (429): {resource.model_name} (Key ends {resource.api_key[-4:]})")
+                resource.status = 'stop'
+                resource.quota_exceed_dt = time.time()
+
             elif "404" in error_str or "not found" in error_str.lower():
-                print(f"    ℹ️ Model {model_name} not found/supported. Skipping.")
-                rotate_resource()
+                print(f"    ℹ️ Model {resource.model_name} not found. Removing from pool.")
+                if resource in RESOURCE_POOL:
+                    RESOURCE_POOL.remove(resource)
             else:
-                print(f"    ❌ Error with {model_name}: {e}")
-                rotate_resource()
-
-        attempts += 1
-
-    print(f"    💀 All resources failed for {region}")
-    return []
+                print(f"    ❌ Error with {resource.model_name}: {e}")
+                resource.status = 'stand-by'
+                time.sleep(1)
 
 import argparse
 import shutil
@@ -165,20 +204,18 @@ def main():
             existing_region = None
 
         # Generate (Clean, Overwrite, or Append-new)
-        new_data = generate_zones(region_name)
-        if not new_data: continue
-
-        new_region_data = new_data[0] # Listの先頭
+        zones_data = generate_zones(region_name)
+        if not zones_data: continue
 
         if existing_region:
-            # Merge logic (本来ここに来るのはAppendで部分的マージが必要な場合だが、
-            # 現在のRegion単位判定ではここに来にくい。念のため残す)
+            # Merge logic (Append/Update existing region)
             existing_zones = existing_region.get("children", [])
             existing_zone_names = {z["name"] for z in existing_zones}
 
-            for new_z in new_region_data.get("children", []):
+            for new_z in zones_data:
                 if new_z["name"] not in existing_zone_names:
-                    new_z["id"] = f"z_{int(time.time())}_{new_z['name']}"
+                    name_hash = hashlib.md5(new_z['name'].encode()).hexdigest()[:6]
+                    new_z["id"] = f"z_{int(time.time())}_{name_hash}"
                     new_z["displayOrder"] = 0
                     existing_zones.append(new_z)
                     print(f"    + Added Zone: {new_z['name']}")
@@ -188,15 +225,22 @@ def main():
                 produced_zones_list.append({"region": region_name, "zone": new_z["name"]})
             existing_region["children"] = existing_zones
         else:
-            # New Region
-            new_region_data["id"] = f"r_{int(time.time())}"
+            # New Region construction
+            new_region_data = {
+                "name": region_name,
+                "description": f"{region_name}のダイビングスポット一覧", # Placeholder description
+                "children": zones_data,
+                "id": f"r_{int(time.time())}_{hashlib.md5(region_name.encode()).hexdigest()[:6]}"
+            }
+
             for i, z in enumerate(new_region_data.get("children", [])):
-                z["id"] = f"z_{int(time.time())}_{i}"
+                name_hash = hashlib.md5(z['name'].encode()).hexdigest()[:6]
+                z["id"] = f"z_{int(time.time())}_{name_hash}"
                 z["displayOrder"] = 0
                 produced_zones_list.append({"region": region_name, "zone": z["name"]})
 
             all_locations.append(new_region_data)
-            print(f"    + Added New Region: {region_name}")
+            print(f"    + Added New Region: {region_name} with {len(zones_data)} zones.")
 
         # Save Incrementally
         os.makedirs(DATA_DIR, exist_ok=True)

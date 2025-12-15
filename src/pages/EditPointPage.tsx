@@ -327,7 +327,7 @@ export const EditPointPage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/*
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">緯度 (Latitude)</label>
                 <input
@@ -350,7 +350,7 @@ export const EditPointPage = () => {
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
                 />
               </div>
-            </div>
+              */}
           </section>
 
           {/* Photos */}

@@ -162,15 +162,7 @@ export const ProposeCreaturePage = () => {
                   <option value="other">その他</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">レア度 (目安)</label>
-                <select name="rarity" value={formData.rarity} onChange={handleChange} className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none">
-                  <option value="Common">Common (普通)</option>
-                  <option value="Rare">Rare (少し珍しい)</option>
-                  <option value="Epic">Epic (珍しい)</option>
-                  <option value="Legendary">Legendary (幻)</option>
-                </select>
-              </div>
+
             </div>
 
             <div>

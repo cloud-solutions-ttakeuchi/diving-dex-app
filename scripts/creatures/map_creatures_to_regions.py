@@ -25,32 +25,51 @@ def get_target_regions() -> List[str]:
     with open(TARGET_REGIONS_FILE, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-# Models to cycle through
-CANDIDATE_MODELS = [
-    'gemini-2.5-flash',
-    'gemini-2.5-flash-lite',
-    'gemma-3-27b-it',
-    'gemma-3-12b-it',
-    'gemma-3-4b-it',
-    'gemma-3-2b-it',
-    'gemma-3-1b-it',
-]
+# --- Class Definitions for Robust API Handling ---
 
-# Flattened Resource Pool: [(model, key), (model, key)...]
-RESOURCE_POOL = [(m, k) for m in CANDIDATE_MODELS for k in API_KEYS]
-current_resource_index = 0
+class APIResource:
+    def __init__(self, api_key: str, model_name: str, priority: int):
+        self.api_key = api_key
+        self.model_name = model_name
+        self.priority = priority
+        self.status = 'stand-by' # 'stand-by' | 'active' | 'stop'
+        self.quota_exceed_dt = 0.0
 
-def get_current_resource():
-    return RESOURCE_POOL[current_resource_index]
+RESOURCE_POOL: List[APIResource] = []
 
-def rotate_resource():
-    global current_resource_index
-    current_resource_index = (current_resource_index + 1) % len(RESOURCE_POOL)
-    print(f"    🔄 Switching to Resource #{current_resource_index + 1}/{len(RESOURCE_POOL)}")
+# Initialize Pool
+# Priority: Flash > Flash-Lite
+for key in API_KEYS:
+    if not key: continue
+    RESOURCE_POOL.append(APIResource(key, 'gemini-2.5-flash', 1))
+
+for key in API_KEYS:
+    if not key: continue
+    RESOURCE_POOL.append(APIResource(key, 'gemini-2.5-flash-lite', 2))
+
+def get_best_resource() -> APIResource:
+    """Design: Priority & Status based selection"""
+    current_time = time.time()
+
+    # 1. Check for release from 'stop' state
+    for r in RESOURCE_POOL:
+        if r.status == 'stop':
+            if current_time - r.quota_exceed_dt > 65:
+                r.status = 'stand-by'
+                r.quota_exceed_dt = 0.0
+
+    # 2. Select 'stand-by' with highest priority
+    candidates = [r for r in RESOURCE_POOL if r.status == 'stand-by']
+    if candidates:
+        candidates.sort(key=lambda x: x.priority)
+        best = candidates[0]
+        best.status = 'active'
+        return best
+
+    return None
 
 def map_regions_batch(creatures: List[Dict], region_list: List[str]) -> List[Dict]:
     """Geminiにバッチで生息域を判定させる"""
-    global current_resource_index
 
     names = [c["name"] for c in creatures]
 
@@ -72,15 +91,30 @@ def map_regions_batch(creatures: List[Dict], region_list: List[str]) -> List[Dic
     ]
     """
 
-    max_attempts = len(RESOURCE_POOL)
-    attempts = 0
+    while True:
+        resource = get_best_resource()
 
-    while attempts < max_attempts:
-        model_name, api_key = get_current_resource()
+        if not resource:
+            stopped_resources = [r for r in RESOURCE_POOL if r.status == 'stop']
+            if not stopped_resources:
+                print("    ❌ All resources invalid/stopped but no timer set. Aborting.")
+                return []
+
+            earliest_release = min(r.quota_exceed_dt for r in stopped_resources) + 65
+            wait_seconds = earliest_release - time.time()
+
+            if wait_seconds > 0:
+                print(f"    ⏳ All resources exhausted. Waiting {wait_seconds:.1f}s for rate limit release...")
+                time.sleep(wait_seconds + 1)
+                continue
+            else:
+                time.sleep(1)
+                continue
 
         try:
-            genai.configure(api_key=api_key)
-            model = genai.GenerativeModel(model_name)
+            # Execute Request
+            genai.configure(api_key=resource.api_key)
+            model = genai.GenerativeModel(resource.model_name)
 
             response = model.generate_content(prompt)
             text = response.text.strip()
@@ -89,28 +123,57 @@ def map_regions_batch(creatures: List[Dict], region_list: List[str]) -> List[Dic
             if text.endswith("```"): text = text[:-3]
 
             result = json.loads(text)
-            key_display_idx = API_KEYS.index(api_key) + 1
-            print(f"    ✅ Success with {model_name} (Key #{key_display_idx})")
+
+            # Success
+            key_display_idx = API_KEYS.index(resource.api_key) + 1
+            print(f"    ✅ Success with {resource.model_name} (Key #{key_display_idx})")
+
+            resource.status = 'stand-by'
+
+            # 🛑 RATE LIMIT HANDLING: Wait 5 seconds after success
+            time.sleep(5)
             return result
         except Exception as e:
             error_str = str(e)
             if "429" in error_str:
-                print(f"    ⚠️ Quota exceeded: {model_name} (Key index in pool: {current_resource_index})")
-                rotate_resource()
-                time.sleep(1)
+                print(f"    ⚠️ Quota exceeded (429): {resource.model_name} (Key ends {resource.api_key[-4:]})")
+                resource.status = 'stop'
+                resource.quota_exceed_dt = time.time()
+
+                # PREVIOUSLY: We stopped all models with this key.
+                # CHANGE: Only stop THIS specific model/key combo to allow fallback to Lite.
+                # for r in RESOURCE_POOL:
+                #    if r.api_key == resource.api_key:
+                #        r.status = 'stop'
+                #        r.quota_exceed_dt = time.time()
+
             elif "404" in error_str or "not found" in error_str.lower():
-                print(f"    ℹ️ Model {model_name} not found/supported. Skipping.")
-                rotate_resource()
+                print(f"    ℹ️ Model {resource.model_name} not found. Removing from pool.")
+                if resource in RESOURCE_POOL:
+                    RESOURCE_POOL.remove(resource)
             else:
-                print(f"    ❌ Error with {model_name}: {e}")
-                rotate_resource()
+                print(f"    ❌ Error with {resource.model_name}: {e}")
+                resource.status = 'stand-by'
+                time.sleep(1)
 
-        attempts += 1
+import argparse
+import shutil
+# ... (imports remain)
+import json
+import os
+import time
+import math
+import google.generativeai as genai
+from typing import List, Dict
 
-    print(f"    💀 All resources failed for this batch")
-    return []
+# ... (imports/constants up to main)
 
 def main():
+    parser = argparse.ArgumentParser(description="Map creatures to regions.")
+    parser.add_argument("--mode", choices=["append", "overwrite", "clean"], default="append",
+                        help="Mode: append (skip existing), overwrite (re-map all), clean (reset all regions first).")
+    args = parser.parse_args()
+
     if not os.path.exists(CREATURES_FILE):
         print("❌ Creatures file not found.")
         return
@@ -119,10 +182,16 @@ def main():
     with open(CREATURES_FILE, 'r', encoding='utf-8') as f:
         creatures = json.load(f)
 
+    # Clean mode logic: Reset existing regions
+    if args.mode == "clean":
+        print("🧹 Clean mode: Clearing all existing region mappings.")
+        for c in creatures:
+            c["regions"] = []
+        # Essentially behaves like overwrite from here, but starting empty
+
     target_regions = get_target_regions()
     print(f"Target Regions: {target_regions[:10]}...")
-
-    print(f"Mapping regions for {len(creatures)} creatures...")
+    print(f"Mapping regions for {len(creatures)} creatures. Mode: {args.mode}")
 
     updated_count = 0
     num_batches = math.ceil(len(creatures) / BATCH_SIZE)
@@ -130,13 +199,15 @@ def main():
     for i in range(num_batches):
         batch_slice = creatures[i*BATCH_SIZE : (i+1)*BATCH_SIZE]
 
-        # 既にregionsが十分入っている場合はスキップするなどの判定を入れることも可能だが、
-        # 今回は補完目的なので全チェック、あるいは「無いものだけ」などが良い
-        # ここでは「regionsが空 または 少ない」場合に実行するロジックにする
-        targets = [c for c in batch_slice if not c.get("regions")]
+        # Target Selection Logic based on Mode
+        if args.mode == "append":
+             # Only process if regions is empty/missing
+             targets = [c for c in batch_slice if not c.get("regions")]
+        else: # overwrite or clean (clean is already cleared above, so same logic)
+             targets = batch_slice # Process ALL
 
         if not targets:
-            print(f"Skipping batch {i+1} (All have regions).")
+            print(f"Skipping batch {i+1} (No targets for {args.mode}).")
             continue
 
         print(f"Processing Batch {i+1}/{num_batches} ({len(targets)} items)...")
