@@ -27,22 +27,22 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
   useEffect(() => {
     if (!value) return;
 
-    const point = points.find((p) => p.id === value);
+    const point = points.find((p: { id: string; areaId: string }) => p.id === value);
     if (!point) return;
 
     // Find Area
-    const area = areas.find((a) => a.id === point.areaId);
+    const area = areas.find((a: { id: string; zoneId: string }) => a.id === point.areaId);
     if (area) {
       // eslint-disable-next-line
       setSelectedAreaId(area.id);
 
       // Find Zone
-      const zone = zones.find((z) => z.id === area.zoneId);
+      const zone = zones.find((z: { id: string; regionId: string }) => z.id === area.zoneId);
       if (zone) {
         setSelectedZoneId(zone.id);
 
         // Find Region
-        const region = regions.find((r) => r.id === zone.regionId);
+        const region = regions.find((r: { id: string }) => r.id === zone.regionId);
         if (region) {
           setSelectedRegionId(region.id);
           // Notify parent of full hierarchy (optional, usually parent knows if it passed value)
@@ -69,7 +69,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     // Reverse lookup: Find Region
     let rId = selectedRegionId;
     if (newZoneId) {
-      const zone = zones.find(z => z.id === newZoneId);
+      const zone = zones.find((z: { id: string; regionId: string }) => z.id === newZoneId);
       if (zone) {
         setSelectedRegionId(zone.regionId);
         rId = zone.regionId;
@@ -90,12 +90,12 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     let rId = selectedRegionId;
 
     if (newAreaId) {
-      const area = areas.find(a => a.id === newAreaId);
+      const area = areas.find((a: { id: string; zoneId: string }) => a.id === newAreaId);
       if (area) {
         setSelectedZoneId(area.zoneId);
         zId = area.zoneId;
 
-        const zone = zones.find(z => z.id === area.zoneId);
+        const zone = zones.find((z: { id: string; regionId: string }) => z.id === area.zoneId);
         if (zone) {
           setSelectedRegionId(zone.regionId);
           rId = zone.regionId;
@@ -114,17 +114,17 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
   // If parent is selected, filter children. If not, show ALL options to allow reverse selection.
   const visibleZones = useMemo(
     () => selectedRegionId
-      ? zones.filter((z) => z.regionId === selectedRegionId)
+      ? zones.filter((z: { regionId: string }) => z.regionId === selectedRegionId)
       : zones,
     [zones, selectedRegionId]
   );
 
   const visibleAreas = useMemo(
     () => selectedZoneId
-      ? areas.filter((a) => a.zoneId === selectedZoneId)
+      ? areas.filter((a: { zoneId: string }) => a.zoneId === selectedZoneId)
       : selectedRegionId // If only region selected, show all areas in that region? Or all areas?
-        ? areas.filter(a => {
-          const z = zones.find(zone => zone.id === a.zoneId);
+        ? areas.filter((a: { zoneId: string }) => {
+          const z = zones.find((zone: { id: string }) => zone.id === a.zoneId);
           return z?.regionId === selectedRegionId;
         })
         : areas,
@@ -133,16 +133,16 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
 
   const visiblePoints = useMemo(() => {
     if (selectedAreaId) {
-      return points.filter(p => p.areaId === selectedAreaId);
+      return points.filter((p: { areaId: string }) => p.areaId === selectedAreaId);
     }
     if (selectedZoneId) {
-      const areaIdsInZone = areas.filter(a => a.zoneId === selectedZoneId).map(a => a.id);
-      return points.filter(p => areaIdsInZone.includes(p.areaId));
+      const areaIdsInZone = areas.filter((a: { zoneId: string }) => a.zoneId === selectedZoneId).map((a: { id: string }) => a.id);
+      return points.filter((p: { areaId: string }) => areaIdsInZone.includes(p.areaId));
     }
     if (selectedRegionId) {
-      const zoneIdsInRegion = zones.filter(z => z.regionId === selectedRegionId).map(z => z.id);
-      const areaIdsInRegion = areas.filter(a => zoneIdsInRegion.includes(a.zoneId)).map(a => a.id);
-      return points.filter(p => areaIdsInRegion.includes(p.areaId));
+      const zoneIdsInRegion = zones.filter((z: { regionId: string }) => z.regionId === selectedRegionId).map((z: { id: string }) => z.id);
+      const areaIdsInRegion = areas.filter((a: { zoneId: string }) => zoneIdsInRegion.includes(a.zoneId)).map((a: { id: string }) => a.id);
+      return points.filter((p: { areaId: string }) => areaIdsInRegion.includes(p.areaId));
     }
     return points; // Return all points if nothing selected (Reverse Lookup)
   }, [points, selectedAreaId, selectedZoneId, selectedRegionId, areas, zones]);
@@ -159,7 +159,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500 appearance-none"
           >
             <option value="">地域を選択...</option>
-            {regions.map((r) => (
+            {regions.map((r: { id: string; name: string }) => (
               <option key={r.id} value={r.id}>
                 {r.name}
               </option>
@@ -179,7 +179,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500 appearance-none"
           >
             <option value="">{selectedRegionId ? 'エリアを選択...' : '全エリアから選択'}</option>
-            {visibleZones.map((z) => (
+            {visibleZones.map((z: { id: string; name: string }) => (
               <option key={z.id} value={z.id}>
                 {z.name}
               </option>
@@ -199,7 +199,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
             className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500 appearance-none"
           >
             <option value="">{selectedZoneId ? '詳細エリアを選択...' : '全詳細エリアから選択'}</option>
-            {visibleAreas.map((a) => (
+            {visibleAreas.map((a: { id: string; name: string }) => (
               <option key={a.id} value={a.id}>
                 {a.name}
               </option>
@@ -223,7 +223,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
             className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl font-bold text-gray-900 focus:ring-2 focus:ring-ocean-200 focus:border-ocean outline-none appearance-none disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
           >
             <option value="">ポイントを選択してください</option>
-            {visiblePoints.map((p) => (
+            {visiblePoints.map((p: { id: string; name: string }) => (
               <option key={p.id} value={p.id}>
                 {p.name}
               </option>

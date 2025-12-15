@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Camera, X, Star, Plus, Trash2, AlertTriangle } from 'lucide-react';
 import { useApp } from '../context/AppContext';
-import { CERTIFICATION_MASTER } from '../data/mockData';
+import { CERTIFICATION_MASTER } from '../constants/masterData';
 import clsx from 'clsx';
 import { ImageWithFallback } from './common/ImageWithFallback';
 import { HierarchicalPointSelector } from './HierarchicalPointSelector';

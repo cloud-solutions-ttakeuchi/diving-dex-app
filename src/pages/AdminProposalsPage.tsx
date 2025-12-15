@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Check, X, MapPin, Fish, Database, Award } from 'lucide-react';
 import { seedFirestore } from '../utils/seeder';
-import { TRUST_RANKS } from '../data/mockData';
+import { TRUST_RANKS } from '../constants/masterData';
 
 export const AdminProposalsPage = () => {
   const { proposalCreatures, proposalPoints, approveProposal, rejectProposal, currentUser, isAuthenticated, allUsers, creatures, points, pointCreatures, removePointCreature, addPointCreature } = useApp();

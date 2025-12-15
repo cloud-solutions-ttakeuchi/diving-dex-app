@@ -6,7 +6,7 @@ import { writeBatch, collection, getDocs, query, where, doc, updateDoc, arrayRem
 import { db } from '../lib/firebase';
 import type { Point } from '../types';
 import { seedFirestore } from '../utils/seeder';
-import { INITIAL_DATA } from '../data/mockData';
+import { INITIAL_DATA } from '../data/initialData';
 
 type TargetField = 'area' | 'zone' | 'region' | 'point';
 
@@ -82,34 +82,34 @@ export const AdminAreaCleansingPage = () => {
 
     // 0. Prepare Filters
     const targetRegionIds = filterRegion.length > 0
-      ? regions.filter(r => filterRegion.includes(r.name)).map(r => r.id)
+      ? regions.filter((r: { name: string; id: string }) => filterRegion.includes(r.name)).map((r: { id: string }) => r.id)
       : [];
     const targetZoneIds = filterZone.length > 0
-      ? zones.filter(z => filterZone.includes(z.name)).map(z => z.id)
+      ? zones.filter((z: { name: string; id: string }) => filterZone.includes(z.name)).map((z: { id: string }) => z.id)
       : [];
 
     // 1. Initialize with Master Data
     if (targetField === 'region') {
-      regions.forEach(r => {
+      regions.forEach((r: { id: string; name: string }) => {
         stats.set(r.id, { id: r.id, name: r.name, count: 0, parents: new Set(), points: [], isMaster: true });
       });
     } else if (targetField === 'zone') {
-      zones.forEach(z => {
+      zones.forEach((z: { id: string; name: string; regionId: string }) => {
         if (targetRegionIds.length > 0 && !targetRegionIds.includes(z.regionId)) return;
         const item = { id: z.id, name: z.name, count: 0, parents: new Set<string>(), points: [] as Point[], isMaster: true };
-        const regionName = regions.find(r => r.id === z.regionId)?.name;
+        const regionName = regions.find((r: { id: string }) => r.id === z.regionId)?.name;
         if (regionName) item.parents.add(regionName);
         stats.set(z.id, item);
       });
     } else if (targetField === 'area') {
-      areas.forEach(a => {
+      areas.forEach((a: { id: string; name: string; zoneId: string }) => {
         if (targetZoneIds.length > 0 && !targetZoneIds.includes(a.zoneId)) return;
         if (targetRegionIds.length > 0 && targetZoneIds.length === 0) {
-          const parentZone = zones.find(z => z.id === a.zoneId);
+          const parentZone = zones.find((z: { id: string; regionId: string }) => z.id === a.zoneId);
           if (!parentZone || !targetRegionIds.includes(parentZone.regionId)) return;
         }
         const item = { id: a.id, name: a.name, count: 0, parents: new Set<string>(), points: [] as Point[], isMaster: true };
-        const zoneName = zones.find(z => z.id === a.zoneId)?.name;
+        const zoneName = zones.find((z: { id: string }) => z.id === a.zoneId)?.name;
         if (zoneName) item.parents.add(zoneName);
         stats.set(a.id, item);
       });
@@ -160,7 +160,7 @@ export const AdminAreaCleansingPage = () => {
         // But we want to group this point under a Zone.
         // If `p.areaId` exists -> get Area -> get Zone ID.
         if (p.areaId) {
-          const a = areas.find(x => x.id === p.areaId);
+          const a = areas.find((x: { id: string }) => x.id === p.areaId);
           if (a) masterId = a.zoneId;
         }
         if (!masterId) orphanName = p.zone; // Fallback to name match for zone
@@ -168,8 +168,8 @@ export const AdminAreaCleansingPage = () => {
       } else if (targetField === 'region') {
         // Similar indirect link
         if (p.areaId) {
-          const a = areas.find(x => x.id === p.areaId);
-          const z = a ? zones.find(x => x.id === a.zoneId) : null;
+          const a = areas.find((x: { id: string; zoneId: string }) => x.id === p.areaId);
+          const z = a ? zones.find((x: { id: string; regionId: string }) => x.id === a.zoneId) : null;
           if (z) masterId = z.regionId;
         }
         if (!masterId) orphanName = p.region;

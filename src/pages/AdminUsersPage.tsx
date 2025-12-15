@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { Shield, ShieldAlert, Award, AlertTriangle, X } from 'lucide-react';
-import { TRUST_RANKS } from '../data/mockData';
+import { TRUST_RANKS } from '../constants/masterData';
 import { type User } from '../types';
 
 export const AdminUsersPage = () => {

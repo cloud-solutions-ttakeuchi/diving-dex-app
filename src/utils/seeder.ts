@@ -1,6 +1,6 @@
 import { collection, doc, writeBatch, getDocs } from 'firebase/firestore';
 import { db } from '../lib/firebase';
-import { INITIAL_DATA } from '../data/mockData';
+import { INITIAL_DATA } from '../data/initialData';
 
 export const seedFirestore = async (force: boolean = false, targetCollections?: string[]) => {
   console.log('Starting seeding...', { force, targetCollections });
