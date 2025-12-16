@@ -12,9 +12,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
-        name: 'Marine Life Pokedex',
-        short_name: 'MarineDex',
-        description: 'Collect and identify marine life!',
+        name: 'WeDive',
+        short_name: 'WeDive',
+        description: 'Connect with divers, explore the ocean.',
         theme_color: '#082f49',
         background_color: '#082f49',
         display: 'standalone',

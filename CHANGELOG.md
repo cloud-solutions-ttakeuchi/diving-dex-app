@@ -1,7 +1,16 @@
 # Changelog
 
 プロジェクトの変更履歴を記録します。
-## [v1.4.1] - 2025-12-16
+## [v2.0.0] - 2025-12-17
+
+### Major Changes (メジャー変更)
+- **Rebranding: "WeDive"**:
+    - アプリ名を「WeDive」に正式変更（旧称: DiveDex / MarineDex）。
+    - ロゴデザインを刷新（"W"をモチーフにしたウェーブデザイン）。
+    - PWAマニフェスト、HTMLタイトル、パッケージ名を更新。
+    - **Concept**: "Connect with divers, explore the ocean." を新タグラインとして採用。
+
+
 
 ### Fixed (修正)
 - **Creature Image Fallback**:
