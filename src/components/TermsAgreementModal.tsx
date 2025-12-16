@@ -14,7 +14,7 @@ export const TermsAgreementModal = () => {
   // If not logged in, or already agreed to LATEST, or on legal pages, don't show
   const hasAgreedToLatest = currentUser?.agreedTermsVersion === CURRENT_TERMS_VERSION;
 
-  if (isLoading || !isAuthenticated || !currentUser || hasAgreedToLatest || ['/terms', '/privacy'].includes(location.pathname)) return null;
+  if (isLoading || !isAuthenticated || !currentUser || currentUser.id === 'guest' || hasAgreedToLatest || ['/terms', '/privacy'].includes(location.pathname)) return null;
 
   // Detect if "New User" flow or "Update" flow
   // "Update" (Existing User) if:

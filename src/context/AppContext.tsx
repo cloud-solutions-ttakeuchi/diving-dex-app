@@ -779,11 +779,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setCurrentUser(prev => ({ ...prev, ...userData }));
 
     // Firestore Persist
-    if (isAuthenticated) {
+    if (isAuthenticated && currentUser.id !== 'guest') {
       try {
         await updateDoc(doc(firestore, 'users', currentUser.id), userData);
       } catch (e) {
         console.error(e);
+        throw e;
       }
     }
   };
