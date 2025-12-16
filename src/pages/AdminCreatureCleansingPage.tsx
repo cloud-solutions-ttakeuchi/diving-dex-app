@@ -412,11 +412,30 @@ export const AdminCreatureCleansingPage = () => {
                             value={editForm.englishName || ''}
                             onChange={e => setEditForm(prev => ({ ...prev, englishName: e.target.value }))}
                           />
+                          <div className="border-t border-gray-100 my-1"></div>
+                          <input
+                            className="border rounded px-2 py-1 text-[10px]"
+                            placeholder="Image Credit"
+                            value={editForm.imageCredit || ''}
+                            onChange={e => setEditForm(prev => ({ ...prev, imageCredit: e.target.value }))}
+                          />
+                          <input
+                            className="border rounded px-2 py-1 text-[10px]"
+                            placeholder="Image License"
+                            value={editForm.imageLicense || ''}
+                            onChange={e => setEditForm(prev => ({ ...prev, imageLicense: e.target.value }))}
+                          />
                         </div>
                       ) : (
                         <div className="flex flex-col">
                           <span className="text-sm font-medium text-gray-700 italic">{creature.scientificName}</span>
                           <span className="text-xs text-gray-500">{creature.englishName}</span>
+                          {(creature.imageCredit || creature.imageLicense) && (
+                            <div className="mt-1 text-[10px] text-gray-400">
+                              <div>© {creature.imageCredit || '-'}</div>
+                              <div>{creature.imageLicense}</div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>

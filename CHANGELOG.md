@@ -1,6 +1,26 @@
 # Changelog
 
 プロジェクトの変更履歴を記録します。
+## [v1.4.1] - 2025-12-16
+
+### Fixed (修正)
+- **Creature Image Fallback**:
+    - 生物画像のURLが無効または空の場合に、正しいプレースホルダー画像 (`no-image-creature.png`) が表示されるように修正。
+- **Copyright Credit Display**:
+    - 画像の著作権クレジット（出典・ライセンス）の表示ロジックを改善。
+    - **Change**: `Wikipedia` または `Creative Commons (CC)` ライセンスの場合のみクレジットを表示し、個人の写真や不明なソースの場合は非表示にするよう変更。
+- **TOS Modal Persistence**:
+    - **Error Handling**: 利用規約への同意時に通信エラー（Quota Exceeded等）が発生した場合、同意済みと誤判定されず、適切にエラーを表示して再試行を促すよう修正。
+    - **Guest Guard**: 認証初期化中の不整合な状態（Guest User）での誤った更新処理を防止。
+- **Console Warnings**:
+    - Rechartsグラフ描画時の「width(-1)」警告を解消（`minWidth={0}` の追加）。
+
+### Changed (変更)
+- **Admin UX Improvement**:
+    - 生物の編集・削除操作時にページ全体がリロードされる挙動を廃止。Firestoreのリアルタイム更新を活用し、スムーズな操作感を実現。
+- **Admin Features**:
+    - 生物データ管理画面に `Image Credit` および `Image License` の編集フィールドを追加。
+
 
 ## [v1.4.0] - 2025-12-15
 

@@ -11,8 +11,8 @@
 | **IMG-01** | 画像なし/空URL | 1. `AdminCreatureCleansingPage`（管理画面）に移動する。<br>2. 画像URLが空の生物を探す。<br>3. 画像列を確認する。 | プレースホルダー画像 `no-image-creature.png` が表示されること。<br>著作権クレジットが表示されないこと。 |
 | **IMG-02** | リンク切れ画像 | 1. `AdminCreatureCleansingPage` に移動する。<br>2. 生物を編集し、`imageUrl` に存在しないURL（例: `http://example.com/fail.jpg`）を設定する。<br>3. 保存してリストを確認する。<br>4. その生物の `CreatureDetailPage`（詳細画面）を開く。 | `onError` ハンドラにより、自動的に `no-image-creature.png` に切り替わって表示されること。<br>著作権クレジットが表示されないこと。 |
 | **IMG-03** | 著作権クレジット（非表示） | 1. 生物の `imageUrl` に有効なURLを設定する。<br>2. `imageCredit` に "Myself"（自分）などを設定する。<br>3. `imageLicense` を空にする。<br>4. 詳細画面を確認する。 | 著作権クレジット（オーバーレイ）が表示**されない**こと。 |
-| **IMG-04** | 著作権クレジット（表示 - Wiki） | 1. `imageCredit` に "Wikipedia User" を設定する。<br>2. 詳細画面を確認する。 | 著作権クレジット `© Wikipedia User` が表示されること。 |
-| **IMG-05** | 著作権クレジット（表示 - CC） | 1. `imageLicense` に "CC BY-SA 4.0" を設定する。<br>2. 詳細画面を確認する。 | 著作権クレジット `© ... (CC BY-SA 4.0)` が表示されること。 |
+| **IMG-04** | 著作権クレジット（表示 - Wiki） | 1. `imageCredit` に "Wikipedia User" を設定する。<br>2. `imageLicense` を空に設定する。<br>3. 詳細画面を確認する。 | 著作権クレジット `© Wikipedia User` が表示されること。 |
+| **IMG-05** | 著作権クレジット（表示 - CC） | 1. `imageCredit` に "Test Photographer" を設定する。<br>2. `imageLicense` に "CC BY-SA 4.0" を設定する。<br>3. 詳細画面を確認する。 | 著作権クレジット `© Test Photographer (CC BY-SA 4.0)` が表示されること。 |
 
 ## 2. 機能: 利用規約モーダル
 
