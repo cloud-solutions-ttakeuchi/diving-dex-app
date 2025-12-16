@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Edit2, Trash2, Save, X, RefreshCw, Layers, Map as MapIcon, Globe, MapPin, ChevronDown, ChevronUp, AlertTriangle, GitMerge, Plus, Download, Check } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Save, X, RefreshCw, Layers, Map as MapIcon, Globe, MapPin, ChevronDown, ChevronUp, AlertTriangle, GitMerge, Plus, Download, Check, CircleOff } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { writeBatch, collection, getDocs, query, where, doc, updateDoc, arrayRemove, arrayUnion, deleteDoc, setDoc, deleteField } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -1395,46 +1395,55 @@ export const AdminAreaCleansingPage = () => {
             </button>
             <button
               onClick={async () => {
-                if (!window.confirm('【重要】Master Dataを完全にリセットしますか？\n\n1. Regions, Zones, Areas, Points, PointCreatures の全ドキュメントを物理削除します。\n2. JSON(mockData)から初期データを再生成します。\n\n※ユーザーログ(Logs)は残りますが、古いエリアIDを参照している場合は"Unknown"等になります。\n\n本当によろしいですか？')) return;
+                if (!window.confirm('【重要】Master Dataを完全にリセットしますか？\n\n1. Regions, Zones, Areas, Points, Creatures, PointCreatures の全ドキュメントを物理削除します。\n2. JSON(mockData)から初期データを再生成します。\n\n※ユーザーログ(Logs)は残りますが、古いエリアIDを参照している場合は"Unknown"等になります。\n\n本当によろしいですか？')) return;
 
                 const code = window.prompt('確認のため "RESET" と入力してください。');
                 if (code !== 'RESET') return;
 
                 setProcessing(true);
                 try {
-                  const collections = ['regions', 'zones', 'areas', 'points', 'point_creatures'];
+                  const collections = ['regions', 'zones', 'areas', 'points', 'creatures', 'point_creatures'];
+                  const deletionStats: Record<string, number> = {};
 
                   // 1. Delete All Documents in Master Collections
-                  // Note: This is client-side iteration. If huge data, it might timeout or cost reads/writes.
-                  // For "Reset", we assume < 2000 items total, which is manageable.
-                  let deletedCount = 0;
-
                   for (const colName of collections) {
+                    console.log(`Fetching ${colName}...`);
                     const snap = await getDocs(collection(db, colName));
+                    console.log(`${colName}: Found ${snap.size} docs.`);
+
+                    if (snap.empty) {
+                      deletionStats[colName] = 0;
+                      continue;
+                    }
+
                     const batchSize = 400;
                     const chunks = [];
                     const tempDocs = [...snap.docs];
                     while (tempDocs.length > 0) chunks.push(tempDocs.splice(0, batchSize));
 
+                    let colDeletedCount = 0;
                     for (const chunk of chunks) {
                       const batch = writeBatch(db);
                       chunk.forEach(d => batch.delete(d.ref));
                       await batch.commit();
-                      deletedCount += chunk.length;
+                      colDeletedCount += chunk.length;
                     }
+                    deletionStats[colName] = colDeletedCount;
+                    console.log(`${colName}: Deleted ${colDeletedCount} docs.`);
                   }
 
-                  console.log(`Deleted ${deletedCount} documents.`);
+                  const statsMsg = Object.entries(deletionStats).map(([k, v]) => `${k}: ${v}`).join('\n');
+                  console.log('Deletion Complete:\n' + statsMsg);
 
                   // 2. Re-Seed
                   await seedFirestore(true); // Force run
 
-                  alert('リセット完了しました。画面をリロードします。');
+                  alert(`リセット完了しました。\n(初期データへの復元が完了しました)\n\n削除内訳:\n${statsMsg}\n\n画面をリロードします。`);
                   window.location.reload();
 
-                } catch (e) {
+                } catch (e: any) {
                   console.error(e);
-                  alert('リセット中にエラーが発生しました: ' + e);
+                  alert('リセット中にエラーが発生しました: ' + e.message);
                 } finally {
                   setProcessing(false);
                 }
@@ -1444,6 +1453,63 @@ export const AdminAreaCleansingPage = () => {
             >
               <Trash2 size={12} />
               HARD RESET DB
+            </button>
+            <button
+              onClick={async () => {
+                if (!window.confirm('【警告】Master Dataを空にしますか？ (Truncate)\n\n1. Regions, Zones, Areas, Points, Creatures, PointCreatures の全ドキュメントを物理削除します。\n2. 自動でのデータ復元は行いません。\n\nデータは0件になります。本当によろしいですか？')) return;
+
+                const code = window.prompt('確認のため "TRUNCATE" と入力してください。');
+                if (code !== 'TRUNCATE') return;
+
+                setProcessing(true);
+                try {
+                  const collections = ['regions', 'zones', 'areas', 'points', 'creatures', 'point_creatures'];
+                  const deletionStats: Record<string, number> = {};
+
+                  for (const colName of collections) {
+                    console.log(`Fetching ${colName}...`);
+                    const snap = await getDocs(collection(db, colName));
+                    console.log(`${colName}: Found ${snap.size} docs.`);
+
+                    if (snap.empty) {
+                      deletionStats[colName] = 0;
+                      continue;
+                    }
+
+                    const batchSize = 400;
+                    const chunks = [];
+                    const tempDocs = [...snap.docs];
+                    while (tempDocs.length > 0) chunks.push(tempDocs.splice(0, batchSize));
+
+                    let colDeletedCount = 0;
+                    for (const chunk of chunks) {
+                      const batch = writeBatch(db);
+                      chunk.forEach(d => batch.delete(d.ref));
+                      await batch.commit();
+                      colDeletedCount += chunk.length;
+                    }
+                    deletionStats[colName] = colDeletedCount;
+                    console.log(`${colName}: Deleted ${colDeletedCount} docs.`);
+                  }
+
+                  const statsMsg = Object.entries(deletionStats).map(([k, v]) => `${k}: ${v}`).join('\n');
+                  console.log('Truncate Complete:\n' + statsMsg);
+
+                  alert(`全データの削除が完了しました。\n(マスタデータは空の状態です)\n\n削除内訳:\n${statsMsg}\n\n画面をリロードします。`);
+                  window.location.reload();
+
+                } catch (e: any) {
+                  console.error(e);
+                  alert('削除中にエラーが発生しました: ' + e.message);
+                } finally {
+                  setProcessing(false);
+                }
+              }}
+              disabled={processing}
+              className="px-3 py-1 bg-black text-white font-bold rounded hover:bg-gray-800 transition-colors flex items-center gap-2 text-xs ml-4 border border-gray-600"
+            >
+              <CircleOff size={12} />
+              TRUNCATE DB
             </button>
             <button
               onClick={async () => {

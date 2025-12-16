@@ -20,6 +20,7 @@ import { ProposePointPage } from './pages/ProposePointPage';
 import { AdminProposalsPage } from './pages/AdminProposalsPage';
 import { AdminUsersPage } from './pages/AdminUsersPage';
 import { AdminAreaCleansingPage } from './pages/AdminAreaCleansingPage';
+import { AdminCreatureCleansingPage } from './pages/AdminCreatureCleansingPage';
 import { PublicLogsPage } from './pages/PublicLogsPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
@@ -51,6 +52,7 @@ function App() {
               <Route path="/admin/proposals" element={<AdminProposalsPage />} />
               <Route path="/admin/users" element={<AdminUsersPage />} />
               <Route path="/admin/areas" element={<AdminAreaCleansingPage />} />
+              <Route path="/admin/creatures" element={<AdminCreatureCleansingPage />} />
               <Route path="/points" element={<PointSearchPage />} />
               <Route path="/logs" element={<PublicLogsPage />} />
               <Route path="/point/:id" element={<PointDetailPage />} />

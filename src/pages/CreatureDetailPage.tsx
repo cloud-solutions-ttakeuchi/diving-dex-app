@@ -27,6 +27,7 @@ export const CreatureDetailPage = () => {
   const [isDiscoveryModalOpen, setIsDiscoveryModalOpen] = useState(false);
   const [selectedSpotId, setSelectedSpotId] = useState<string>('');
   const [selectedRarity, setSelectedRarity] = useState<Rarity>('Common');
+  const [imgError, setImgError] = useState(false);
 
   const creature = creatures.find(c => c.id === id);
   if (!creature) return <div className="text-center mt-20">Not Found</div>;
@@ -97,19 +98,34 @@ export const CreatureDetailPage = () => {
           <div className="w-full md:w-1/2 flex items-center justify-center relative min-h-[300px]">
             {/* Background Pattern for Image */}
             <div className="absolute inset-0 bg-[radial-gradient(#E9ECEF_2px,transparent_2.5px)] [background-size:20px_20px] opacity-50 rounded-full scale-90"></div>
-            <motion.img
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              src={creature.imageUrl}
-              alt={creature.name}
-              className="w-full max-w-[350px] h-auto object-contain z-10 drop-shadow-lg"
-            />
-            {/* Copyright Credit */}
-            {(creature.imageCredit || creature.imageLicense) && (
-              <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded z-20 pointer-events-none">
-                © {creature.imageCredit || 'Unknown'} {creature.imageLicense && `(${creature.imageLicense})`}
-              </div>
+            {creature.imageUrl && !imgError ? (
+              <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                src={creature.imageUrl}
+                alt={creature.name}
+                className="w-full max-w-[350px] h-auto object-contain z-10 drop-shadow-lg"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <motion.img
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                src="/images/no-image-creature.png"
+                alt={creature.name}
+                className="w-full max-w-[350px] h-auto object-contain z-10 drop-shadow-lg grayscale opacity-50"
+              />
             )}
+            {/* Copyright Credit */}
+            {creature.imageUrl && !imgError && (
+              (creature.imageCredit?.toLowerCase().includes('wikipedia') ||
+                creature.imageLicense?.toLowerCase().includes('cc') ||
+                creature.imageLicense?.toLowerCase().includes('creative commons'))
+            ) && (
+                <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded z-20 pointer-events-none">
+                  © {creature.imageCredit || 'Unknown'} {creature.imageLicense && `(${creature.imageLicense})`}
+                </div>
+              )}
           </div>
 
           {/* Name Card (Top Right) */}
@@ -268,7 +284,7 @@ export const CreatureDetailPage = () => {
           <div className="bg-white rounded-[10px] p-4 md:p-8 shadow-sm border border-gray-200 h-full flex flex-col items-center justify-center relative">
             <h3 className="absolute top-4 left-6 font-bold text-gray-400 text-sm">パラメーター</h3>
             <div className="w-full h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                 <RadarChart cx="50%" cy="50%" outerRadius="70%" data={[
                   { subject: '人気', A: creature.stats?.popularity || 50, fullMark: 100 },
                   { subject: '大きさ', A: creature.stats?.size || 20, fullMark: 100 },

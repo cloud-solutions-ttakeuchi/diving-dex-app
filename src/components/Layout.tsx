@@ -106,6 +106,12 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
                     ユーザー管理
                   </Link>
                 )}
+                <Link to="/admin/areas" onClick={() => setIsMenuOpen(false)} className="text-lg font-bold text-gray-600 hover:text-purple-600">
+                  エリア管理
+                </Link>
+                <Link to="/admin/creatures" onClick={() => setIsMenuOpen(false)} className="text-lg font-bold text-gray-600 hover:text-purple-600">
+                  生物管理
+                </Link>
               </div>
             )}
             <button onClick={() => {
