@@ -38,10 +38,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
           {/* Logo Area */}
           <Link to="/" className="flex items-center gap-2 group">
             <div className="relative">
-              <img src="/images/logo.png" alt="DiveDex Logo" className="w-14 h-14 object-contain mix-blend-multiply brightness-110 contrast-110" />
+              <img src="/images/logo.png" alt="WeDive Logo" className="w-14 h-14 object-contain mix-blend-multiply brightness-110 contrast-110" />
             </div>
             <span className="text-2xl font-extrabold text-gray-700 tracking-tight" style={{ fontFamily: '"M PLUS Rounded 1c", sans-serif' }}>
-              <span className="text-cyan-500">Dive</span>Dex
+              <span className="text-cyan-500">We</span>Dive
             </span>
           </Link>
 
@@ -142,10 +142,10 @@ export const Layout = ({ children }: { children: React.ReactNode }) => {
 
           </div>
           <p className="text-xs text-gray-400 font-medium">
-            © 2025 DiveDex. All rights reserved.
+            © 2025 WeDive. All rights reserved.
           </p>
         </div>
-      </footer>
-    </div>
+      </footer >
+    </div >
   );
 };
