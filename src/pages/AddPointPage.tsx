@@ -7,16 +7,19 @@ import type { Point } from '../types';
 
 export const AddPointPage = () => {
   const navigate = useNavigate();
-  const { addPoint, isAuthenticated } = useApp();
+  const { addPoint, isAuthenticated, regions, zones, areas } = useApp();
 
   // Authentication check moved to render phase to avoid conditional hooks
   const showAccessDenied = !isAuthenticated;
 
+  // Selection State
+  const [selectedRegionId, setSelectedRegionId] = useState<string>('');
+  const [selectedZoneId, setSelectedZoneId] = useState<string>('');
+  const [selectedAreaId, setSelectedAreaId] = useState<string>('');
+
   const [formData, setFormData] = useState({
     name: '',
-    region: '日本',
-    zone: '沖縄本島',
-    area: '恩納村',
+    // region, zone, area strings will be derived from selection on submit
     level: 'Beginner',
     maxDepth: '15',
     entryType: 'boat',
@@ -29,9 +32,33 @@ export const AddPointPage = () => {
     images: [] as string[],
   });
 
+  // Filtered Options
+  const visibleZones = selectedRegionId
+    ? zones.filter(z => z.regionId === selectedRegionId)
+    : [];
+
+  const visibleAreas = selectedZoneId
+    ? areas.filter(a => a.zoneId === selectedZoneId)
+    : [];
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRegionId(e.target.value);
+    setSelectedZoneId('');
+    setSelectedAreaId('');
+  };
+
+  const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedZoneId(e.target.value);
+    setSelectedAreaId('');
+  };
+
+  const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedAreaId(e.target.value);
   };
 
   const handleTopographyChange = (type: string) => {
@@ -69,13 +96,27 @@ export const AddPointPage = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!selectedRegionId || !selectedZoneId || !selectedAreaId) {
+      alert('地域・エリア・地区を選択してください');
+      return;
+    }
+
+    const region = regions.find(r => r.id === selectedRegionId);
+    const zone = zones.find(z => z.id === selectedZoneId);
+    const area = areas.find(a => a.id === selectedAreaId);
+
+    if (!region || !zone || !area) {
+      alert('選択された地域情報の取得に失敗しました');
+      return;
+    }
+
     try {
       const pointData: Omit<Point, 'id'> = {
         name: formData.name,
-        areaId: 'temp_area_id', // Placeholder or logic to find/create area
-        region: formData.region,
-        zone: formData.zone,
-        area: formData.area,
+        areaId: selectedAreaId,
+        region: region.name,
+        zone: zone.name,
+        area: area.name,
         level: formData.level as any,
         maxDepth: Number(formData.maxDepth),
         entryType: formData.entryType as any,
@@ -92,7 +133,6 @@ export const AddPointPage = () => {
         createdAt: new Date().toISOString(),
         images: formData.images,
         imageUrl: formData.images[0] || '/images/seascape.png',
-        /* creatures: [] removed */
         bookmarkCount: 0
       };
 
@@ -157,33 +197,47 @@ export const AddPointPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">国・地域 (Region)</label>
-                <input
-                  type="text"
-                  name="region"
-                  value={formData.region}
-                  onChange={handleChange}
+                <select
+                  value={selectedRegionId}
+                  onChange={handleRegionChange}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
+                  required
+                >
+                  <option value="">地域を選択</option>
+                  {regions.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">エリア (Zone)</label>
-                <input
-                  type="text"
-                  name="zone"
-                  value={formData.zone}
-                  onChange={handleChange}
+                <select
+                  value={selectedZoneId}
+                  onChange={handleZoneChange}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
+                  disabled={!selectedRegionId}
+                  required
+                >
+                  <option value="">{selectedRegionId ? 'エリアを選択' : '地域を選択してください'}</option>
+                  {visibleZones.map(z => (
+                    <option key={z.id} value={z.id}>{z.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">地区 (Area)</label>
-                <input
-                  type="text"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleChange}
+                <select
+                  value={selectedAreaId}
+                  onChange={handleAreaChange}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
+                  disabled={!selectedZoneId}
+                  required
+                >
+                  <option value="">{selectedZoneId ? '地区を選択' : 'エリアを選択してください'}</option>
+                  {visibleAreas.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </section>
