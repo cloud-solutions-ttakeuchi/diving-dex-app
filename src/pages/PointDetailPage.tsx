@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ImageWithFallback } from '../components/common/ImageWithFallback'; // Import
+import { ImageWithFallback } from '../components/common/ImageWithFallback';
 import { MapPin, Droplets, Wind, Mountain, ArrowLeft, Plus, Search, X, Check, Anchor, AlertCircle, Bookmark, Star } from 'lucide-react';
 import clsx from 'clsx';
 import type { Creature, Rarity } from '../types';
+import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
 export const PointDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,10 +13,12 @@ export const PointDetailPage = () => {
   const { points, creatures, pointCreatures, currentUser, toggleBookmarkPoint, isAuthenticated, removePointCreature } = useApp();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  // Local state to track creatures added in this session (to show "Pending" status)
-  // Store as object to keep track of rarity too for optimistic display
-  /* sentPendingCreatures removed */
-  /* const pendingCreatureIds removed */
+  const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || import.meta.env.VITE_FIREBASE_API_KEY || '';
+  const { isLoaded } = useJsApiLoader({
+    id: 'google-map-script',
+    googleMapsApiKey: apiKey,
+    language: 'ja'
+  });
 
   const point = points.find(p => p.id === id);
 
@@ -47,7 +50,7 @@ export const PointDetailPage = () => {
     });
     return Array.from(uniqueMap.values());
 
-  }, [point, creatures, pointCreatures]); // Removed pendingCreatures usage as we now rely on Context State
+  }, [point, creatures, pointCreatures]);
 
   if (!point) {
     return <div className="p-8 text-center">Point not found</div>;
@@ -96,7 +99,17 @@ export const PointDetailPage = () => {
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10 text-white max-w-[1200px] mx-auto">
           <div className="flex items-center gap-2 text-sm font-bold opacity-90 mb-3 text-cyan-300">
             <MapPin size={16} />
-            {point.region} &gt; {point.zone} &gt; {point.area}
+            <Link to={`/points?region=${encodeURIComponent(point.region)}`} className="hover:underline hover:text-white transition-colors">
+              {point.region}
+            </Link>
+            &gt;
+            <Link to={`/points?zone=${encodeURIComponent(point.zone)}`} className="hover:underline hover:text-white transition-colors">
+              {point.zone}
+            </Link>
+            &gt;
+            <Link to={`/points?area=${encodeURIComponent(point.area)}`} className="hover:underline hover:text-white transition-colors">
+              {point.area}
+            </Link>
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold mb-4 tracking-tight shadow-sm">{point.name}</h1>
           <div className="flex flex-wrap gap-2">
@@ -181,15 +194,7 @@ export const PointDetailPage = () => {
                         onClick={(e) => {
                           e.preventDefault();
                           if (window.confirm('この生物の関連付けを削除（または削除申請）しますか？')) {
-                            // Debugging
-                            /* const link removed */
-                            // alert(`Debug: Role=${currentUser.role}, LinkID=${link?.id}, Point=${point.id}, Creature=${creature.id}`);
-
-                            // Call context remove
                             removePointCreature(point.id, creature.id);
-
-                            // Optimistic UI handled by Context
-                            // alert('削除/申請リクエストを送信しました');
                           }
                         }}
                         className="absolute top-2 left-2 p-1.5 bg-black/40 hover:bg-red-500/80 rounded-full text-white/70 hover:text-white transition-colors z-20 backdrop-blur-sm"
@@ -255,23 +260,58 @@ export const PointDetailPage = () => {
             <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2 border-b border-gray-100 pb-3">
               <MapPin size={18} className="text-ocean" /> アクセス・地図
             </h3>
-            <div className="aspect-video bg-gray-100 rounded-xl flex flex-col items-center justify-center text-gray-400 mb-4 overflow-hidden relative group cursor-pointer">
-              <MapPin size={32} className="mb-2 text-gray-300 group-hover:text-ocean transition-colors" />
-              <span className="text-xs font-bold">Google Map</span>
+
+            <div className="aspect-video bg-gray-100 rounded-xl overflow-hidden relative group">
+              {point.coordinates ? (
+                isLoaded ? (
+                  <GoogleMap
+                    mapContainerStyle={{ width: '100%', height: '100%' }}
+                    center={point.coordinates}
+                    zoom={14}
+                    options={{
+                      disableDefaultUI: true,
+                      gestureHandling: 'cooperative',
+                      streetViewControl: false,
+                      mapTypeControl: false
+                    }}
+                  >
+                    <Marker position={point.coordinates} />
+                  </GoogleMap>
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading Map...</div>
+                )
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center text-gray-400">
+                  <MapPin size={32} className="mb-2 text-gray-300" />
+                  <span className="text-xs font-bold">位置情報なし</span>
+                </div>
+              )}
             </div>
-            <div className="text-sm text-gray-600 space-y-4">
+
+            <div className="text-sm text-gray-600 space-y-4 mt-4">
               <div>
                 <p className="font-bold text-gray-900 mb-1">所在地</p>
-                <p>{point.region} {point.zone} {point.area}</p>
+                <p>{point.formattedAddress || `${point.region} ${point.zone} ${point.area}`}</p>
               </div>
               <div>
                 <p className="font-bold text-gray-900 mb-1">アクセス</p>
                 <p>車でのアクセスが便利です。近くにダイビングショップ「{point.area}ダイバーズ」があります。</p>
               </div>
             </div>
-            <button className="w-full mt-6 bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors">
-              Google Mapで開く
-            </button>
+
+            {point.coordinates && (
+              <a
+                href={point.googlePlaceId
+                  ? `https://www.google.com/maps/search/?api=1&query=Google&query_place_id=${point.googlePlaceId}`
+                  : `https://www.google.com/maps/search/?api=1&query=${point.coordinates.lat},${point.coordinates.lng}`
+                }
+                target="_blank"
+                rel="noreferrer"
+                className="block w-full mt-6 bg-gray-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors text-center"
+              >
+                Google Mapで開く
+              </a>
+            )}
           </div>
         </div>
       </div >

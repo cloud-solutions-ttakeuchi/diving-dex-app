@@ -5,6 +5,8 @@ import { ChevronLeft, MapPin, Camera, Info, Anchor, Mountain } from 'lucide-reac
 import { compressImage } from '../utils/imageUtils';
 import type { Point } from '../types';
 
+import { MapPickerModal } from '../components/MapPickerModal';
+
 export const AddPointPage = () => {
   const navigate = useNavigate();
   const { addPoint, isAuthenticated, regions, zones, areas } = useApp();
@@ -16,6 +18,7 @@ export const AddPointPage = () => {
   const [selectedRegionId, setSelectedRegionId] = useState<string>('');
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
   const [selectedAreaId, setSelectedAreaId] = useState<string>('');
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -29,6 +32,8 @@ export const AddPointPage = () => {
     features: '',
     lat: '',
     lng: '',
+    googlePlaceId: undefined as string | undefined, // New
+    formattedAddress: undefined as string | undefined, // New
     images: [] as string[],
   });
 
@@ -128,6 +133,8 @@ export const AddPointPage = () => {
           lat: Number(formData.lat),
           lng: Number(formData.lng)
         } : undefined,
+        googlePlaceId: formData.googlePlaceId, // New
+        formattedAddress: formData.formattedAddress, // New
         status: 'pending',
         submitterId: 'current_user',
         createdAt: new Date().toISOString(),
@@ -306,7 +313,53 @@ export const AddPointPage = () => {
             </div>
           </section>
 
-          {/* Details */}
+          {/* Location (Optional) */}
+          <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 border-b pb-2 flex items-center gap-2">
+              <MapPin size={20} className="text-red-500" /> 位置情報 (任意)
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">緯度 (Latitude)</label>
+                <input
+                  type="number"
+                  step="any"
+                  name="lat"
+                  value={formData.lat}
+                  onChange={handleChange}
+                  placeholder="例: 26.500000"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">経度 (Longitude)</label>
+                <input
+                  type="number"
+                  step="any"
+                  name="lng"
+                  value={formData.lng}
+                  onChange={handleChange}
+                  placeholder="例: 127.900000"
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
+                />
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                console.log("Map button clicked");
+                setIsMapOpen(true);
+              }}
+              className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:bg-gray-50 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
+            >
+              <MapPin size={18} />
+              地図から位置を選択
+            </button>
+          </section>
+
+          {/* Details (Continued) */}
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
             <h2 className="text-lg font-bold text-gray-900 border-b pb-2 flex items-center gap-2">
               <Mountain size={20} className="text-green-500" /> 詳細情報
@@ -335,33 +388,6 @@ export const AddPointPage = () => {
                 placeholder="例: カメが見れる, 光が綺麗, マクロ派向け"
               />
             </div>
-
-            {/*
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">緯度 (Latitude)</label>
-                <input
-                  type="number"
-                  step="any"
-                  name="lat"
-                  value={formData.lat}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">経度 (Longitude)</label>
-                <input
-                  type="number"
-                  step="any"
-                  name="lng"
-                  value={formData.lng}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-            </div>
-            */}
           </section>
 
           {/* Photos */}
@@ -414,6 +440,32 @@ export const AddPointPage = () => {
 
         </form>
       </main>
+
+      {/* Map Modal - Moved outside to avoid stacking context issues */}
+      {isMapOpen && (
+        <MapPickerModal
+          initialLat={formData.lat}
+          initialLng={formData.lng}
+          initialSearchQuery={
+            [
+              regions.find(r => r.id === selectedRegionId)?.name,
+              zones.find(z => z.id === selectedZoneId)?.name,
+              areas.find(a => a.id === selectedAreaId)?.name
+            ].filter(Boolean).join(' ')
+          }
+          onClose={() => setIsMapOpen(false)}
+          onConfirm={(lat, lng, placeId, address) => {
+            setFormData(prev => ({
+              ...prev,
+              lat,
+              lng,
+              googlePlaceId: placeId,
+              formattedAddress: address
+            }));
+            setIsMapOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 };
