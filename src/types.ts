@@ -46,6 +46,8 @@ export interface Point {
     lat: number;
     lng: number;
   };
+  googlePlaceId?: string; // New: Google Maps Place ID
+  formattedAddress?: string; // New: Google Maps Formatted Address
 
   // System
   status: 'pending' | 'approved' | 'rejected';

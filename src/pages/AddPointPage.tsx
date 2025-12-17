@@ -32,6 +32,8 @@ export const AddPointPage = () => {
     features: '',
     lat: '',
     lng: '',
+    googlePlaceId: undefined as string | undefined, // New
+    formattedAddress: undefined as string | undefined, // New
     images: [] as string[],
   });
 
@@ -131,6 +133,8 @@ export const AddPointPage = () => {
           lat: Number(formData.lat),
           lng: Number(formData.lng)
         } : undefined,
+        googlePlaceId: formData.googlePlaceId, // New
+        formattedAddress: formData.formattedAddress, // New
         status: 'pending',
         submitterId: 'current_user',
         createdAt: new Date().toISOString(),
@@ -344,7 +348,10 @@ export const AddPointPage = () => {
 
             <button
               type="button"
-              onClick={() => setIsMapOpen(true)}
+              onClick={() => {
+                console.log("Map button clicked");
+                setIsMapOpen(true);
+              }}
               className="w-full py-2 border-2 border-dashed border-gray-300 rounded-xl text-gray-500 font-bold hover:bg-gray-50 hover:border-blue-400 hover:text-blue-500 transition-colors flex items-center justify-center gap-2"
             >
               <MapPin size={18} />
@@ -382,19 +389,6 @@ export const AddPointPage = () => {
               />
             </div>
           </section>
-
-          {/* Map Modal */}
-          {isMapOpen && (
-            <MapPickerModal
-              initialLat={formData.lat}
-              initialLng={formData.lng}
-              onClose={() => setIsMapOpen(false)}
-              onConfirm={(lat, lng) => {
-                setFormData(prev => ({ ...prev, lat, lng }));
-                setIsMapOpen(false);
-              }}
-            />
-          )}
 
           {/* Photos */}
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 space-y-4">
@@ -446,6 +440,32 @@ export const AddPointPage = () => {
 
         </form>
       </main>
-    </div >
+
+      {/* Map Modal - Moved outside to avoid stacking context issues */}
+      {isMapOpen && (
+        <MapPickerModal
+          initialLat={formData.lat}
+          initialLng={formData.lng}
+          initialSearchQuery={
+            [
+              regions.find(r => r.id === selectedRegionId)?.name,
+              zones.find(z => z.id === selectedZoneId)?.name,
+              areas.find(a => a.id === selectedAreaId)?.name
+            ].filter(Boolean).join(' ')
+          }
+          onClose={() => setIsMapOpen(false)}
+          onConfirm={(lat, lng, placeId, address) => {
+            setFormData(prev => ({
+              ...prev,
+              lat,
+              lng,
+              googlePlaceId: placeId,
+              formattedAddress: address
+            }));
+            setIsMapOpen(false);
+          }}
+        />
+      )}
+    </div>
   );
 };
