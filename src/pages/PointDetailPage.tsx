@@ -7,6 +7,8 @@ import clsx from 'clsx';
 import type { Creature, Rarity } from '../types';
 import { GoogleMap, useJsApiLoader, Marker } from '@react-google-maps/api';
 
+const libraries: ("places" | "geometry")[] = ["places"];
+
 export const PointDetailPage = () => {
   const { id } = useParams<{ id: string }>();
   // Use pointCreatures from context
@@ -17,6 +19,7 @@ export const PointDetailPage = () => {
   const { isLoaded } = useJsApiLoader({
     id: 'google-map-script',
     googleMapsApiKey: apiKey,
+    libraries,
     language: 'ja'
   });
 
