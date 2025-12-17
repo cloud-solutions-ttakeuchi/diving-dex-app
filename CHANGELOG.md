@@ -1,6 +1,22 @@
 # Changelog
 
 プロジェクトの変更履歴を記録します。
+## [v2.1.0] - 2025-12-17
+
+### Added (追加)
+- **Google Maps Integration (Registration & Display)**:
+    - **Add Point**: 新しい「ポイント登録」画面にGoogle Maps連携機能を実装。`Maps JavaScript API` と `Places API (New)` を活用。
+        - **Map Picker**: 地図上から正確な位置（緯度経度）を選択可能に。
+        - **Text Search**: 地名検索（例: "伊豆海洋公園"）機能を追加し、検索結果からピンを自動配置。
+    - **Point Detail**: ポイント詳細ページに動的なGoogle Mapを表示し、正確な位置情報を視覚化。
+    - **Breadcrumbs**: ポイント詳細ページに、国・地域 > エリア > ポイント の階層リンク（パンくずリスト）を追加し、検索ページへのスムーズなナビゲーションを実現。
+
+### Changed (変更)
+- **API Modernization**:
+    - **New Places API**: Google Maps Platformの新しいポリシー（2025年3月以降）に準拠するため、古い `Autocomplete` ウィジェットや `PlacesService` の使用を完全に廃止し、新しい `Place.searchByText` と `fetchFields` メソッドに移行。
+- **UI Improvements**:
+    - **Image Fallback**: 手動登録されたポイントで画像がない場合に、美しい代替画像 (`seascape.png`) を表示するように修正。
+
 ## [v2.0.0] - 2025-12-17
 
 ### Major Changes (メジャー変更)
