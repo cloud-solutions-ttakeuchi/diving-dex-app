@@ -551,10 +551,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       id: `c${Date.now()}`,
     };
 
+    const payload = sanitizePayload(newCreature);
+
     // Firestore Persist
     if (isAuthenticated) {
       try {
-        await setDoc(doc(firestore, 'creatures', newCreature.id), newCreature);
+        await setDoc(doc(firestore, 'creatures', newCreature.id), payload);
       } catch (e) {
         console.error(e);
       }
@@ -568,10 +570,12 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       id: `p${Date.now()}`,
     };
 
+    const payload = sanitizePayload(newPoint);
+
     // Firestore Persist
     if (isAuthenticated) {
       try {
-        await setDoc(doc(firestore, 'points', newPoint.id), newPoint);
+        await setDoc(doc(firestore, 'points', newPoint.id), payload);
       } catch (e) {
         console.error(e);
       }
@@ -602,13 +606,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     });
 
     try {
-      await setDoc(doc(firestore, 'point_creatures', relId), pointCreatureData);
+      await setDoc(doc(firestore, 'point_creatures', relId), sanitizePayload(pointCreatureData));
       console.log(`[CTX - ADD] Firestore write success`);
     } catch (e) {
       console.error(`[CTX - ADD] Firestore write failed`, e);
       throw e;
     }
   };
+
 
   const removePointCreature = async (pointId: string, creatureId: string) => {
     if (!isAuthenticated) return;
@@ -715,7 +720,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (isAuthenticated) {
       try {
         const creatureRef = doc(firestore, 'creatures', creatureId);
-        await updateDoc(creatureRef, creatureData);
+        await updateDoc(creatureRef, sanitizePayload(creatureData));
       } catch (e) {
         console.error(e);
       }
@@ -727,7 +732,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     if (isAuthenticated) {
       try {
         const pointRef = doc(firestore, 'points', pointId);
-        await updateDoc(pointRef, pointData);
+        await updateDoc(pointRef, sanitizePayload(pointData));
       } catch (e) {
         console.error(e);
       }
