@@ -29,11 +29,11 @@ exports.getConciergeResponse = (0, https_1.onCall)({ region: "asia-northeast1" }
         return `スポット名: ${d.name} (${d.area}), レベル: ${d.level}, 特徴: ${d.features}, 深度: ${d.maxDepth}m, 説明: ${d.description}`;
     }).join("\n---\n");
     const vertexAI = new vertexai_1.VertexAI({
-        project: process.env.GCLOUD_PROJECT,
-        location: "asia-northeast1"
+        project: process.env.GCLOUD_PROJECT || "dive-dex-app-dev",
+        location: "us-central1"
     });
     const model = vertexAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.0-flash-exp",
     });
     const prompt = `あなたはWeDiveのダイビングコンシェルジュです。
 以下のデータベース情報を参考にして、ユーザーの質問に日本語で親身に回答してください。

@@ -30,12 +30,12 @@ export const getConciergeResponse = onCall({ region: "asia-northeast1" }, async 
   }).join("\n---\n");
 
   const vertexAI = new VertexAI({
-    project: process.env.GCLOUD_PROJECT,
-    location: "asia-northeast1"
+    project: process.env.GCLOUD_PROJECT || "dive-dex-app-dev",
+    location: "us-central1"
   });
 
   const model = vertexAI.getGenerativeModel({
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash-exp",
   });
 
   const prompt = `あなたはWeDiveのダイビングコンシェルジュです。
