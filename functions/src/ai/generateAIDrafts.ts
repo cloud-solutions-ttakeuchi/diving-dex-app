@@ -72,7 +72,7 @@ const CREATURE_KEYWORDS = ["固有種", "絶滅危惧", "新種", "猛毒", "危
 /**
  * AI Spot Registration Assistant (with 2-Step Optimized Grounding)
  */
-export const generateSpotDraft = onCall({ region: "us-central1" }, async (request) => {
+export const generateSpotDraft = onCall({ region: "asia-northeast1" }, async (request) => {
   const { auth, data } = request;
   if (!auth) throw new Error("unauthenticated");
 
@@ -85,7 +85,7 @@ export const generateSpotDraft = onCall({ region: "us-central1" }, async (reques
 
   const vertexAI = new VertexAI({
     project: process.env.GCLOUD_PROJECT || "wedive-app",
-    location: "us-central1"
+    location: "asia-northeast1"
   });
 
   const spotSchema = {
@@ -196,7 +196,7 @@ export const generateSpotDraft = onCall({ region: "us-central1" }, async (reques
 /**
  * AI Creature Registration Assistant (with 2-Step Optimized Grounding)
  */
-export const generateCreatureDraft = onCall({ region: "us-central1" }, async (request) => {
+export const generateCreatureDraft = onCall({ region: "asia-northeast1" }, async (request) => {
   const { auth, data } = request;
   if (!auth) throw new Error("unauthenticated");
 
@@ -209,7 +209,7 @@ export const generateCreatureDraft = onCall({ region: "us-central1" }, async (re
 
   const vertexAI = new VertexAI({
     project: process.env.GCLOUD_PROJECT || "wedive-app",
-    location: "us-central1"
+    location: "asia-northeast1"
   });
 
   const creatureSchema = {

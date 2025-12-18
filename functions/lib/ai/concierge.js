@@ -11,7 +11,7 @@ const db = (0, firestore_1.getFirestore)();
  * Recommends diving spots based on user query and Firestore data.
  */
 exports.getConciergeResponse = (0, https_1.onCall)({
-    region: "us-central1",
+    region: "asia-northeast1",
     cors: ["https://wedive.app", "https://we-dive.web.app", "http://localhost:5173"]
 }, async (request) => {
     const { auth, data } = request;
@@ -33,7 +33,7 @@ exports.getConciergeResponse = (0, https_1.onCall)({
     }).join("\n---\n");
     const vertexAI = new vertexai_1.VertexAI({
         project: process.env.GCLOUD_PROJECT || "dive-dex-app-dev",
-        location: "us-central1"
+        location: "asia-northeast1"
     });
     const model = vertexAI.getGenerativeModel({
         model: "gemini-2.0-flash-exp",
