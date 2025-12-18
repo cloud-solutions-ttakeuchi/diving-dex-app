@@ -107,7 +107,7 @@ export const SpotDetail = () => {
           {/* Creatures Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {inhabitants.map((creature) => {
-              const isDiscovered = userLogs.some(l => l.creatureId === creature!.id);
+              const isDiscovered = userLogs.some(l => l.creatureId === creature!.id || l.sightedCreatures?.includes(creature!.id));
 
               return (
                 <Link

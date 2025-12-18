@@ -14,7 +14,7 @@ export const Pokedex = () => {
 
   const allCreatures = creatures;
   const userLogs = isAuthenticated ? logs : [];
-  const discoveredCreatureIds = new Set(userLogs.map(l => l.creatureId));
+  const discoveredCreatureIds = new Set(userLogs.flatMap(l => [l.creatureId, ...(l.sightedCreatures || [])]).filter(Boolean) as string[]);
 
   const filteredCreatures = allCreatures.filter(creature => {
     const term = searchTerm.toLowerCase();

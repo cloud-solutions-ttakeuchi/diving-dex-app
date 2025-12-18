@@ -36,7 +36,7 @@ export const MyPointDetail = () => {
   // logs in context are already filtered by currentUser (users/{uid}/logs)
   const userLogs = logs.filter(l => l.spotId === point.id);
 
-  const discoveredCount = new Set(userLogs.map(l => l.creatureId)).size;
+  const discoveredCount = new Set(userLogs.flatMap(l => [l.creatureId, ...(l.sightedCreatures || [])]).filter(Boolean)).size;
   const totalCount = localPointCreatures.length;
   const masteryRate = totalCount > 0 ? Math.round((discoveredCount / totalCount) * 100) : 0;
 
@@ -112,7 +112,7 @@ export const MyPointDetail = () => {
 
         <div className="grid grid-cols-3 gap-3">
           {localPointCreatures.map(creature => {
-            const isDiscovered = userLogs.some(l => l.creatureId === creature.id);
+            const isDiscovered = userLogs.some(l => l.creatureId === creature.id || l.sightedCreatures?.includes(creature.id));
 
             return (
               <Link

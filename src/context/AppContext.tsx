@@ -484,11 +484,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     // Fallback logic (if rarity not defined)
     // Use allLogs (which we are now syncing for the user, but for global rarity we might need more data.
     // For now, use available logs)
-    const creatureLogs = allLogs.filter(l => l.creatureId === creatureId);
+    const getCreatureLogs = (logs: Log[]) => logs.filter(l => l.creatureId === creatureId || l.sightedCreatures?.includes(creatureId));
 
     if (spotId) {
       const spotLogs = allLogs.filter(l => l.location.pointId === spotId);
-      const spotCreatureLogs = spotLogs.filter(l => l.creatureId === creatureId);
+      const spotCreatureLogs = getCreatureLogs(spotLogs);
       const encounterRate = spotLogs.length > 0 ? spotCreatureLogs.length / spotLogs.length : 0;
 
       if (encounterRate > 0.3) return 'Common';
@@ -499,7 +499,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
     // Global rarity fallback
     const totalLogs = allLogs.length;
-    const globalRate = totalLogs > 0 ? creatureLogs.length / totalLogs : 0;
+    const globalRate = totalLogs > 0 ? getCreatureLogs(allLogs).length / totalLogs : 0;
 
     if (globalRate > 0.2) return 'Common';
     if (globalRate > 0.05) return 'Rare';

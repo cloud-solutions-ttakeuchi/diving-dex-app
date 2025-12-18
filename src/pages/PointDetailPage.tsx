@@ -106,11 +106,11 @@ export const PointDetailPage = () => {
               {point.region}
             </Link>
             &gt;
-            <Link to={`/points?zone=${encodeURIComponent(point.zone)}`} className="hover:underline hover:text-white transition-colors">
+            <Link to={`/points?region=${encodeURIComponent(point.region)}&zone=${encodeURIComponent(point.zone)}`} className="hover:underline hover:text-white transition-colors">
               {point.zone}
             </Link>
             &gt;
-            <Link to={`/points?area=${encodeURIComponent(point.area)}`} className="hover:underline hover:text-white transition-colors">
+            <Link to={`/points?region=${encodeURIComponent(point.region)}&zone=${encodeURIComponent(point.zone)}&area=${encodeURIComponent(point.area)}`} className="hover:underline hover:text-white transition-colors">
               {point.area}
             </Link>
           </div>

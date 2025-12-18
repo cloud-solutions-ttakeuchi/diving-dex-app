@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ChevronRight, MapPin, Droplets, Anchor, Wind, Mountain, ArrowRight, Bookmark, Image as ImageIcon } from 'lucide-react';
 import clsx from 'clsx';
@@ -7,11 +7,56 @@ import type { Region, Zone, Area } from '../types';
 
 export const PointSearchPage = () => {
   const { points: allPoints, regions: allRegions, zones: allZones, areas: allAreas, currentUser, toggleBookmarkPoint } = useApp();
+  const [searchParams] = useSearchParams();
 
   // Navigation State
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
   const [selectedArea, setSelectedArea] = useState<Area | null>(null);
+
+  // Handle Query Parameters
+  useEffect(() => {
+    const regionName = searchParams.get('region');
+    const zoneName = searchParams.get('zone');
+    const areaName = searchParams.get('area');
+
+    if (regionName) {
+      const region = allRegions.find(r => r.name === regionName);
+      if (region) {
+        setSelectedRegion(region);
+        if (zoneName) {
+          const zone = allZones.find(z => z.name === zoneName && z.regionId === region.id);
+          if (zone) {
+            setSelectedZone(zone);
+            if (areaName) {
+              const area = allAreas.find(a => a.name === areaName && a.zoneId === zone.id);
+              if (area) {
+                setSelectedArea(area);
+              } else {
+                setSelectedArea(null);
+              }
+            } else {
+              setSelectedArea(null);
+            }
+          } else {
+            setSelectedZone(null);
+            setSelectedArea(null);
+          }
+        } else {
+          setSelectedZone(null);
+          setSelectedArea(null);
+        }
+      } else {
+        setSelectedRegion(null);
+        setSelectedZone(null);
+        setSelectedArea(null);
+      }
+    } else {
+      setSelectedRegion(null);
+      setSelectedZone(null);
+      setSelectedArea(null);
+    }
+  }, [searchParams, allRegions, allZones, allAreas]);
 
   // Data Helpers
   const regions = allRegions;

@@ -366,7 +366,7 @@ export const MyPage = () => {
                         return (rarityOrder[b.rarity] || 0) - (rarityOrder[a.rarity] || 0);
                       })
                       .map(creature => {
-                        const isDiscovered = userLogs.some(l => l.spotId === pm!.point.id && l.creatureId === creature.id);
+                        const isDiscovered = userLogs.some(l => l.spotId === pm!.point.id && (l.creatureId === creature.id || l.sightedCreatures?.includes(creature.id)));
                         return (
                           <div key={creature.id} className="relative w-8 h-8 rounded-full overflow-hidden border border-gray-100">
                             <img
