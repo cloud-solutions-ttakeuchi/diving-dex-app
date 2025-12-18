@@ -129,7 +129,7 @@ export const ConciergePage = () => {
                 "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-sm border transition-all",
                 message.role === 'assistant'
                   ? "bg-white border-gray-100 text-ocean-600"
-                  : "bg-ocean-500 border-ocean-400 text-white"
+                  : "bg-gray-100 border-gray-200 text-gray-500"
               )}>
                 {message.role === 'assistant' ? <Bot size={20} /> : <User size={20} />}
               </div>
@@ -139,10 +139,10 @@ export const ConciergePage = () => {
               )}>
                 <div
                   className={clsx(
-                    "p-4 rounded-2xl text-sm leading-relaxed shadow-sm font-medium",
+                    "p-4 rounded-2xl text-sm leading-relaxed shadow-sm font-medium border",
                     message.role === 'assistant'
-                      ? "bg-white text-gray-800 border border-gray-200"
-                      : "bg-white border-2 border-ocean-500 text-gray-900" // User requested 'bright blue frame'
+                      ? "bg-white text-gray-800 border-gray-200"
+                      : "bg-white text-gray-800 border-gray-100"
                   )}
                 >
                   {message.content}
