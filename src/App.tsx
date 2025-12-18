@@ -24,6 +24,7 @@ import { AdminCreatureCleansingPage } from './pages/AdminCreatureCleansingPage';
 import { PublicLogsPage } from './pages/PublicLogsPage';
 import { TermsPage } from './pages/TermsPage';
 import { PrivacyPage } from './pages/PrivacyPage';
+import { ConciergePage } from './pages/ConciergePage';
 import { TermsAgreementModal } from './components/TermsAgreementModal';
 import { LanguageProvider } from './context/LanguageContext';
 
@@ -47,6 +48,7 @@ function App() {
               <Route path="/edit-log/:id" element={<EditLogPage />} />
               <Route path="/edit-creature/:id" element={<EditCreaturePage />} />
               <Route path="/edit-point/:id" element={<EditPointPage />} />
+              <Route path="/concierge" element={<ConciergePage />} />
               <Route path="/propose-creature" element={<ProposeCreaturePage />} />
               <Route path="/propose-point" element={<ProposePointPage />} />
               <Route path="/admin/proposals" element={<AdminProposalsPage />} />

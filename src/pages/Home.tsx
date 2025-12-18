@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ImageWithFallback } from '../components/common/ImageWithFallback'; // Import
 import { LogDetailModal } from '../components/LogDetailModal';
-import { ChevronRight, ChevronLeft, Star, Heart, Bookmark, Calendar, MapPin } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Star, Heart, Bookmark, Calendar, MapPin, Bot, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import type { Log } from '../types'; // Import Log type
@@ -49,6 +49,40 @@ export const Home = () => {
 
   return (
     <div className="pb-24 space-y-16">
+      {/* 0. AI Concierge Promo */}
+      <section className="max-w-[1280px] mx-auto px-4 pt-12">
+        <Link to="/concierge" className="block group">
+          <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-r from-ocean-600 to-indigo-600 p-[1px]">
+            <div className="relative bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 transition-all group-hover:bg-white/90">
+              <div className="flex-1 space-y-4 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 px-4 py-2 bg-ocean-50 text-ocean-600 rounded-full text-xs font-black uppercase tracking-widest shadow-sm">
+                  <Sparkles size={14} /> NEW AI FEATURE
+                </div>
+                <h2 className="text-3xl md:text-4xl font-black text-gray-900 leading-tight" style={{ fontFamily: '"M PLUS Rounded 1c", sans-serif' }}>
+                  あなただけの<span className="text-ocean-600">ダイビング<br className="md:hidden" />コンシェルジュ</span>
+                </h2>
+                <p className="text-gray-500 font-medium text-lg leading-relaxed max-w-xl">
+                  「今週末、カメに会えるおすすめの場所は？」「初心者が楽しめる沖縄のスポットは？」AIに相談して、最高のダイビングプランを見つけましょう。
+                </p>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 pt-2">
+                  <span className="px-8 py-4 bg-slate-900 text-white rounded-2xl font-black shadow-xl shadow-slate-200 transition-all hover:bg-slate-800 hover:scale-105 flex items-center gap-2">
+                    AIに相談する <ChevronRight size={20} />
+                  </span>
+                </div>
+              </div>
+              <div className="relative w-48 h-48 md:w-64 md:h-64 shrink-0 flex items-center justify-center">
+                <div className="absolute inset-0 bg-ocean-100 rounded-full scale-90 animate-pulse"></div>
+                <div className="relative z-10 w-full h-full bg-white rounded-full shadow-2xl flex items-center justify-center border-4 border-ocean-50 transition-transform group-hover:rotate-12 duration-500">
+                  <Bot size={80} className="text-ocean-600" />
+                </div>
+                <div className="absolute top-0 right-0 p-3 bg-white rounded-2xl shadow-xl animate-bounce">
+                  <Sparkles size={24} className="text-ocean-400" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </section>
 
       {/* 1. Slideshow: Featured / New / Popular Points */}
       <section className="bg-white pt-8 pb-4 relative overflow-hidden">

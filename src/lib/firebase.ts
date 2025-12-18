@@ -7,6 +7,7 @@ import {
 } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 import { getRemoteConfig, fetchAndActivate } from "firebase/remote-config";
+import { getFunctions } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -74,3 +75,8 @@ export const remoteConfigPromise = fetchAndActivate(remoteConfig).then(() => {
   console.warn('Remote Config fetch failed', err);
   return false;
 });
+
+// ---------------------------------------------------------
+// 5. Functions
+// ---------------------------------------------------------
+export const functions = getFunctions(app, "asia-northeast1");

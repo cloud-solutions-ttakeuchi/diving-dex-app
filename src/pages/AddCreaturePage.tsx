@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ChevronLeft, Upload, Info, MapPin, Thermometer, Ruler } from 'lucide-react';
+import { ChevronLeft, Upload, Info, MapPin, Thermometer, Ruler, Sparkles, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import type { Creature } from '../types';
 import { compressImage } from '../utils/imageUtils';
+import { httpsCallable } from 'firebase/functions';
+import { functions } from '../lib/firebase';
 
 export const AddCreaturePage = () => {
   const navigate = useNavigate();
@@ -13,6 +15,9 @@ export const AddCreaturePage = () => {
   const { addCreature, points } = useApp();
 
   // Note: points are loaded from context
+  const [isLoadingAI, setIsLoadingAI] = useState(false);
+  const [isVerifiedAI, setIsVerifiedAI] = useState(false);
+  const [groundingSources, setGroundingSources] = useState<string[]>([]);
 
   // Form State
   const [formData, setFormData] = useState<Partial<Creature> & {
@@ -119,6 +124,86 @@ export const AddCreaturePage = () => {
     }
   };
 
+  const handleAIAutoFill = async () => {
+    if (!formData.name?.trim()) return;
+    setIsLoadingAI(true);
+    setIsVerifiedAI(false);
+    setGroundingSources([]);
+
+    try {
+      const generateCreatureDraft = httpsCallable(functions, 'generateCreatureDraft');
+      const response = await generateCreatureDraft({ creatureName: formData.name });
+      const aiResult = response.data as any;
+
+      if (!aiResult) throw new Error("No data returned from AI");
+
+      // Mapping Japanese labels to internal values
+      const rarityMap: Record<string, Creature['rarity']> = {
+        "Common (★1)": "Common",
+        "Rare (★2)": "Rare",
+        "Epic (★3)": "Epic",
+        "Legendary (★4)": "Legendary"
+      };
+
+      const seasonMap: Record<string, string> = {
+        "春": "spring",
+        "夏": "summer",
+        "秋": "autumn",
+        "冬": "winter"
+      };
+
+      // Safe Merge
+      setFormData(prev => ({
+        ...prev,
+        scientificName: aiResult.scientific_name || prev.scientificName,
+        category: (aiResult.category as any) || prev.category,
+        rarity: rarityMap[aiResult.rarity] || prev.rarity || "Common",
+        description: aiResult.description || prev.description,
+        size: aiResult.size || prev.size,
+        depthMin: aiResult.depth_min ? String(aiResult.depth_min) : prev.depthMin,
+        depthMax: aiResult.depth_max ? String(aiResult.depth_max) : prev.depthMax,
+        season: aiResult.seasons ? aiResult.seasons.map((s: string) => seasonMap[s]).filter(Boolean) : prev.season,
+        specialAttributesInput: (aiResult.special_traits || []).join(', '),
+        waterTempMin: aiResult.temp_min ? String(aiResult.temp_min) : prev.waterTempMin,
+        waterTempMax: aiResult.temp_max ? String(aiResult.temp_max) : prev.waterTempMax,
+        tagsInput: (aiResult.search_tags || []).join(', ')
+      }));
+
+      if (aiResult.is_verified) {
+        setIsVerifiedAI(true);
+        setGroundingSources(aiResult.sources || []);
+      }
+
+    } catch (error) {
+      console.error("AI Auto-fill failed:", error);
+      alert("AIによる自動入力に失敗しました。");
+    } finally {
+      setIsLoadingAI(false);
+    }
+  };
+
+  const VerifiedBadge = () => (
+    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-green-50 text-[10px] font-bold text-green-700 border border-green-200 animate-fade-in shadow-sm">
+      <Sparkles size={10} className="text-green-600" />
+      Google Search 検証済み
+    </div>
+  );
+
+  const GroundingSources = () => (
+    <div className="mt-2 p-2 bg-gray-50 rounded-lg border border-gray-100 animate-fade-in">
+      <div className="text-[10px] font-bold text-gray-500 mb-1 flex items-center gap-1">
+        <Info size={10} /> 引用元ソース
+      </div>
+      <ul className="space-y-0.5">
+        {groundingSources.map((source, i) => (
+          <li key={i} className="text-[10px] text-blue-600 truncate hover:underline cursor-pointer">
+            <a href={source} target="_blank" rel="noopener noreferrer">{source}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -142,22 +227,41 @@ export const AddCreaturePage = () => {
 
           {/* Basic Info */}
           <section className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center gap-2">
-              <Info size={20} className="text-blue-500" /> 基本情報
+            <h2 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Info size={20} className="text-blue-500" /> 基本情報
+              </div>
+              {isVerifiedAI && <VerifiedBadge />}
             </h2>
+            {isVerifiedAI && groundingSources.length > 0 && <GroundingSources />}
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">名前 <span className="text-red-500">*</span></label>
+                <div className="space-y-1.5 md:col-span-2">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-sm font-bold text-gray-700">名前 <span className="text-red-500">*</span></label>
+                    <button
+                      type="button"
+                      onClick={handleAIAutoFill}
+                      disabled={!formData.name?.trim() || isLoadingAI}
+                      className="flex items-center gap-1.5 text-xs font-bold text-slate-900 transition-all bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-full hover:bg-slate-100 hover:border-slate-300 disabled:opacity-40 active:scale-95"
+                    >
+                      {isLoadingAI ? (
+                        <Loader2 size={13} className="animate-spin" />
+                      ) : (
+                        <Sparkles size={13} />
+                      )}
+                      AIで自動入力
+                    </button>
+                  </div>
                   <input
                     type="text"
                     name="name"
                     required
                     value={formData.name}
                     onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                    placeholder="例: カクレクマノミ"
+                    className="w-full px-4 py-2 bg-white rounded-xl border border-gray-300 outline-none focus:ring-2 focus:ring-blue-500 transition-all shadow-sm"
+                    placeholder="例: ギンガメアジ"
                   />
                 </div>
                 <div>
