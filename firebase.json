@@ -43,6 +43,11 @@
         "region": "asia-northeast1"
       },
       {
+        "source": "/api/runDataCleansing",
+        "function": "runDataCleansing",
+        "region": "asia-northeast1"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }

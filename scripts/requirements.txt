@@ -1,0 +1,4 @@
+google-genai>=0.2.0
+jinja2
+pandas
+requests

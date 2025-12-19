@@ -124,12 +124,20 @@ export const TermsAgreementModal = () => {
           </button>
 
           {import.meta.env.DEV && (
-            <button
-              onClick={() => logout()}
-              className="w-full py-2 text-gray-300 hover:text-gray-500 text-xs transition-colors"
-            >
-              強制ログアウト (デバッグ用 - Dev Only)
-            </button>
+            <div className="mt-4 pt-4 border-t border-dashed border-gray-200 flex flex-col gap-2">
+              <button
+                onClick={handleAgree}
+                className="w-full py-2 bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-xl text-xs font-bold hover:bg-yellow-100 transition-colors"
+              >
+                DEV: 同意をスキップして即座に有効化
+              </button>
+              <button
+                onClick={() => logout()}
+                className="w-full py-2 text-gray-300 hover:text-gray-500 text-xs transition-colors"
+              >
+                強制ログアウト (デバッグ用 - Dev Only)
+              </button>
+            </div>
           )}
         </div>
       </div>

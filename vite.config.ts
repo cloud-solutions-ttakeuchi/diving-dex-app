@@ -43,4 +43,13 @@ export default defineConfig({
       },
     })
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5001/dive-dex-app-dev/asia-northeast1',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
+  }
 })

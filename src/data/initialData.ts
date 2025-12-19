@@ -32,33 +32,53 @@ let POINTS: Point[] = [];
 
 const rawLocations = locationsSeed as SeedLocationNode[];
 
+// Deterministic hash for clean, alphanumeric IDs
+const getHash = (str: string) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(16).slice(0, 8);
+};
+
 rawLocations.forEach(regionNode => {
+  // Region slug is unique enough at top level
+  const regionSlug = regionNode.name === '日本' ? 'japan' : getHash(regionNode.name);
+  const regionId = regionNode.id || `reg_${regionSlug}`;
+
   REGIONS.push({
-    id: regionNode.id,
+    id: regionId,
     name: regionNode.name,
     description: regionNode.description || ''
   });
 
   regionNode.children?.forEach(zoneNode => {
+    // Include Region in Zone hash for scope
+    const zoneId = zoneNode.id || `zone_${getHash(regionNode.name + zoneNode.name)}`;
     ZONES.push({
-      id: zoneNode.id,
+      id: zoneId,
       name: zoneNode.name,
-      regionId: regionNode.id,
+      regionId: regionId,
       description: zoneNode.description || ''
     });
 
     zoneNode.children?.forEach(areaNode => {
+      // Include Zone in Area hash for scope
+      const areaId = areaNode.id || `area_${getHash(zoneNode.name + areaNode.name)}`;
       AREAS.push({
-        id: areaNode.id,
+        id: areaId,
         name: areaNode.name,
-        zoneId: zoneNode.id
+        zoneId: zoneId
       });
 
       areaNode.children?.forEach(pointNode => {
+        // Scoped Point ID to prevent same-name collisions (e.g. "Main Spot")
+        const pointId = pointNode.id || `p_${getHash(areaNode.name + pointNode.name)}`;
         POINTS.push({
-          id: pointNode.id,
+          id: pointId,
           name: pointNode.name,
-          areaId: areaNode.id,
+          areaId: areaId,
           region: regionNode.name,
           zone: zoneNode.name,
           area: areaNode.name,
@@ -94,35 +114,43 @@ const rarityMap: Record<string, Rarity> = {
   'Legendary': 'Legendary'
 };
 
-// 2. Creatures Loading
-const CREATURES: Creature[] = creaturesSeed.map((c: any) => ({
-  id: c.id,
-  name: c.name,
-  scientificName: c.scientificName,
-  englishName: c.englishName,
-  family: c.family,
-  size: c.size,
-  category: c.category,
-  tags: c.tags,
-  description: c.description,
-  rarity: (rarityMap[c.rarity] || 'Common') as Rarity,
-  imageUrl: c.imageUrl,
-  depthRange: c.depthRange,
-  waterTempRange: c.waterTempRange,
-  specialAttributes: c.specialAttributes,
-  imageCredit: c.imageCredit,
-  imageLicense: c.imageLicense,
-  imageKeyword: c.imageKeyword,
-  status: 'approved',
-  stats: calculateCreatureStats({
+// 2. Creatures Loading (Deduplicated to avoid React Key warnings)
+const seenCreatureIds = new Set<string>();
+const CREATURES: Creature[] = [];
+
+creaturesSeed.forEach((c: any) => {
+  if (seenCreatureIds.has(c.id)) return;
+  seenCreatureIds.add(c.id);
+
+  CREATURES.push({
+    id: c.id,
     name: c.name,
+    scientificName: c.scientificName,
+    englishName: c.englishName,
+    family: c.family,
+    size: c.size,
     category: c.category,
     tags: c.tags,
+    description: c.description,
+    rarity: (rarityMap[c.rarity] || 'Common') as Rarity,
+    imageUrl: c.imageUrl,
+    depthRange: c.depthRange,
+    waterTempRange: c.waterTempRange,
     specialAttributes: c.specialAttributes,
-    size: c.size,
-    baseRarity: c.rarity
-  })
-}));
+    imageCredit: c.imageCredit,
+    imageLicense: c.imageLicense,
+    imageKeyword: c.imageKeyword,
+    status: 'approved',
+    stats: calculateCreatureStats({
+      name: c.name,
+      category: c.category,
+      tags: c.tags,
+      specialAttributes: c.specialAttributes,
+      size: c.size,
+      baseRarity: c.rarity
+    })
+  });
+});
 
 function calculateCreatureStats(c: {
   name: string;
@@ -249,3 +277,12 @@ export const INITIAL_DATA = {
   users: USERS,
   logs: LOGS,
 };
+
+console.log('INITIAL_DATA Loaded:', {
+  regions: REGIONS.length,
+  zones: ZONES.length,
+  areas: AREAS.length,
+  points: POINTS.length,
+  creatures: CREATURES.length,
+  pointCreatures: POINT_CREATURES.length
+});

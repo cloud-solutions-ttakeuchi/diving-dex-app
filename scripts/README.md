@@ -40,14 +40,14 @@ API制限の回避やデータ保護のため、以下の3つの実行モード�
 `config/target_regions.json` に定義されたRegionについて、主要なZoneを生成します。
 アウトプット: `src/data/locations_seed.json` に追記されます。
 ```bash
-python scripts/locations/generate_zones.py --mode append
+python3 scripts/locations/generate_zones.py --mode append
 ```
 
 **Step 2: Areas Generation**
 生成されたZoneリスト (`config/target_zones.json`) を元に、Areaを生成します。
 アウトプット: `src/data/locations_seed.json` に追記されます。
 ```bash
-python scripts/locations/generate_areas.py --mode append
+python3 scripts/locations/generate_areas.py --mode append
 ```
 
 **Step 3: Points Generation**
@@ -55,7 +55,7 @@ python scripts/locations/generate_areas.py --mode append
 重複チェック (Levenshtein distance) が行われます。
 アウトプット: `src/data/locations_seed.json` に追記されます。
 ```bash
-python scripts/locations/generate_points.py --mode append
+python3 scripts/locations/generate_points.py --mode append
 ```
 
 ---
@@ -78,7 +78,7 @@ python scripts/locations/generate_points.py --mode append
 `config/target_families.json` を元に生物リストを作成。
 アウトプット: `src/data/creatures_seed.json` に追記されます。
 ```bash
-python scripts/creatures/generate_creatures_by_family.py --mode append
+python3 scripts/creatures/generate_creatures_by_family.py --mode append
 ```
 	
 **Step 2: Fetch Images**
@@ -86,28 +86,28 @@ Wikipedia APIから画像を正確に取得。
 (このスクリプトは常に既存データの画像がない項目のみを対象とします)
 アウトプット: `src/data/creatures_seed.json` に追記されます。
 ```bash
-python scripts/creatures/fetch_creature_images.py
+python3 scripts/creatures/fetch_creature_images.py
 ```
 	
 **Step 3-A: Map Regions (Basic)**
 生成された生物データに対して、広域の生息域（Region）情報をAIで付与します。
 アウトプット: `src/data/creatures_seed.json` に追記（更新）されます。
 ```bash
-python scripts/creatures/map_creatures_to_regions.py --mode append
+python3 scripts/creatures/map_creatures_to_regions.py --mode append
 ```
 
 **Step 3-B: Map Areas (Granular)**
 `src/data/locations_seed.json` から抽出した具体的なダイビングエリア（約190箇所）を元に、詳細な生息情報を紐付けます。 **(推奨)**
 アウトプット: `src/data/creatures_seed.json` に `areas` フィールドが追記（更新）されます。
 ```bash
-python scripts/creatures/map_creatures_to_areas.py --mode append
+python3 scripts/creatures/map_creatures_to_areas.py --mode append
 ```
 	
 **Step 4: Generate Point-Creature Associations**
 各ポイントに、そのエリアに応じた生物を確率で割り振り、出現レアリティを決定します。
 アウトプット: `src/data/point_creatures_seed.json` が生成されます。
 ```bash
-python scripts/creatures/generate_point_creatures.py --mode append
+python3 scripts/creatures/generate_point_creatures.py --mode append
 ```
 
 #### レアリティ判定ロジック
@@ -127,8 +127,40 @@ python scripts/creatures/generate_point_creatures.py --mode append
 
 - **API Key**: 環境変数 `GOOGLE_API_KEY` を設定してください。カンマ区切りで複数指定することで、**レート制限回避のためのローテーション**が自動で行われます。
 - **Robust Model Selection**:
-  - デフォルトで **`gemini-2.5-flash`** を優先的に使用します。
-  - レート制限 (429 Error) が発生した場合、そのAPIキーのFlashモデルのみを一時停止し、同一キーの **`gemini-2.5-flash-lite`** または別のキーへ自動的にフォールバックします。
+  - デフォルトで **`gemini-2.0-flash`** を優先的に使用します。
+  - レート制限 (429 Error) が発生した場合、予備のキーまたはモデルへ自動的にフォールバックします。
   - 429エラー時は65秒間のクールダウンをインテリジェントに管理します。
 - **Resume Capability**:
   - 生物生成 (`generate_creatures_by_family.py`) は `processed_families_log.json` を使用して進捗を管理しており、中断しても途中から再開可能です。
+
+---
+
+## 🧼 AI Data Cleansing Pipeline (Issue #49)
+
+高精度なAI検証エンジンを使用して、ポイントと生物の生息情報をクレンジング・拡充します。
+
+### 🚀 Usage (Local Execution)
+
+**Prerequisites:**
+- Python 3.11+
+- Google Cloud 認証済み (gcloud auth application-default login)
+- `GOOGLE_CLOUD_PROJECT` 環境変数の設定
+
+**Step 1: Install Dependencies**
+```bash
+pip install -r scripts/requirements.txt
+```
+
+**Step 2: Run Cleansing**
+```bash
+# 新規データのみを対象に、5件検証（テスト実行推奨）
+python3 scripts/cleansing_pipeline.py --mode new --limit 5
+
+# 全件リセットして再構築（注意: シードファイルが大幅に更新されます）
+python3 scripts/cleansing_pipeline.py --mode all --limit 100
+```
+
+### 💡 Features
+- **Context Caching**: 実行時に生物辞書を Vertex AI にキャッシュし、トークンコストを 75% 削減します。
+- **Auto Backup**: 実行前に `src/data/point_creatures_seed.json.bak` が自動生成されます。
+- **2-Stage Validation**: 物理的な生息可能判定 (Flash) と、Google検索による目撃実績の確認を組み合わせています。

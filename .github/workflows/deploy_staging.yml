@@ -49,3 +49,34 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEDIVE_APP_STG }}'
           channelId: live
           projectId: ${{ vars.VITE_FIREBASE_PROJECT_ID }}
+  deploy_cleansing_job:
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEDIVE_APP_STG }}
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev
+      - name: Build and Push Cleansing Image
+        run: |
+          docker build -t ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/wedive-repo-stg/cleansing-pipeline:latest -f docker/cleansing/Dockerfile .
+          docker push ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/wedive-repo-stg/cleansing-pipeline:latest
+      - name: Update Cloud Run Job
+        run: |
+          gcloud run jobs update cleansing-job-stg \
+            --image ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/wedive-repo-stg/cleansing-pipeline:latest \
+            --region ${{ vars.GCP_REGION || 'asia-northeast1' }} \
+            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.AI_AGENT_LOCATION }}" \
+            --tasks 1 \
+            --max-retries 0 || \
+          gcloud run jobs create cleansing-job-stg \
+            --image ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/wedive-repo-stg/cleansing-pipeline:latest \
+            --region ${{ vars.GCP_REGION || 'asia-northeast1' }} \
+            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.AI_AGENT_LOCATION }}" \
+            --tasks 1 \
+            --max-retries 0

@@ -1,6 +1,28 @@
 # Changelog
 
 プロジェクトの変更履歴を記録します。
+## [2.1.4] - 2025-12-20
+### Updated
+- **Gemini 2.0 Flash Migration**:
+    - 全てのAIクレンジングエンジン（Python & Node.js）を **Gemini 2.0 Flash (`gemini-2.0-flash-001`)** にアップグレード。
+    - Python版パイプラインを最新の `google-genai` SDKへ移行し、安定性と保守性を向上。
+    - **Google Search Grounding (Web Search)**: 旧モデルの `googleSearchRetrieval` から、Gemini 2.0 対応の最新 `googleSearch` ツールへ刷新。
+- **Reliability & Performance**:
+    - **Explicit JSON Schema**: AI回答に対して強固なJSONスキーマを適用。Markdownコードブロックや不要な説明文の混入を排除し、解析エラーをゼロに。
+    - **Context Caching Support**: `google-genai` SDKによる Context Cache API の正式サポートを実装。
+- **Safety Guards (Cost Control)**:
+    - **Smart Throttling**: Cloud Functionsからの実行時、エリア・ゾーン単位のクレンジングには特定の「生物ID」の指定を必須化。不用意な全件検索によるコスト急増を防止。
+    - **Refined Default Scope**: 特定生物無指定時の検索範囲を上位5種に制限。
+
+## [2.1.3] - 2025-12-19
+### Added
+- **AI Data Cleansing System (Issue #49)**: 高精度な生物マッピング・管理システムの実装
+    - **2段階検証エンジン**: Gemini 1.5 Flash による物理フィルタリングと Google Search Grounding による事実確認を統合。
+    - **コスト最適化 (Explicit Cache)**: Python版パイプラインにおいて Vertex AI の Context Cache API を利用し、入力トークンコストを約 75% 削減。
+    - **運用自動化 (Cloud Run Jobs)**: 大規模な全件クレンジング用に Docker イメージ化し、Cloud Run Jobs および GitHub Actions ワークフローへ統合。
+    - **管理者用レビューUI**: ポイント・生物の両面からAIの提案を精査できる統合レビュー画面 (`/admin/cleansing`) を実装。
+    - **インクリメンタル更新**: Cloud Functions により、UIから特定のポイントや生物をピンポイントで検証可能な「オンデマンド・クレンジング」に対応。
+
 ## [v2.1.2] - 2025-12-19
 
 ### Fixed (修正)
@@ -18,15 +40,17 @@
 ## [v2.1.1] - 2025-12-19
 
 ### Added (追加)
-- **AI Concierge (Beta)**:
+- [x] **AI Concierge (Beta)**: 対話型スポット提案機能の実装
     - **Interactive Chat**: ユーザーの質問に対し、WeDiveデータベース内の情報を検索して最適なスポットを提案する対話型AIコンシェルジュ機能をリリース。
     - **Real-time Suggestion**: 会話の中で特定のスポットが提案されると、直感的なリンクボタン（チップ）を自動生成し、詳細ページへスムーズに誘導。
     - **Google Gemini 2.0 Flash Integration**: AIモデルに最新の `gemini-2.0-flash-exp` を採用し、高速かつ自然な日本語対話を実現。
-- **AI Auto-fill (Spot & Creature)**:
+- [x] **AI Auto-fill (Spot & Creature)**: 登録時の説明文自動生成とGoogle検索グラウンディング
     - **Draft Generation**: ポイントや生物の新規登録時に、名前を入力するだけでGemini AIが説明文（Description）を自動生成する機能を追加。
     - **Google Search Grounding**: AIが自信のない情報についてはGoogle検索を実行し、最新かつ正確な情報（出典付き）を補完する「グラウンディング」機能を実装。
-- **Auto-Translation**:
+- [x] **Auto-Translation**: マルチランゲージ対応（日・英・韓・中）
     - **Multilingual Support**: ポイント情報の更新トリガーにより、日本語の説明文を自動的に英語・韓国語・中国語（繁体字）に翻訳して保存するバックグラウンド処理を追加。
+- [x] **High-Precision Mapping (Issue #49)**: 生物・ポイント紐付けのAIクレンジングとレビュー管理
+- [ ] **AI Concierge Grounding**: コンシェルジュ検索精度の向上（管理者限定検証中）
 
 ### Improved (改善)
 - **UI Visibility**:

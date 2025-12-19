@@ -19,28 +19,55 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
-// Initialize Firebase
+// ---------------------------------------------------------
+// 1. Initialize Firebase
+// ---------------------------------------------------------
 const app = initializeApp(firebaseConfig);
 
+export const auth = getAuth(app);
+export const googleProvider = new GoogleAuthProvider();
+export const functions = getFunctions(app, "asia-northeast1");
+
 // ---------------------------------------------------------
-// 1. Firestore: 初期化と同時に永続化設定を行う (推奨される新しい書き方)
+// 2. Emulator Connection (MUST BE DONE BEFORE INITIALIZING FIRESTORE)
 // ---------------------------------------------------------
-// もし古いSDK(v9初期)を使っているなら元のままでも動きますが、
-// v10以降ならこちらの方が確実です。
+if (import.meta.env.DEV) {
+  const { connectFirestoreEmulator } = await import("firebase/firestore");
+  const { connectAuthEmulator } = await import("firebase/auth");
+  const { connectFunctionsEmulator } = await import("firebase/functions");
+
+  // @ts-ignore
+  if (!window._firebaseEmulatorsStarted) {
+    console.log("Connecting to Firebase Emulators...");
+    // connectAuthEmulator(auth, "http://localhost:9099"); // Keep cloud auth for easier Google Login if preferred
+    connectFunctionsEmulator(functions, "localhost", 5001);
+    // @ts-ignore
+    window._firebaseEmulatorsStarted = true;
+  }
+}
+
+// ---------------------------------------------------------
+// 3. Firestore: Initialize with persistence
+// ---------------------------------------------------------
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager() // 複数タブでの同期を管理
+    tabManager: persistentMultipleTabManager()
   })
 });
 
-// ---------------------------------------------------------
-// 2. Auth
-// ---------------------------------------------------------
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+// Extra step for Firestore emulator due to timing
+if (import.meta.env.DEV) {
+  const { connectFirestoreEmulator } = await import("firebase/firestore");
+  // @ts-ignore
+  if (!window._firestoreEmulatorConnected) {
+    connectFirestoreEmulator(db, "localhost", 8080);
+    // @ts-ignore
+    window._firestoreEmulatorConnected = true;
+  }
+}
 
 // ---------------------------------------------------------
-// 3. Analytics: 環境によっては動かないので安全策をとる
+// 4. Analytics: 環境によっては動かないので安全策をとる
 // ---------------------------------------------------------
 export let analytics: ReturnType<typeof getAnalytics> | null = null;
 isSupported().then((supported) => {
@@ -50,7 +77,7 @@ isSupported().then((supported) => {
 });
 
 // ---------------------------------------------------------
-// 4. Remote Config
+// 5. Remote Config
 // ---------------------------------------------------------
 export const remoteConfig = getRemoteConfig(app);
 
@@ -58,16 +85,9 @@ export const remoteConfig = getRemoteConfig(app);
 remoteConfig.settings.minimumFetchIntervalMillis = import.meta.env.DEV ? 0 : 3600000;
 
 // デフォルト値の設定
-remoteConfig.defaultConfig = {
-
-};
+remoteConfig.defaultConfig = {};
 
 // フェッチ実行
-// ※ 注意: これは非同期なので、アプリの初回レンダリング時にはまだ完了していない可能性があります。
-// その場合、getValue() は上記の defaultConfig の値を返します。
-// フェッチ実行
-// ※ 注意: これは非同期なので、アプリの初回レンダリング時にはまだ完了していない可能性があります。
-// その場合、getValue() は上記の defaultConfig の値を返します。
 export const remoteConfigPromise = fetchAndActivate(remoteConfig).then(() => {
   console.log('Remote Config fetched!');
   return true;
@@ -75,8 +95,3 @@ export const remoteConfigPromise = fetchAndActivate(remoteConfig).then(() => {
   console.warn('Remote Config fetch failed', err);
   return false;
 });
-
-// ---------------------------------------------------------
-// 5. Functions
-// ---------------------------------------------------------
-export const functions = getFunctions(app, "asia-northeast1");

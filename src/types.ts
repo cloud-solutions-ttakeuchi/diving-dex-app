@@ -67,12 +67,14 @@ export type DivingPoint = Point;
 export type Rarity = 'Common' | 'Rare' | 'Epic' | 'Legendary';
 
 export type PointCreature = {
-  id: string; // pointId_creatureId (このIDはFirestoreのドキュメントIDとして使用)
+  id: string; // pointId_creatureId
   pointId: string;
   creatureId: string;
-  localRarity: 'Common' | 'Rare' | 'Epic' | 'Legendary'; // そのポイントでの出現率
-  lastSighted?: string; // 最終目撃日（任意）
-  status: 'approved' | 'pending' | 'deletion_requested'; // 提案された紐付けの承認ステータス
+  localRarity: 'Common' | 'Rare' | 'Epic' | 'Legendary';
+  lastSighted?: string;
+  status: 'approved' | 'pending' | 'deletion_requested';
+  reasoning?: string;    // AIによる紐付け根拠 (Issue #49)
+  confidence?: number;   // AIによる信頼度スコア 0.0-1.0 (Issue #49)
 };
 
 // --- Master Data Types ---

@@ -30,11 +30,6 @@ export const seedFirestore = async (force: boolean = false, targetCollections?: 
     ].filter(c => !targetCollections || targetCollections.includes(c.name));
 
     for (const { name, data } of masterCollections) {
-      // If not forced, check if empty first (to preserve old behavior if strictly needed,
-      // but 'merge: true' is safe even if not forced, usually.
-      // However, standard seed logic usually runs only on empty DB.
-      // We'll stick to: if !force, check empty. if force, skip check.)
-
       let shouldRun = force;
       if (!force) {
         const snap = await getDocs(collection(db, name));
@@ -42,16 +37,29 @@ export const seedFirestore = async (force: boolean = false, targetCollections?: 
       }
 
       if (shouldRun) {
-        console.log(`Seeding ${name}... (force=${force})`);
+        console.log(`Seeding ${name}... (count: ${data.length}, force=${force})`);
+        let count = 0;
         for (const item of data) {
-          // @ts-ignore
-          const ref = doc(db, name, item.id);
-          const safeItem = JSON.parse(JSON.stringify(item));
-          // Upsert logic: merge: true
-          batch.set(ref, safeItem, { merge: true });
-          operationCount++;
-          if (operationCount >= batchLimit) await commitBatch();
+          try {
+            // Robust ID check
+            if (!item || !item.id) {
+              console.error(`[Seeder] Skipping item in ${name} because id is missing:`, item);
+              continue;
+            }
+
+            const ref = doc(db, name, item.id);
+            const safeItem = JSON.parse(JSON.stringify(item));
+            batch.set(ref, safeItem, { merge: true });
+            operationCount++;
+            count++;
+            if (operationCount >= batchLimit) await commitBatch();
+          } catch (e) {
+            console.error(`[Seeder] FATAL ERROR in ${name} loop at item:`, item);
+            console.error(`[Seeder] Error details:`, e);
+            throw e; // Re-throw to be caught by the outer catch and stop seeding
+          }
         }
+        console.log(`Successfully queued ${count} items for ${name}`);
       } else {
         console.log(`Skipping ${name} (already exists and force=false)`);
       }

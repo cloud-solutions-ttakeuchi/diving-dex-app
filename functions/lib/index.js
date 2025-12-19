@@ -21,4 +21,6 @@ __exportStar(require("./ai/generateAIDrafts"), exports);
 __exportStar(require("./ai/concierge"), exports);
 // Export Firestore Triggers
 __exportStar(require("./triggers/translateTriggers"), exports);
+// Export Management APIs
+__exportStar(require("./api/cleansing"), exports);
 //# sourceMappingURL=index.js.map
