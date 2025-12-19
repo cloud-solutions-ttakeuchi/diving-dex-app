@@ -69,7 +69,7 @@ Diving Dex App のリリーススケジュールとロードマップです。
 |---|---|---|---|---|
 | `enable_garmin_import` | Boolean | `false` | Garminデータインポート機能（V1: ZIP取込）の有効化。<br>MyPageに「Garmin取込」ボタンを表示する。 | **Ready** (Prod: OFF) |
 | `enable_garmin_graph` | Boolean | `false` | 詳細グラフ（V2: 深度プロファイル）の表示。<br>LogDetailModalにグラフを表示する。 | **Dev** (Prod: OFF) |
-| `enable_ai_concierge` | Admin-Only | `false` | AIコンシェルジュ機能の段階的リリース。<br>現在は管理者(admin)のみアクセス可能とし、グラウンディング化の検証を行う。 | **Beta** (Admin Only) |
+| `enable_ai_concierge` | Admin-Only | `false` | AIコンシェルジュ機能の段階的リリース。<br>true:全体公開, false:管理者(admin)のみアクセス可能とし、グラウンディング化の検証を行う。 | **Beta** (Admin Only) |
 
 ## Project Management & Release Workflow
 

@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom';
 import { ChevronLeft, Send, Bot, User, Loader2, MapPin, Anchor, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { httpsCallable } from 'firebase/functions';
-import { functions, auth } from '../lib/firebase';
+import { functions, auth, remoteConfig } from '../lib/firebase';
+import { getBoolean } from 'firebase/remote-config';
 import clsx from 'clsx';
 
 interface Message {
@@ -108,8 +109,10 @@ export const ConciergePage = () => {
     );
   }
 
-  // Feature Flag: Admin Only
-  if (!isAdmin && !import.meta.env.DEV) {
+  const isAiConciergeEnabled = getBoolean(remoteConfig, 'enable_ai_concierge');
+
+  // Feature Flag: Admin Only (if not explicitly enabled for all)
+  if (!isAiConciergeEnabled && !isAdmin) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         <div className="bg-white rounded-3xl p-10 shadow-xl text-center max-w-md w-full border border-gray-100 animate-fade-in">
