@@ -61,6 +61,16 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev
+      - name: Ensure Artifact Registry Repository exists
+        run: |
+          gcloud artifacts repositories describe ${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }} \
+            --location=${{ vars.GCP_REGION || 'asia-northeast1' }} \
+            --project=${{ vars.VITE_FIREBASE_PROJECT_ID }} || \
+          gcloud artifacts repositories create ${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }} \
+            --repository-format=docker \
+            --location=${{ vars.GCP_REGION || 'asia-northeast1' }} \
+            --project=${{ vars.VITE_FIREBASE_PROJECT_ID }} \
+            --description="Docker repository for WeDive"
       - name: Build and Push Cleansing Image
         run: |
           docker build -t ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }}/cleansing-pipeline:latest -f docker/cleansing/Dockerfile .
