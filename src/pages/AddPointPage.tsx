@@ -5,7 +5,7 @@ import { ChevronLeft, MapPin, Camera, Info, Anchor, Mountain, Sparkles, Loader2 
 import { compressImage } from '../utils/imageUtils';
 import type { Point } from '../types';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../lib/firebase';
+import { functions, auth } from '../lib/firebase';
 import { MapPickerModal } from '../components/MapPickerModal';
 
 export const AddPointPage = () => {
@@ -102,9 +102,24 @@ export const AddPointPage = () => {
     setGroundingSources([]);
 
     try {
-      const generateSpotDraft = httpsCallable(functions, 'generateSpotDraft');
-      const response = await generateSpotDraft({ spotName: formData.name });
-      const aiResult = response.data as any;
+      // 1. Get Auth Token
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error("Unauthenticated");
+
+      // 2. Call via Hosting Proxy to bypass CORS completely
+      const response = await fetch('/api/spot-draft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ data: { spotName: formData.name } })
+      });
+
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+      const result = await response.json();
+      const aiResult = result.result; // httpsCallable format wrapper
 
       if (!aiResult) throw new Error("No data returned from AI");
 

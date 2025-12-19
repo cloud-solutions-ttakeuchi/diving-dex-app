@@ -1,6 +1,20 @@
 # Changelog
 
 プロジェクトの変更履歴を記録します。
+## [v2.1.2] - 2025-12-19
+
+### Fixed (修正)
+- **CORS Conflict Resolution**:
+    - **Hosting Rewrites**: Firebase Hostingの `rewrites` を利用したリバースプロキシ設定を導入。`firebase.json` で `/api/*` パスを関数へマッピングし、フロントエンド（`.tsx`）では `httpsCallable` から `fetch` による同一オリジン呼び出しへ切り替えることで、ブラウザのCORSポリシーによるブロックを完全に解消。
+    - **Region Unification**: 全てのAI Cloud Functionsを `asia-northeast1` (東京) に集約。
+    - **Vertex AI Location Fix**: Gemini 2.0 Flashが東京リージョン未提供（404エラー）であったため、APIの呼び出し先（Location）のみを `us-central1` に固定し、機能の安定稼働を確保。
+- **Deployment Security**:
+    - Cloud Functionsデプロイ時の「IAM権限付与失敗（Invoker設定）」を、カスタムドメインとHostingの同一オリジン化により、認証トークンをヘッダーに付与するセキュアな構成で解決。
+
+### Added (追加)
+- **Feature Flag (Concierge)**:
+    - コンシェルジュ機能の精度向上に向けたグラウンディング化（Google検索連携）の検証を開始。高コスト化に伴う有料化検討のため、現在は管理者のみがアクセス可能なFeature Flagを導入。
+
 ## [v2.1.1] - 2025-12-19
 
 ### Added (追加)

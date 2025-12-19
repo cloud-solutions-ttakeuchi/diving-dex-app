@@ -11,37 +11,27 @@ Diving Dex App のリリーススケジュールとロードマップです。
 - ポイントマップ情報
 - ユーザー認証（Google Auth）
 
-### v1.1.0 (Admin & Data Cleanliness) - Current Focus
+### v1.1.0 (Admin & Data Cleanliness) - Completed
 **目的: データの整合性確保と管理機能の強化**
 
 - [x] **管理画面の実装 (Admin Area Cleansing)**
-    - エリア・ゾーン・リージョンの階層構造を整理する専用ツールの実装
-    - 重複データ、Orphan（親なし）データの可視化
-- [x] **データクレンジング機能**
-    - **Duplicate Handling**: 同名エリアの編集・削除・区別機能
-    - **Merge Tool**: 重複したエリアやゾーンを一つに統合する機能（ポイントデータの移行含む）
-- [x] **不具合修正**
-    - データの巻き戻り（自動初期化）問題の修正
+- [x] **データクレンジング機能** (Merge/Duplicate)
+- [x] **不具合修正** (Data Reset fix)
 
-### v1.2.0 (Feature Expansion) - Up Next
+### v1.2.0 (UX & Expansion) - In Progress
 **目的: ユーザー体験の向上とソーシャル要素**
 
 - [ ] **バルク編集機能 (Bulk Edit)**: 複数のログを一括で編集・場所設定する機能
-- [x] **インポート機能の強化 (Garmin Import V1)**:
-    - Garminなどのダイコンデータ（詳細データ含む）を一括で取り込む機能の実装
-    - ZIPファイル解析、詳細メタデータの抽出、地図表示、詳細項目のUI表示
-    - **Status**: Completed (V1)
-- [x] **利用規約（同意書）の作成**: 初回利用時等の同意フロー実装
-    - **Status**: Completed (v1.3.0) - Issue #12
+- [x] **インポート機能の強化 (Garmin Import V1)**: ZIPファイル解析・詳細メタデータ抽出
+- [x] **利用規約（同意書）の作成**: Issue #12
 
-### v1.4.0 (Data Auto-Generation Optimization) - In Progress
-**目的: データベース品質の向上（重複排除・網羅性）**
-- [ ] **ダイビングポイント自動追加の最適化 (Point Generation Opt)**
-    - Levenshtein距離による重複名寄せ
-    - 階層構造（Region > Zone > Area > Point）の整理
-- [ ] **海洋生物図鑑の充実 (Creature Dex Expansion)**
-    - 科目（Family）単位でのデータ生成
-    - 画像取得プロセスの分離（Wiki API等）
+### v2.1.x (AI Powered Ecosystem) - Current Focus
+**目的: AIによる自動化と高度なユーザーサポート**
+
+- [x] **AI Auto-fill (Spot & Creature)**: 登録時の説明文自動生成とGoogle検索グラウンディング
+- [x] **Auto-Translation**: マルチランゲージ対応（日・英・韓・中）
+- [x] **AI Concierge (Beta)**: 対話型スポット提案機能の実装
+- [ ] **AI Concierge Grounding**: コンシェルジュ検索精度の向上（管理者限定検証中）
 
 
 ### v1.3.0 (Community Features) - Planning
@@ -79,6 +69,7 @@ Diving Dex App のリリーススケジュールとロードマップです。
 |---|---|---|---|---|
 | `enable_garmin_import` | Boolean | `false` | Garminデータインポート機能（V1: ZIP取込）の有効化。<br>MyPageに「Garmin取込」ボタンを表示する。 | **Ready** (Prod: OFF) |
 | `enable_garmin_graph` | Boolean | `false` | 詳細グラフ（V2: 深度プロファイル）の表示。<br>LogDetailModalにグラフを表示する。 | **Dev** (Prod: OFF) |
+| `enable_ai_concierge` | Admin-Only | `false` | AIコンシェルジュ機能の段階的リリース。<br>現在は管理者(admin)のみアクセス可能とし、グラウンディング化の検証を行う。 | **Beta** (Admin Only) |
 
 ## Project Management & Release Workflow
 

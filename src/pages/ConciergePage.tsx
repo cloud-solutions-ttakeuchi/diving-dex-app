@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, Send, Bot, User, Loader2, MapPin, Anchor } from 'lucide-react';
+import { ChevronLeft, Send, Bot, User, Loader2, MapPin, Anchor, Sparkles } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { httpsCallable } from 'firebase/functions';
-import { functions } from '../lib/firebase';
+import { functions, auth } from '../lib/firebase';
 import clsx from 'clsx';
 
 interface Message {
@@ -53,9 +53,24 @@ export const ConciergePage = () => {
     setIsLoading(true);
 
     try {
-      const getConciergeResponse = httpsCallable(functions, 'getConciergeResponse');
-      const response = await getConciergeResponse({ query: input });
-      const aiResult = response.data as any;
+      // 1. Get Auth Token
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error("Unauthenticated");
+
+      // 2. Call via Hosting Proxy to bypass CORS completely
+      const response = await fetch('/api/concierge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ data: { query: input } })
+      });
+
+      if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+      const result = await response.json();
+      const aiResult = result.result; // httpsCallable format wrapper
 
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
@@ -76,6 +91,8 @@ export const ConciergePage = () => {
     }
   };
 
+  const isAdmin = currentUser?.role === 'admin';
+
   if (!isAuthenticated && !import.meta.env.DEV) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
@@ -84,6 +101,26 @@ export const ConciergePage = () => {
           <h2 className="text-xl font-bold text-gray-900 mb-2">ログインが必要です</h2>
           <p className="text-gray-500 mb-6">コンシェルジュ機能を利用するにはログインしてください。</p>
           <Link to="/" className="block w-full py-3 rounded-xl font-bold text-white bg-ocean-500 hover:bg-ocean-600 transition-colors">
+            トップページへ戻る
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // Feature Flag: Admin Only
+  if (!isAdmin && !import.meta.env.DEV) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-10 shadow-xl text-center max-w-md w-full border border-gray-100 animate-fade-in">
+          <div className="w-20 h-20 bg-ocean-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-ocean-500 shadow-inner">
+            <Sparkles size={40} className="animate-pulse" />
+          </div>
+          <h2 className="text-2xl font-black text-gray-900 mb-3">AIコンシェルジュ準備中</h2>
+          <p className="text-gray-500 mb-8 leading-relaxed font-medium">
+            現在、より高度な検索機能を実装するため、一部のユーザーのみに限定公開しています。一般公開までしばらくお待ちください。
+          </p>
+          <Link to="/" className="block w-full py-4 rounded-2xl font-bold text-white bg-ocean-500 hover:bg-ocean-600 transition-all shadow-lg shadow-ocean-100 hover:scale-[1.02] active:scale-[0.98]">
             トップページへ戻る
           </Link>
         </div>

@@ -36,12 +36,52 @@ Cloud Functions API を有効化した直後や、まだ関数を一度もデプ
 
 ## 2. 実装時の注意点
 
-### リージョンの指定
-Vertex AI (Gemini 1.5 Flash) は多くのリージョンで利用可能ですが、WeDive では低レイテンシとコストのバランスから `asia-northeast1` (東京) 推奨です。
+### リージョンの指定とモデルの可用性
+- **Cloud Functions**: レイテンシを抑えるため、`asia-northeast1` (東京) で稼働させます。
+- **Vertex AI (Gemini 2.0 Flash)**: 最新の Gemini 2.0 シリーズは現在、東京リージョンでは提供されていない場合があります（`404 Model Not Found`）。そのため、SDK の **`location` パラメータには `us-central1` を指定** する必要があります。
+  - 函数: `asia-northeast1`
+  - Vertex AI SDK: `us-central1`
 
-### 環境変数
-Cloud Functions 側で以下の環境変数が正しく設定されていることを確認してください（通常 Firebase 側で自動設定されます）。
-- `GCLOUD_PROJECT`: プロジェクト ID
+### デプロイと CORS 改修
+ブラウザからの直接呼び出しにおける CORS エラーを回避するため、Firebase Hosting の `rewrites` を利用したリバースプロキシ構成を採用しています。
+
+#### 1. `firebase.json` の設定
+`/api/*` パスを、該当する Cloud Functions（東京リージョン）へ正確にルーティングします。
+
+```json
+"hosting": {
+  "rewrites": [
+    {
+      "source": "/api/concierge",
+      "function": "getConciergeResponse",
+      "region": "asia-northeast1"
+    },
+    {
+      "source": "/api/spot-draft",
+      "function": "generateSpotDraft",
+      "region": "asia-northeast1"
+    },
+    ...
+  ]
+}
+```
+
+#### 2. フロントエンドでの呼び出し (`.tsx`)
+`httpsCallable` の代わりに、標準の `fetch` を使用して同一ドメインのエンドポイントを叩きます。認証情報を維持するため、Firebase Auth の ID トークンをヘッダーに付与します。
+
+```typescript
+const token = await auth.currentUser?.getIdToken();
+const response = await fetch('/api/concierge', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${token}`
+  },
+  body: JSON.stringify({ data: { ... } })
+});
+```
+
+これにより、Cloud Run 特有の IAM 権限問題 (`allUsers` 許可の失敗) に左右されず、安全かつ確実に AI 機能を呼び出すことが可能になりました。
 
 ---
 
