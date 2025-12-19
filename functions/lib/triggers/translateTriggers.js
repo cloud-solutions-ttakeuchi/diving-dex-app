@@ -9,7 +9,10 @@ const logger = require("firebase-functions/logger");
  * Automatic Multilingual Translation Trigger
  * Activates when a point's description is updated.
  */
-exports.onPointUpdateTranslate = (0, firestore_1.onDocumentUpdated)("points/{pointId}", async (event) => {
+exports.onPointUpdateTranslate = (0, firestore_1.onDocumentUpdated)({
+    document: "points/{pointId}",
+    region: "asia-northeast1"
+}, async (event) => {
     const newData = event.data?.after.data();
     const oldData = event.data?.before.data();
     // Only translate if description changed

@@ -34,7 +34,7 @@ export const getConciergeResponse = onCall({
 
   const vertexAI = new VertexAI({
     project: process.env.GCLOUD_PROJECT || "dive-dex-app-dev",
-    location: "asia-northeast1"
+    location: "us-central1"
   });
 
   const model = vertexAI.getGenerativeModel({

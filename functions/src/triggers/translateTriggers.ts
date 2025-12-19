@@ -8,7 +8,10 @@ import * as logger from "firebase-functions/logger";
  * Automatic Multilingual Translation Trigger
  * Activates when a point's description is updated.
  */
-export const onPointUpdateTranslate = onDocumentUpdated("points/{pointId}", async (event) => {
+export const onPointUpdateTranslate = onDocumentUpdated({
+  document: "points/{pointId}",
+  region: "asia-northeast1"
+}, async (event) => {
   const newData = event.data?.after.data();
   const oldData = event.data?.before.data();
 

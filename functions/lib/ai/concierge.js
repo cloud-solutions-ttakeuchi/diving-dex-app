@@ -33,7 +33,7 @@ exports.getConciergeResponse = (0, https_1.onCall)({
     }).join("\n---\n");
     const vertexAI = new vertexai_1.VertexAI({
         project: process.env.GCLOUD_PROJECT || "dive-dex-app-dev",
-        location: "asia-northeast1"
+        location: "us-central1"
     });
     const model = vertexAI.getGenerativeModel({
         model: "gemini-2.0-flash-exp",

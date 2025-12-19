@@ -77,7 +77,7 @@ exports.generateSpotDraft = (0, https_1.onCall)({ region: "asia-northeast1" }, a
         return cached;
     const vertexAI = new vertexai_1.VertexAI({
         project: process.env.GCLOUD_PROJECT || "wedive-app",
-        location: "asia-northeast1"
+        location: "us-central1"
     });
     const spotSchema = {
         type: vertexai_1.SchemaType.OBJECT,
@@ -192,7 +192,7 @@ exports.generateCreatureDraft = (0, https_1.onCall)({ region: "asia-northeast1" 
         return cached;
     const vertexAI = new vertexai_1.VertexAI({
         project: process.env.GCLOUD_PROJECT || "wedive-app",
-        location: "asia-northeast1"
+        location: "us-central1"
     });
     const creatureSchema = {
         type: vertexai_1.SchemaType.OBJECT,

@@ -28,6 +28,21 @@
     ],
     "rewrites": [
       {
+        "source": "/api/concierge",
+        "function": "getConciergeResponse",
+        "region": "asia-northeast1"
+      },
+      {
+        "source": "/api/spot-draft",
+        "function": "generateSpotDraft",
+        "region": "asia-northeast1"
+      },
+      {
+        "source": "/api/creature-draft",
+        "function": "generateCreatureDraft",
+        "region": "asia-northeast1"
+      },
+      {
         "source": "**",
         "destination": "/index.html"
       }
