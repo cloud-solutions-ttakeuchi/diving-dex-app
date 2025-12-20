@@ -136,6 +136,16 @@ class CleansingPipeline:
             logger.warning(f"⚠️ Context Caching not available or failed: {e}. Proceeding without cache (higher token cost).")
             self.cache = None
 
+    def cleanup_cache(self):
+        """Deletes the context cache to free up resources immediately."""
+        if self.cache:
+            try:
+                logger.info(f"🧹 Deleting Context Cache: {self.cache.name}")
+                self.client.caches.delete(name=self.cache.name)
+                self.cache = None
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to delete cache: {e}")
+
     def _safe_json_parse(self, text: str):
         """Clean and parse JSON from AI response."""
         try:
@@ -208,6 +218,14 @@ class CleansingPipeline:
             result = self._safe_json_parse(text)
             return result if isinstance(result, list) else []
         except Exception as e:
+            # Check if it is a cache expiration error
+            error_msg = str(e)
+            if "expired" in error_msg.lower() and self.cache:
+                logger.warning(f"⚠️ Cache expired during processing. Re-creating cache to maintain cost efficiency...")
+                self.create_context_cache()
+                # Retry with the newly created cache (if creation succeeded)
+                return self.run_stage1_batch(point)
+
             logger.warning(f"⚠️ Stage 1 Error for {point['name']}: {e}")
             return []
 
@@ -248,8 +266,9 @@ class CleansingPipeline:
             return {"actual_existence": False, "evidence": str(e), "rarity": "Unknown"}
 
     def process(self, mode: str, filters: Dict[str, Any], limit: int):
-        self.load_data(filters)
-        self.create_context_cache()
+        try:
+            self.load_data(filters)
+            self.create_context_cache()
 
         processed_count = 0
         for p in self.points:
@@ -323,6 +342,9 @@ class CleansingPipeline:
 
                 # Small sleep to be nice to API quotas (adjust as needed)
                 time.sleep(0.5)
+
+        finally:
+            self.cleanup_cache()
 
         logger.info(f"🏁 Finished. Processed {processed_count} mappings.")
 
