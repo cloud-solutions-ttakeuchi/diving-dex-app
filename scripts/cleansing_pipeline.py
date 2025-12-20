@@ -286,8 +286,17 @@ class CleansingPipeline:
                 creature = next((c for c in self.creatures if c['id'] == creature_id), None)
                 if not creature: continue
 
-                logger.info(f"  🌐 Grounding: {creature['name']}...")
-                s2 = self.run_stage2_grounding(p, creature)
+                # Stage 2: Fact-check with Grounding (Only if Stage 1 is unsure)
+                if res.get("confidence", 0) >= 0.85:
+                    logger.info(f"  ✨ AI is confident ({res.get('confidence')}). Saving without search.")
+                    s2 = {
+                        "actual_existence": True,
+                        "evidence": res.get("reasoning"),
+                        "rarity": res.get("rarity")
+                    }
+                else:
+                    logger.info(f"  🌐 AI is unsure. Running Google Search Grounding: {creature['name']}...")
+                    s2 = self.run_stage2_grounding(p, creature)
 
                 # Save result to Firestore
                 status = "pending" if s2.get("actual_existence") else "rejected"
