@@ -208,6 +208,14 @@ class CleansingPipeline:
             result = self._safe_json_parse(text)
             return result if isinstance(result, list) else []
         except Exception as e:
+            # Check if it is a cache expiration error
+            error_msg = str(e)
+            if "expired" in error_msg.lower() and self.cache:
+                logger.warning(f"⚠️ Cache expired during processing. Re-creating cache to maintain cost efficiency...")
+                self.create_context_cache()
+                # Retry with the newly created cache (if creation succeeded)
+                return self.run_stage1_batch(point)
+
             logger.warning(f"⚠️ Stage 1 Error for {point['name']}: {e}")
             return []
 
