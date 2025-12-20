@@ -152,11 +152,27 @@ docker build --platform linux/amd64 -t ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_P
 docker push ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/wedive-repo/cleansing-pipeline:latest
 
 # 4. ジョブの作成/更新 (AI_AGENT_LOCATION は us-central1 を推奨)
+# 大規模クレンジングを完走させるため、--max-timeout 604800 (7日間) を設定します
 gcloud run jobs deploy cleansing-job \
     --image ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/wedive-repo/cleansing-pipeline:latest \
     --project ${GOOGLE_CLOUD_PROJECT} \
     --region ${REGION} \
+    --max-timeout 604800 \
     --set-env-vars "GCLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},LOCATION=${REGION},AI_AGENT_LOCATION=us-central1,LOG_LEVEL=debug"
+```
+
+### 5. データベースのメンテナンス（旧データの削除）
+AI クレンジングエンジンを刷新した際、古いロジックで作成された不正確なデータを一括削除できます。
+```bash
+# 1. 認証の更新
+gcloud auth application-default login
+
+# 2. 差分（削除対象）の確認
+python3 scripts/cleanup_old_mappings.py --project dive-dex-app-dev
+
+# 3. 実行（実際に削除）
+python3 scripts/cleanup_old_mappings.py --project dive-dex-app-dev --execute
+```
 ```
 
 ## Security & Vulnerability Management

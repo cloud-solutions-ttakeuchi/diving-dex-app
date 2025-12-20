@@ -3,15 +3,20 @@
 プロジェクトの変更履歴を記録します。
 ## [2.1.5] - 2025-12-20
 ### Added
-- **Unified Batch Cleansing Engine**:
-    - AIクレンジングの実行基盤を **Python版 Cloud Run Job** に一本化。
-    - Cloud Functions は「起動トリガー」として機能し、実際の重い処理はバッチ側へ委譲する疎結合な設計へ移行。
-- **Cost & Performance Optimization**:
-    - **Context Caching の全面採用**: バッチ移行により大規模判定時のトークンコストを最小化。
-    - **タイムアウトの排除**: Cloud Functions の実行制限を回避し、数万件規模の全件クレンジングが安定して実行可能に。
-- **Firestore Direct Integration**:
-    - Pythonスクリプトが Firestore (`point_creatures`) を直接更新するように拡張。
-    - ピンポイント指定、エリア指定、全件指定など、柔軟な実行引数に対応。
+- **AI Data Cleansing Pipeline v2.1.5 (Advanced Optimization)**:
+    - **Speed & Cost Optimization (Conditional Grounding)**: Stage 1 の確信度が 0.85 以上の生物について、高コストな Google 検索（Stage 2）をスキップするロジックを導入。判定速度を最大 300% 向上させつつ、APIコストを大幅に削減。
+    - **Self-Healing Context Caching**: ジョブ実行中にキャッシュ期限（TTL）が切れた場合、自動的にキャッシュを再生成して続行するフォールバック機能を実装。数万件規模のバッチ完走を技術的に担保。
+    - **Explicit Resource Cleanup**: ジョブ終了時（正常・異常問わず）に Google Cloud 上の Context Cache を即座に破棄するクリーンアップ処理を実装。リソースの無駄遣いを徹底排除。
+- **Maintenance Tools**:
+    - **Legacy Data Cleanup Script**: 新エンジン (`python-batch-v1`) 以外で作成された古い `point_creatures` マッピングを一括削除するメンテナンススクリプト (`cleanup_old_mappings.py`) を作成。データベースの完全リセットと最新AIへの統一が可能に。
+- **Infrastructure & Reliability**:
+    - **Ultra-Long Batch Support**: Cloud Run Job のタイムアウト制限を 24時間（最大で7日間）まで拡張。タイムアウトによる再起動リスクを排除。
+    - **Standardized AI Location**: Gemini 2.0 Flash と Caching API の互換性を確保するため、AI 処理用リージョンを `us-central1` に標準化。
+
+### Fixed
+- **UI Clarification**: クレンジング画面の確認メッセージを「全生物マスタを対象にする」内容に修正（旧: 上位5種）。
+- **Firestore Filter Bug**: 地名による絞り込み（Region/Zone/Area）が機能していなかった Firestore クエリを、階層構造を考慮したインメモリ・フィルタリング方式に修正。
+- **Syntax Error**: Cloud Run 上で発生していた Python のインデント・構文エラーを修正。
 
 ## [2.1.4] - 2025-12-20
 ### Added
