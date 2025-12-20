@@ -128,7 +128,7 @@ class CleansingPipeline:
                     display_name=f"bio_cache_{datetime.now(timezone.utc).strftime('%Y%m%d%H')}",
                     system_instruction=system_instruction,
                     contents=[creatures_context],
-                    ttl="3600s",
+                    ttl="86400s",
                 )
             )
             logger.info(f"✅ Context Cache created: {self.cache.name}")
