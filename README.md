@@ -35,7 +35,7 @@ The following variables can be set in GitHub Actions Variables or Firebase Confi
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `ENABLE_CLEANSING_DEBUG` | Set to `true` to enable extremely detailed logging for the AI data cleansing pipeline (Gemini prompts/responses). | `false` |
+| `LOG_LEVEL` | アプリ全体のログ出力レベル制御。`debug` に設定すると、Vertex AI とのやり取りに関する詳細なログを出力します。 | `info` |
 | `LOCATION` | Vertex AI execution location (e.g. `us-central1`). | REQUIRED |
 | `AI_AGENT_LOCATION` | Specific location for the AI Agent (e.g. `us-central1`). | REQUIRED |
 | `GCP_REGION` | Infrastructure deployment region (e.g. `asia-northeast1`). | `asia-northeast1` |

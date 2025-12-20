@@ -36,7 +36,7 @@ Diving Dex App のリリーススケジュールとロードマップです。
     - **Gemini 2.0 Integration**: **Gemini 2.0 Flash** への移行と `google-genai` SDK の導入による高度なグラウンディングと構造化出力の実現。
     - **Cost Engineering**: Context Caching によるトークンコストの大幅削減。
     - **CI/CD Integration**: GitHub Actions によるパイプライン Docker イメージの自動デプロイ（Staging & Production）。のリポジトリ構成の変数化完了。
-    - **v2.1.4: Infrastructure Stabilization**: 環境依存値の完全外部化と、AI診断用のデバッグログ制御（Feature Flag）の実装。
+    - **v2.1.4: Infrastructure Stabilization**: 環境依存値の完全外部化と、標準ロガーレベル（`LOG_LEVEL`）によるAI診断制御の実装。
 
 
 ### v1.3.0 (Community Features) - Planning
@@ -75,7 +75,7 @@ Diving Dex App のリリーススケジュールとロードマップです。
 | `enable_garmin_import` | Boolean | `false` | Garminデータインポート機能（V1: ZIP取込）の有効化。<br>MyPageに「Garmin取込」ボタンを表示する。 | **Ready** (Prod: OFF) |
 | `enable_garmin_graph` | Boolean | `false` | 詳細グラフ（V2: 深度プロファイル）の表示。<br>LogDetailModalにグラフを表示する。 | **Dev** (Prod: OFF) |
 | `enable_ai_concierge` | Admin-Only | `false` | AIコンシェルジュ機能の段階的リリース。<br>true:全体公開, false:管理者(admin)のみアクセス可能とし、グラウンディング化の検証を行う。 | **Beta** (Admin Only) |
-| `ENABLE_CLEANSING_DEBUG` | Env Var | `false` | AIクレンジングの診断用詳細ログ出力制御。<br>true:詳細ログ出力, false:通常ログ。 | **Ready** |
+| `LOG_LEVEL` | Env Var | `info` | アプリ全体のログ出力レベル制御。<br>`debug`:詳細ログ出力, `info`:通常ログ。 | **Ready** |
 
 ## Project Management & Release Workflow
 
