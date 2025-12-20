@@ -136,6 +136,16 @@ class CleansingPipeline:
             logger.warning(f"⚠️ Context Caching not available or failed: {e}. Proceeding without cache (higher token cost).")
             self.cache = None
 
+    def cleanup_cache(self):
+        """Deletes the context cache to free up resources immediately."""
+        if self.cache:
+            try:
+                logger.info(f"🧹 Deleting Context Cache: {self.cache.name}")
+                self.client.caches.delete(name=self.cache.name)
+                self.cache = None
+            except Exception as e:
+                logger.warning(f"⚠️ Failed to delete cache: {e}")
+
     def _safe_json_parse(self, text: str):
         """Clean and parse JSON from AI response."""
         try:
@@ -256,8 +266,9 @@ class CleansingPipeline:
             return {"actual_existence": False, "evidence": str(e), "rarity": "Unknown"}
 
     def process(self, mode: str, filters: Dict[str, Any], limit: int):
-        self.load_data(filters)
-        self.create_context_cache()
+        try:
+            self.load_data(filters)
+            self.create_context_cache()
 
         processed_count = 0
         for p in self.points:
@@ -331,6 +342,9 @@ class CleansingPipeline:
 
                 # Small sleep to be nice to API quotas (adjust as needed)
                 time.sleep(0.5)
+
+        finally:
+            self.cleanup_cache()
 
         logger.info(f"🏁 Finished. Processed {processed_count} mappings.")
 
