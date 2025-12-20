@@ -10,4 +10,4 @@ COPY src/data src/data/
 
 ENV PYTHONUNBUFFERED=1
 
-ENTRYPOINT ["python", "scripts/cleansing_pipeline.py"]
+ENTRYPOINT ["python3", "-u", "scripts/cleansing_pipeline.py"]
