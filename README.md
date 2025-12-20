@@ -36,9 +36,8 @@ The following variables can be set in GitHub Actions Variables or Firebase Confi
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `LOG_LEVEL` | アプリ全体のログ出力レベル制御。`debug` に設定すると、Vertex AI とのやり取りに関する詳細なログを出力します。 | `info` |
-| `LOCATION` | Vertex AI execution location (e.g. `us-central1`). | REQUIRED |
-| `AI_AGENT_LOCATION` | Specific location for the AI Agent (e.g. `us-central1`). | REQUIRED |
-| `GCP_REGION` | Infrastructure deployment region (e.g. `asia-northeast1`). | `asia-northeast1` |
+| `LOCATION` | 一般的なインフラ実行リージョン（例: `asia-northeast1`） | `asia-northeast1` |
+| `AI_AGENT_LOCATION` | **必須**。Gemini 2.0 Flash 及 Context Caching を利用するため `us-central1` を指定してください。 | `us-central1` |
 
 ---
 
@@ -148,16 +147,16 @@ gcloud artifacts repositories create wedive-repo --repository-format=docker --lo
 # 2. Docker の認証設定（初回または認証切れ時）
 gcloud auth configure-docker ${REGION}-docker.pkg.dev --project=${GOOGLE_CLOUD_PROJECT}
 
-# 3. ビルド & プッシュ
-docker build -t ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/wedive-repo/cleansing-pipeline:latest -f docker/cleansing/Dockerfile .
+# 3. ビルド & プッシュ (※Apple Siliconをお使いの場合は --platform linux/amd64 が必須)
+docker build --platform linux/amd64 -t ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/wedive-repo/cleansing-pipeline:latest -f docker/cleansing/Dockerfile .
 docker push ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/wedive-repo/cleansing-pipeline:latest
 
-# 4. ジョブの作成/更新
+# 4. ジョブの作成/更新 (AI_AGENT_LOCATION は us-central1 を推奨)
 gcloud run jobs deploy cleansing-job \
     --image ${REGION}-docker.pkg.dev/${GOOGLE_CLOUD_PROJECT}/wedive-repo/cleansing-pipeline:latest \
     --project ${GOOGLE_CLOUD_PROJECT} \
     --region ${REGION} \
-    --set-env-vars "GCLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},LOCATION=${REGION},LOG_LEVEL=debug"
+    --set-env-vars "GCLOUD_PROJECT=${GOOGLE_CLOUD_PROJECT},LOCATION=${REGION},AI_AGENT_LOCATION=us-central1,LOG_LEVEL=debug"
 ```
 
 ## Security & Vulnerability Management

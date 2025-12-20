@@ -62,26 +62,51 @@ class CleansingPipeline:
         self.db = firestore.client()
 
     def load_data(self, filters: Dict[str, Any]):
-        """Fetch points and creatures from Firestore based on filters."""
+        """Fetch points and creatures from Firestore based on hierarchy-aware filters."""
         logger.info("📡 Fetching data from Firestore...")
 
         # 1. Load Creatures (All for context cache)
         creatures_ref = self.db.collection('creatures')
         self.creatures = [doc.to_dict() | {"id": doc.id} for doc in creatures_ref.stream()]
 
-        # 2. Load Points with filters
-        points_ref = self.db.collection('points')
-        query = points_ref
+        # 2. Load hierarchy-aware Master data if needed (small collections)
+        areas_dict = {doc.id: doc.to_dict() for doc in self.db.collection('areas').stream()}
+        zones_dict = {doc.id: doc.to_dict() for doc in self.db.collection('zones').stream()}
 
+        # 3. Load Points and filter in-memory for robustness
+        points_ref = self.db.collection('points')
         if filters.get('pointId'):
-            self.points = [points_ref.document(filters['pointId']).get().to_dict() | {"id": filters['pointId']}]
+            # Specific point: direct access
+            doc = points_ref.document(filters['pointId']).get()
+            raw_points = [doc.to_dict() | {"id": doc.id}] if doc.exists else []
         else:
-            if filters.get('region'): query = query.where('region', '==', filters['region'])
-            if filters.get('zone'): query = query.where('zone', '==', filters['zone'])
-            if filters.get('area'): query = query.where('area', '==', filters['area'])
-            self.points = [doc.to_dict() | {"id": doc.id} for doc in query.stream()]
+            # Load all and filter hierarchically
+            raw_points = [doc.to_dict() | {"id": doc.id} for doc in points_ref.stream()]
+
+        self.points = []
+        for p in raw_points:
+            # Higher-level filters check
+            if filters.get('area') and p.get('areaId') != filters['area']:
+                continue
+
+            if filters.get('zone'):
+                area = areas_dict.get(p.get('areaId'))
+                if not area or area.get('zoneId') != filters['zone']:
+                    continue
+
+            if filters.get('region'):
+                area = areas_dict.get(p.get('areaId'))
+                if area:
+                    zone = zones_dict.get(area.get('zoneId'))
+                    if not zone or zone.get('regionId') != filters['region']:
+                        continue
+                else:
+                    continue
+
+            self.points.append(p)
 
         logger.info(f"📊 Loaded {len(self.creatures)} creatures and {len(self.points)} target points.")
+        logger.info(f"🔎 Applied Filters: {json.dumps(filters, indent=2)}")
 
     def create_context_cache(self):
         """Creates a context cache for biological data to save token costs."""
@@ -148,16 +173,18 @@ class CleansingPipeline:
         # Incorporate filters into instructions to focus the AI
         filter_instr = ""
         if point.get('specific_creature_name'):
-             filter_instr = f"- 特に「{point['specific_creature_name']}」に注目して重点的に判定してください。"
+             filter_instr = f"- 今回の判定対象は「{point['specific_creature_name']}」1種類のみです。他の生物は一切リストに含めないでください。"
+        else:
+             filter_instr = "- ポイントの環境に合致する生物をリストから漏れなく抽出してください。"
 
         prompt = f"""
-        ダイビングポイント「{point['name']}」の条件に基づき、生息可能な生物をキャッシュ内の辞書から抽出してください。
+        ダイビングポイント「{point['name']}」の条件に基づき、対象生物が生息可能か、キャッシュ内の辞書から抽出してください。
         ポイント水深: {point.get('maxDepth', 40)}m
         地形: {json.dumps(point.get('topography', []))}
 
         【指示】
-        - 生息の可能性がある生物（is_possible=true）を抽出してください。
         {filter_instr}
+        - 生息可能（is_possible=true）な場合にJSONに含めてください。
         - 期待される希少度(rarity)、確信度(confidence: 0.0-1.0)、理由(reasoning)を含めてください。
         - 出力形式は純粋なJSON配列のみとし、説明文などは一切含めないでください。
         """
