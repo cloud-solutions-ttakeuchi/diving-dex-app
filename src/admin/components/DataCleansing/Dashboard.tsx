@@ -117,7 +117,7 @@ export const CleansingDashboard = () => {
           : targetRegion ? `リージョン: ${targetRegion.name}`
             : '全地域';
 
-    const creatureName = targetCreature ? `生物: ${targetCreature.name}` : '対象: 主要生物 (上位5種)';
+    const creatureName = targetCreature ? `生物: ${targetCreature.name}` : '対象: 全生物マスタ';
 
     const confirmMsg = `【実行確認】
 モード: ${mode === 'new' ? '新規追加' : mode === 'all' ? 'リセット' : mode === 'replace' ? '入れ替え' : '範囲指定'}
