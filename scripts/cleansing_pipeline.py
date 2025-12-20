@@ -266,82 +266,82 @@ class CleansingPipeline:
             return {"actual_existence": False, "evidence": str(e), "rarity": "Unknown"}
 
     def process(self, mode: str, filters: Dict[str, Any], limit: int):
+        processed_count = 0
         try:
             self.load_data(filters)
             self.create_context_cache()
 
-        processed_count = 0
-        for p in self.points:
-            if processed_count >= limit: break
-            logger.info(f"🔎 Processing Point: {p['name']} ({p['id']})")
-
-            # Add target creature name to point info for Stage 1 focus
-            p['specific_creature_name'] = None
-            if filters.get('creatureId'):
-                creature = next((c for c in self.creatures if c['id'] == filters['creatureId']), None)
-                if creature:
-                    p['specific_creature_name'] = creature['name']
-
-            s1_results = self.run_stage1_batch(p)
-
-            for res in s1_results:
+            for p in self.points:
                 if processed_count >= limit: break
-                creature_id = res.get("creature_id")
-                if not res.get("is_possible") or not creature_id: continue
+                logger.info(f"🔎 Processing Point: {p['name']} ({p['id']})")
 
-                # Optional: pinpoint creature filter
-                if filters.get('creatureId') and creature_id != filters['creatureId']:
-                    continue
+                # Add target creature name to point info for Stage 1 focus
+                p['specific_creature_name'] = None
+                if filters.get('creatureId'):
+                    creature = next((c for c in self.creatures if c['id'] == filters['creatureId']), None)
+                    if creature:
+                        p['specific_creature_name'] = creature['name']
 
-                key = f"{p['id']}_{creature_id}"
+                s1_results = self.run_stage1_batch(p)
 
-                # Check existence in Firestore if mode is 'new'
-                if mode == "new":
-                    existing = self.db.collection('point_creatures').document(key).get()
-                    if existing.exists:
-                        logger.debug(f"  ⏭️ Skipping existing: {creature_id}")
+                for res in s1_results:
+                    if processed_count >= limit: break
+                    creature_id = res.get("creature_id")
+                    if not res.get("is_possible") or not creature_id: continue
+
+                    # Optional: pinpoint creature filter
+                    if filters.get('creatureId') and creature_id != filters['creatureId']:
                         continue
 
-                creature = next((c for c in self.creatures if c['id'] == creature_id), None)
-                if not creature: continue
+                    key = f"{p['id']}_{creature_id}"
 
-                # Stage 2: Fact-check with Grounding (Only if Stage 1 is unsure)
-                if res.get("confidence", 0) >= 0.85:
-                    logger.info(f"  ✨ AI is confident ({res.get('confidence')}). Saving without search.")
-                    s2 = {
-                        "actual_existence": True,
-                        "evidence": res.get("reasoning"),
-                        "rarity": res.get("rarity")
+                    # Check existence in Firestore if mode is 'new'
+                    if mode == "new":
+                        existing = self.db.collection('point_creatures').document(key).get()
+                        if existing.exists:
+                            logger.debug(f"  ⏭️ Skipping existing: {creature_id}")
+                            continue
+
+                    creature = next((c for c in self.creatures if c['id'] == creature_id), None)
+                    if not creature: continue
+
+                    # Stage 2: Fact-check with Grounding (Only if Stage 1 is unsure)
+                    if res.get("confidence", 0) >= 0.85:
+                        logger.info(f"  ✨ AI is confident ({res.get('confidence')}). Saving without search.")
+                        s2 = {
+                            "actual_existence": True,
+                            "evidence": res.get("reasoning"),
+                            "rarity": res.get("rarity")
+                        }
+                    else:
+                        logger.info(f"  🌐 AI is unsure. Running Google Search Grounding: {creature['name']}...")
+                        s2 = self.run_stage2_grounding(p, creature)
+
+                    # Save result to Firestore
+                    status = "pending" if s2.get("actual_existence") else "rejected"
+
+                    # Final check: if rejected but high confidence in S1, maybe it's just 'Rare'
+                    if status == "rejected" and res.get("confidence", 0) > 0.8:
+                        logger.info(f"  💡 High confidence S1 result kept as 'pending' despite no web evidence.")
+                        status = "pending"
+
+                    new_entry = {
+                        "pointId": p['id'],
+                        "creatureId": creature['id'],
+                        "localRarity": s2.get("rarity") or res.get("rarity") or "Rare",
+                        "status": status,
+                        "reasoning": s2.get("evidence") or res.get("reasoning"),
+                        "confidence": (res.get("confidence", 0.5) + (0.3 if s2.get("actual_existence") else 0)) / 1.3,
+                        "updatedAt": firestore.SERVER_TIMESTAMP,
+                        "method": "python-batch-v1"
                     }
-                else:
-                    logger.info(f"  🌐 AI is unsure. Running Google Search Grounding: {creature['name']}...")
-                    s2 = self.run_stage2_grounding(p, creature)
 
-                # Save result to Firestore
-                status = "pending" if s2.get("actual_existence") else "rejected"
+                    self.db.collection('point_creatures').document(key).set(new_entry)
+                    logger.info(f"  🚀 Saved: {creature['name']} -> {status}")
+                    processed_count += 1
 
-                # Final check: if rejected but high confidence in S1, maybe it's just 'Rare'
-                if status == "rejected" and res.get("confidence", 0) > 0.8:
-                    logger.info(f"  💡 High confidence S1 result kept as 'pending' despite no web evidence.")
-                    status = "pending"
-
-                new_entry = {
-                    "pointId": p['id'],
-                    "creatureId": creature['id'],
-                    "localRarity": s2.get("rarity") or res.get("rarity") or "Rare",
-                    "status": status,
-                    "reasoning": s2.get("evidence") or res.get("reasoning"),
-                    "confidence": (res.get("confidence", 0.5) + (0.3 if s2.get("actual_existence") else 0)) / 1.3,
-                    "updatedAt": firestore.SERVER_TIMESTAMP,
-                    "method": "python-batch-v1"
-                }
-
-                self.db.collection('point_creatures').document(key).set(new_entry)
-                logger.info(f"  🚀 Saved: {creature['name']} -> {status}")
-                processed_count += 1
-
-                # Small sleep to be nice to API quotas (adjust as needed)
-                time.sleep(0.5)
+                    # Small sleep to be nice to API quotas (adjust as needed)
+                    time.sleep(0.5)
 
         finally:
             self.cleanup_cache()
