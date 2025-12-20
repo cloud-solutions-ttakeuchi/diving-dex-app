@@ -48,7 +48,7 @@ jobs:
 
           echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >> functions/.env
           echo "BASIC_AUTH_USER=${{ vars.BASIC_AUTH_USER }}" >> functions/.env
-          echo "BASIC_AUTH_PASS=${{ secrets.BASIC_AUTH_PASS }}" >> functions/.env
+          echo "BASIC_AUTH_PASS=${{ vars.BASIC_AUTH_PASS }}" >> functions/.env
           echo "CLEANSING_JOB_NAME=cleansing-job" >> functions/.env
           npx firebase-tools deploy --only functions --project ${{ vars.VITE_FIREBASE_PROJECT_ID }} --force
       - run: ls -la
