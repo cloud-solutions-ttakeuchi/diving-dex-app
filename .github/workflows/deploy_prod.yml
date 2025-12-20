@@ -29,6 +29,7 @@ jobs:
           VITE_FIREBASE_APP_ID: ${{ vars.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.VITE_FIREBASE_MEASUREMENT_ID }}
           VITE_GOOGLE_MAPS_API_KEY: ${{ vars.VITE_GOOGLE_MAPS_API_KEY }}
+          LOG_LEVEL: ${{ vars.LOG_LEVEL }}
       - name: Install and Build Functions
         run: |
           cd functions
@@ -40,6 +41,7 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEDIVE_APP_PROD }}
       - name: Deploy Functions
         run: |
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" > functions/.env
           npx firebase-tools deploy --only functions --project ${{ vars.VITE_FIREBASE_PROJECT_ID }} --force
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -70,12 +72,12 @@ jobs:
           gcloud run jobs update cleansing-job-prod \
             --image ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }}/cleansing-pipeline:latest \
             --region ${{ vars.GCP_REGION || 'asia-northeast1' }} \
-            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.AI_AGENT_LOCATION }}" \
+            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.AI_AGENT_LOCATION }},LOG_LEVEL=${{ vars.LOG_LEVEL }}" \
             --tasks 1 \
             --max-retries 0 || \
           gcloud run jobs create cleansing-job-prod \
             --image ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }}/cleansing-pipeline:latest \
             --region ${{ vars.GCP_REGION || 'asia-northeast1' }} \
-            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.AI_AGENT_LOCATION }}" \
+            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.AI_AGENT_LOCATION }},LOG_LEVEL=${{ vars.LOG_LEVEL }}" \
             --tasks 1 \
             --max-retries 0
