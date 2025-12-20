@@ -1,6 +1,18 @@
 # Changelog
 
 プロジェクトの変更履歴を記録します。
+## [2.1.5] - 2025-12-20
+### Added
+- **Unified Batch Cleansing Engine**:
+    - AIクレンジングの実行基盤を **Python版 Cloud Run Job** に一本化。
+    - Cloud Functions は「起動トリガー」として機能し、実際の重い処理はバッチ側へ委譲する疎結合な設計へ移行。
+- **Cost & Performance Optimization**:
+    - **Context Caching の全面採用**: バッチ移行により大規模判定時のトークンコストを最小化。
+    - **タイムアウトの排除**: Cloud Functions の実行制限を回避し、数万件規模の全件クレンジングが安定して実行可能に。
+- **Firestore Direct Integration**:
+    - Pythonスクリプトが Firestore (`point_creatures`) を直接更新するように拡張。
+    - ピンポイント指定、エリア指定、全件指定など、柔軟な実行引数に対応。
+
 ## [2.1.4] - 2025-12-20
 ### Added
 - **Feature Flag & Logging System Enhancement**:

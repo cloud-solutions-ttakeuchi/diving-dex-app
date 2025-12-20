@@ -41,7 +41,14 @@ jobs:
           credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_WEDIVE_APP_STG }}
       - name: Deploy Functions
         run: |
-          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" > functions/.env
+          # Copy index.html to functions folder so the Function can serve it
+          cp dist/index.html functions/index.html
+          # Rename original so Hosting doesn't serve it directly (bypassing Function)
+          mv dist/index.html dist/_app.html
+
+          echo "LOG_LEVEL=${{ vars.LOG_LEVEL }}" >> functions/.env
+          echo "BASIC_AUTH_USER=${{ vars.BASIC_AUTH_USER }}" >> functions/.env
+          echo "BASIC_AUTH_PASS=${{ secrets.BASIC_AUTH_PASS }}" >> functions/.env
           npx firebase-tools deploy --only functions --project ${{ vars.VITE_FIREBASE_PROJECT_ID }}
       - run: ls -la
       - run: ls -la dist || echo "dist not found"
