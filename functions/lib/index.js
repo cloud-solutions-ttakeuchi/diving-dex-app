@@ -23,4 +23,5 @@ __exportStar(require("./ai/concierge"), exports);
 __exportStar(require("./triggers/translateTriggers"), exports);
 // Export Management APIs
 __exportStar(require("./api/cleansing"), exports);
+__exportStar(require("./api/auth"), exports);
 //# sourceMappingURL=index.js.map

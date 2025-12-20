@@ -11,3 +11,4 @@ export * from "./triggers/translateTriggers";
 
 // Export Management APIs
 export * from "./api/cleansing";
+export * from "./api/auth";
