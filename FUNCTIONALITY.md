@@ -122,7 +122,7 @@
     - **コレクションへの影響**: Firestore の `point_creatures` コレクションから、条件に合致するドキュメントを**物理削除**します。
 - **DB レア度整合性修正 (`scripts/maintenance/fix_rarities.py`)**:
     - **ふるまい**: `point_creatures` の `localRarity` フィールドに不正な値（AIの解説文など）が入っている場合、キーワード（Rare等）を抽出して正規化します。
-    - **使い方**: `python scripts/maintenance/fix_rarities.py`
+    - **使い方**: `python scripts/maintenance/fix_rarities.py --project [PROJECT_ID] --execute`
     - **コレクションへの影響**: `point_creatures` の `localRarity` を Enum 値に修正します。
 
 ---
