@@ -83,14 +83,14 @@ jobs:
           gcloud run jobs update cleansing-job \
             --image ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }}/cleansing-pipeline:latest \
             --region ${{ vars.GCP_REGION || 'asia-northeast1' }} \
-            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.GCP_REGION || 'asia-northeast1' }},AI_AGENT_LOCATION=${{ vars.AI_AGENT_LOCATION || 'us-central1' }},LOG_LEVEL=${{ vars.LOG_LEVEL }},USE_VERTEX_AI_SEARCH=${{ vars.USE_VERTEX_AI_SEARCH }},VERTEX_AI_CONCIERGE_DATA_STORE_IDS=${{ vars.VERTEX_AI_CONCIERGE_DATA_STORE_IDS }},VERTEX_AI_DRAFT_DATA_STORE_IDS=${{ vars.VERTEX_AI_DRAFT_DATA_STORE_IDS }}" \
+            --set-env-vars "^:^GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }}:LOCATION=${{ vars.GCP_REGION || 'asia-northeast1' }}:AI_AGENT_LOCATION=${{ vars.AI_AGENT_LOCATION || 'us-central1' }}:LOG_LEVEL=${{ vars.LOG_LEVEL }}:USE_VERTEX_AI_SEARCH=${{ vars.USE_VERTEX_AI_SEARCH }}:VERTEX_AI_CONCIERGE_DATA_STORE_IDS=${{ vars.VERTEX_AI_CONCIERGE_DATA_STORE_IDS }}:VERTEX_AI_DRAFT_DATA_STORE_IDS=${{ vars.VERTEX_AI_DRAFT_DATA_STORE_IDS }}" \
             --task-timeout 604800 \
             --tasks 1 \
             --max-retries 0 || \
           gcloud run jobs create cleansing-job \
             --image ${{ vars.GCP_REGION || 'asia-northeast1' }}-docker.pkg.dev/${{ vars.VITE_FIREBASE_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY || 'wedive-repo' }}/cleansing-pipeline:latest \
             --region ${{ vars.GCP_REGION || 'asia-northeast1' }} \
-            --set-env-vars "GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }},LOCATION=${{ vars.GCP_REGION || 'asia-northeast1' }},AI_AGENT_LOCATION=${{ vars.AI_AGENT_LOCATION || 'us-central1' }},LOG_LEVEL=${{ vars.LOG_LEVEL }},USE_VERTEX_AI_SEARCH=${{ vars.USE_VERTEX_AI_SEARCH }},VERTEX_AI_CONCIERGE_DATA_STORE_IDS=${{ vars.VERTEX_AI_CONCIERGE_DATA_STORE_IDS }},VERTEX_AI_DRAFT_DATA_STORE_IDS=${{ vars.VERTEX_AI_DRAFT_DATA_STORE_IDS }}" \
+            --set-env-vars "^:^GCLOUD_PROJECT=${{ vars.VITE_FIREBASE_PROJECT_ID }}:LOCATION=${{ vars.GCP_REGION || 'asia-northeast1' }}:AI_AGENT_LOCATION=${{ vars.AI_AGENT_LOCATION || 'us-central1' }}:LOG_LEVEL=${{ vars.LOG_LEVEL }}:USE_VERTEX_AI_SEARCH=${{ vars.USE_VERTEX_AI_SEARCH }}:VERTEX_AI_CONCIERGE_DATA_STORE_IDS=${{ vars.VERTEX_AI_CONCIERGE_DATA_STORE_IDS }}:VERTEX_AI_DRAFT_DATA_STORE_IDS=${{ vars.VERTEX_AI_DRAFT_DATA_STORE_IDS }}" \
             --task-timeout 86400 \
             --tasks 1 \
             --max-retries 0
