@@ -101,5 +101,31 @@
     - フォロー/フォロワー機能。
     - タイムラインフィード。
     - バディスタンプ
+
 3.  **データ分析強化**:
     - 月別・エリア別ダイビング統計のグラフ化。
+
+---
+
+## 7. インフラ設計 (Infrastructure Design)
+
+### 7.1 クラウド構成
+- **Hosting**: Firebase Hosting (Vite アプリ)
+- **Functions**: Cloud Functions for Firebase (API, AI Concierge, Triggers)
+- **Backend Job**: Cloud Run Jobs (Python - 大規模データクレンジング専用)
+- **AI**: Vertex AI (Gemini 2.0 Flash / Pro)
+
+### 7.2 環境変数 (Environment Variables)
+
+| 環境変数名 | 説明 | 使用目的 |
+| :--- | :--- | :--- |
+| `GCLOUD_PROJECT` | Google Cloud プロジェクト ID | Firestore、Vertex AI、Cloud Run 等のリソース特定。**必須。** |
+| `LOCATION` / `GCP_REGION` | リソースの稼働リージョン | Cloud Run Job、Firebase Functions の実行場所指定。 |
+| `AI_LOCATION` | Vertex AI (Gen AI) の実行リージョン | Gemini API や Context Cache のパフォーマンス最適化用。 |
+| `LOG_LEVEL` | ログ出力詳細度 | DEBUG, INFO, WARN, ERROR のいずれか。システムのデバッグに使用。 |
+| `BASIC_AUTH_USER` | Basic 認証ユーザー名 | ステージング・本番環境へのアクセス制限（未設定時は解除）。 |
+| `BASIC_AUTH_PASS` | Basic 認証パスワード | 同上。 |
+| `CLEANSING_JOB_NAME` | Cloud Run Jobs 名 | AI クレンジングを実行するジョブの名称指定。 |
+| `VITE_FIREBASE_API_KEY` | Firebase API キー | フロントエンドからの Firebase 接続認証。 |
+| `VITE_GOOGLE_MAPS_API_KEY` | Google Maps API キー | 地図の表示、座標選択、ジオコーディングに使用。 |
+| `VITE_FIREBASE_PROJECT_ID` | フロントエンド用プロジェクト ID | フロントエンドが接続する Firebase プロジェクトの指定。 |

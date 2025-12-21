@@ -84,7 +84,7 @@ export const generateSpotDraft = onCall({ region: "asia-northeast1" }, async (re
   if (cached) return cached;
 
   const vertexAI = new VertexAI({
-    project: process.env.GCLOUD_PROJECT || "wedive-app",
+    project: process.env.GCLOUD_PROJECT,
     location: "us-central1"
   });
 
@@ -208,7 +208,7 @@ export const generateCreatureDraft = onCall({ region: "asia-northeast1" }, async
   if (cached) return cached;
 
   const vertexAI = new VertexAI({
-    project: process.env.GCLOUD_PROJECT || "wedive-app",
+    project: process.env.GCLOUD_PROJECT,
     location: "us-central1"
   });
 

@@ -15,30 +15,10 @@ from firebase_admin import credentials, firestore
 import sys
 
 # --- Logging Configuration ---
-log_level = os.environ.get("LOG_LEVEL", "INFO").upper()
-logging.basicConfig(
-    level=getattr(logging, log_level, logging.INFO),
-    format='%(asctime)s [%(levelname)s] %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# --- Configuration ---
-PROJECT_ID = (
-    os.environ.get("GOOGLE_CLOUD_PROJECT") or
-    os.environ.get("GCLOUD_PROJECT") or
-    os.environ.get("VITE_FIREBASE_PROJECT_ID")
-)
+PROJECT_ID = os.environ.get("GCLOUD_PROJECT")
 LOCATION = os.environ.get("LOCATION") or os.environ.get("AI_AGENT_LOCATION")
-
-if not PROJECT_ID:
-    print("❌ FATAL: PROJECT_ID is not set. Checked: GOOGLE_CLOUD_PROJECT, GCLOUD_PROJECT, VITE_FIREBASE_PROJECT_ID", flush=True)
-    sys.exit(1)
-
-if not LOCATION:
-    print("❌ FATAL: LOCATION is not set. Checked: LOCATION, AI_AGENT_LOCATION", flush=True)
-    sys.exit(1)
-
-print(f"ℹ️ Configured with PROJECT_ID={PROJECT_ID}, LOCATION={LOCATION}, LOG_LEVEL={log_level}", flush=True)
+LOG_LEVEL = os.environ.get("LOG_LEVEL", "INFO").upper()
+logger = logging.getLogger(__name__)
 
 class CleansingPipeline:
     def __init__(self):
@@ -416,7 +396,29 @@ if __name__ == "__main__":
     parser.add_argument("--zone", help="Filter points by zone")
     parser.add_argument("--area", help="Filter points by area")
 
+    parser.add_argument("--project", help="Firebase Project ID")
     args = parser.parse_args()
+
+    # Priority: 1. CLI Arg, 2. Env Var
+    if args.project:
+        PROJECT_ID = args.project
+
+    if not PROJECT_ID:
+        print("❌ FATAL: PROJECT_ID is not set. Checked: GCLOUD_PROJECT (env) or --project (arg)", flush=True)
+        sys.exit(1)
+
+    if not LOCATION:
+        print("❌ FATAL: LOCATION is not set. Checked: LOCATION, AI_AGENT_LOCATION", flush=True)
+        sys.exit(1)
+
+    # Initialize Logging after PROJECT_ID is confirmed (optional, but cleaner)
+    logging.basicConfig(
+        level=getattr(logging, LOG_LEVEL, logging.INFO),
+        format='%(asctime)s [%(levelname)s] %(message)s'
+    )
+    logger = logging.getLogger(__name__)
+
+    print(f"ℹ️ Configured with PROJECT_ID={PROJECT_ID}, LOCATION={LOCATION}, LOG_LEVEL={LOG_LEVEL}", flush=True)
 
     filters = {
         "pointId": args.pointId,

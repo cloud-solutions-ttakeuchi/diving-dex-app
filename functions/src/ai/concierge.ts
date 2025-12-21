@@ -33,7 +33,7 @@ export const getConciergeResponse = onCall({
   }).join("\n---\n");
 
   const vertexAI = new VertexAI({
-    project: process.env.GCLOUD_PROJECT || "dive-dex-app-dev",
+    project: process.env.GCLOUD_PROJECT,
     location: "us-central1"
   });
 

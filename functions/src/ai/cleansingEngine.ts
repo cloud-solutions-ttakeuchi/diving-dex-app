@@ -13,6 +13,9 @@ export class CleansingEngine {
     projectId: string = process.env.GCLOUD_PROJECT!,
     location: string = process.env.LOCATION!
   ) {
+    if (!projectId) {
+      logger.error("GCLOUD_PROJECT environment variable is not set. Vertex AI calls will fail.");
+    }
     if (!location) {
       logger.error("LOCATION environment variable is not set. Vertex AI calls may fail.");
     }

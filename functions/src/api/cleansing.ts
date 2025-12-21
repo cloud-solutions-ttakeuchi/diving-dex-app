@@ -28,7 +28,10 @@ export const runDataCleansing = onCall({ region: "asia-northeast1", memory: "512
 
   const { mode, pointId, creatureId, regionId, zoneId, areaId, limit } = data;
 
-  const projectId = process.env.GCLOUD_PROJECT || process.env.VITE_FIREBASE_PROJECT_ID;
+  const projectId = process.env.GCLOUD_PROJECT;
+  if (!projectId) {
+    throw new HttpsError("failed-precondition", "GCLOUD_PROJECT environment variable is not set");
+  }
   const region = process.env.GCP_REGION || "asia-northeast1";
 
   // Get Job name from environment variable (default: cleansing-job)

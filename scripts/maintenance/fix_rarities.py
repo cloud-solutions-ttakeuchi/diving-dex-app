@@ -11,10 +11,10 @@ parser.add_argument("--project", help="Firebase Project ID")
 parser.add_argument("--execute", action="store_true", help="Actually execute the updates in Firestore")
 args = parser.parse_args()
 
-PROJECT_ID = args.project or os.environ.get("VITE_FIREBASE_PROJECT_ID")
+PROJECT_ID = args.project or os.environ.get("GCLOUD_PROJECT")
 
 if not PROJECT_ID:
-    print("❌ FATAL: PROJECT_ID is not set. Use --project or VITE_FIREBASE_PROJECT_ID env var.")
+    print("❌ FATAL: PROJECT_ID is not set. Use --project or GCLOUD_PROJECT env var.")
     sys.exit(1)
 
 # Initialize Firestore

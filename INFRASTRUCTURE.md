@@ -119,3 +119,19 @@ GitHub Actions を通じて、以下の 3 段階でデプロイが実行され�
 | Firestore リージョン | `asia-northeast1` |
 | AI プロセッサ ロケーション | `us-central1` |
 | Artifact Registry Repo | `wedive-repo` |
+
+
+### 6. 環境変数 (Environment Variables)
+
+| 環境変数名 | 説明 | 使用目的 |
+| :--- | :--- | :--- |
+| `GCLOUD_PROJECT` | Google Cloud プロジェクト ID | Firestore、Vertex AI、Cloud Run 等のリソース特定。**必須。** |
+| `LOCATION` / `GCP_REGION` | リソースの稼働リージョン | Cloud Run Job、Firebase Functions の実行場所指定。 |
+| `AI_LOCATION` | Vertex AI (Gen AI) の実行リージョン | Gemini API や Context Cache のパフォーマンス最適化用。 |
+| `LOG_LEVEL` | ログ出力詳細度 | DEBUG, INFO, WARN, ERROR のいずれか。システムのデバッグに使用。 |
+| `BASIC_AUTH_USER` | Basic 認証ユーザー名 | ステージング・本番環境へのアクセス制限（未設定時は解除）。 |
+| `BASIC_AUTH_PASS` | Basic 認証パスワード | 同上。 |
+| `CLEANSING_JOB_NAME` | Cloud Run Jobs 名 | AI クレンジングを実行するジョブの名称指定。 |
+| `VITE_FIREBASE_API_KEY` | Firebase API キー | フロントエンドからの Firebase 接続認証。 |
+| `VITE_GOOGLE_MAPS_API_KEY` | Google Maps API キー | 地図の表示、座標選択、ジオコーディングに使用。 |
+| `VITE_FIREBASE_PROJECT_ID` | フロントエンド用プロジェクト ID | フロントエンドが接続する Firebase プロジェクトの指定。 |

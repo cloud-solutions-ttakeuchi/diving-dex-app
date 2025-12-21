@@ -20,6 +20,11 @@ export const onPointUpdateTranslate = onDocumentUpdated({
     return;
   }
 
+  if (!process.env.GCLOUD_PROJECT) {
+    logger.error("GCLOUD_PROJECT environment variable is not set. Translation failed.");
+    return;
+  }
+
   const vertexAI = new VertexAI({
     project: process.env.GCLOUD_PROJECT,
     location: "asia-northeast1"
