@@ -179,6 +179,20 @@ class CleansingPipeline:
             logger.error(f"Failed to parse JSON: {e}\nRaw Text Preview: {text[:500]}... [Total Length: {len(text)}]")
             return None
 
+    def _normalize_rarity(self, rarity_text: str) -> str:
+        """Ensure rarity is a valid enum value by searching for keywords."""
+        valid_rarities = ["Common", "Rare", "Epic", "Legendary"]
+        if not rarity_text:
+            return "Rare"
+
+        text = str(rarity_text).lower()
+        # Search for exact matches first
+        for r in valid_rarities:
+            if r.lower() in text:
+                return r
+
+        return "Rare"
+
     def run_stage1_batch(self, point) -> List[Dict[str, Any]]:
         """Stage 1: Batch physical constraint filtering via Cache."""
         response_schema = {
@@ -365,6 +379,8 @@ class CleansingPipeline:
 
                     # Save result to Firestore
                     status = "pending" if s2.get("actual_existence") else "rejected"
+                    raw_rarity = s2.get("rarity") or res.get("rarity") or "Rare"
+                    local_rarity = self._normalize_rarity(raw_rarity)
 
                     # Final check: if rejected but high confidence in S1, maybe it's just 'Rare'
                     if status == "rejected" and res.get("confidence", 0) > 0.8:
@@ -374,7 +390,7 @@ class CleansingPipeline:
                     new_entry = {
                         "pointId": p['id'],
                         "creatureId": creature['id'],
-                        "localRarity": s2.get("rarity") or res.get("rarity") or "Rare",
+                        "localRarity": local_rarity,
                         "status": status,
                         "reasoning": s2.get("evidence") or res.get("reasoning"),
                         "confidence": (res.get("confidence", 0.5) + (0.3 if s2.get("actual_existence") else 0)) / 1.3,

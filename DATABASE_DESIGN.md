@@ -117,7 +117,7 @@ erDiagram
 | `id` | string | `[pointId]_[creatureId]` |
 | `pointId` | string | ポイントID |
 | `creatureId` | string | 生物ID |
-| `localRarity` | string | その地点固有のレア度 |
+| `localRarity` | string | その地点固有のレア度 (Common, Rare, Epic, Legendary) |
 | `lastSighted` | string | 最終目撃日 (Option) |
 | `status` | string | approved, pending, deletion_requested |
 | `reasoning` | string | AIによる紐付け根拠 |

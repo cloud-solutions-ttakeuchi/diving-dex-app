@@ -2,6 +2,23 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [2.2.10] - 2025-12-21
+### Added
+- **AI Data Cleansing Pipeline Enhancements**:
+    - **Rarity Normalization**: `cleansing_pipeline.py` に `localRarity` の自動正規化ロジックを追加。AIが解説文をレア度フィールドに出力するのを防止。
+    - **Retry & Recovery**: AIのJSONレスポンスが途切れた際のリカバリロジックを強化。
+- **Maintenance Tools**:
+    - **Rarity Data Fixer (`scripts/maintenance/fix_rarities.py`)**: 既存の `point_creatures` データ内の不正な `localRarity` 文字列をクリーンアップするバッチを導入。
+- **UI Improvements**:
+    - **Admin Review Engine**: AI却下済みデータの表示フィルタを追加。
+    - **Bulk Actions**: グループ単位の一括選択、および一括選択のトグル解除機能を実装。
+- **Data Integrity**:
+    - **Status Type Expansion**: `PointCreature` マスタに `rejected` ステータスを正式に追加。ポイント詳細画面での表示からAI却下済み生物を除外。
+
+### Fixed
+- **UI Logic**: ポイント詳細画面（`PointDetailPage`）において、AIが「いない」と判定した生物が表示されていた問題を修正。
+- **Lint Errors**: `types.ts` と 各ページにおける `PointCreature` の型定義不整合を解消。
+
 ## [2.2.9] - 2025-12-21
 ### Added
 - **DB Schema Redesign (ID Normalization & Hierarchy)**:

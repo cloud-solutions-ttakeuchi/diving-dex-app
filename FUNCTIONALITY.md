@@ -120,6 +120,10 @@
     - **ふるまい**: ID 規則に違反したゴミデータや、古いロジックで作成された重複・不要な紐付けデータを一括削除します。
     - **使い方**: `python scripts/cleanup_old_mappings.py --project [PROJECT_ID] --trash-only --execute`
     - **コレクションへの影響**: Firestore の `point_creatures` コレクションから、条件に合致するドキュメントを**物理削除**します。
+- **DB レア度整合性修正 (`scripts/maintenance/fix_rarities.py`)**:
+    - **ふるまい**: `point_creatures` の `localRarity` フィールドに不正な値（AIの解説文など）が入っている場合、キーワード（Rare等）を抽出して正規化します。
+    - **使い方**: `python scripts/maintenance/fix_rarities.py`
+    - **コレクションへの影響**: `point_creatures` の `localRarity` を Enum 値に修正します。
 
 ---
 
