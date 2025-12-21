@@ -29,8 +29,8 @@ export const PointDetailPage = () => {
   const inhabitants = useMemo(() => {
     if (!point) return [];
 
-    // 1. Find relationships for this point (approved, pending, deletion_requested)
-    const links = pointCreatures.filter(pc => pc.pointId === point.id && pc.status !== undefined); // All relevant links
+    // 1. Find relationships for this point (approved, pending, deletion_requested) - Exclude rejected
+    const links = pointCreatures.filter(pc => pc.pointId === point.id && pc.status !== undefined && pc.status !== 'rejected'); // All relevant links
 
     // 2. Map to Creature objects with overridden Local Rarity and Status
     const validCreatures = links.map(link => {

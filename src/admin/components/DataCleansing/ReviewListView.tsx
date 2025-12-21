@@ -23,15 +23,22 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
   const { points, creatures, pointCreatures } = useApp();
   const [viewMode, setViewMode] = useState<'point' | 'creature'>(initialViewMode);
   const [filterPending, setFilterPending] = useState(true);
+  const [filterRejected, setFilterRejected] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [processing, setProcessing] = useState(false);
 
   // 1. Group Data for Review
   const groupedData = useMemo(() => {
-    const pcList = filterPending
-      ? pointCreatures.filter(pc => pc.status === 'pending')
-      : pointCreatures;
+    const pcList = pointCreatures.filter(pc => {
+      // 1. Pending Filter
+      if (filterPending && pc.status === 'pending') return true;
+      // 2. Rejected/Auto-Rejected Filter
+      if (filterRejected && (pc.status === 'rejected' || pc.status === 'deletion_requested')) return true;
+      // 3. Fallback (if no filters)
+      if (!filterPending && !filterRejected) return true;
+      return false;
+    });
 
     if (viewMode === 'point') {
       // Point -> [Creatures]
@@ -90,11 +97,19 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
     } catch (e) { console.error(e); } finally { setProcessing(false); }
   };
 
-  const toggleSelect = (id: string) => {
+  const toggleSelect = (id: string, checked: boolean) => {
     const next = new Set(selectedIds);
-    if (next.has(id)) next.delete(id);
+    if (!checked) next.delete(id);
     else next.add(id);
     setSelectedIds(next);
+  };
+
+  const handleSelectAll = (ids: string[]) => {
+    setSelectedIds(new Set(ids));
+  };
+
+  const handleDeselectAll = () => {
+    setSelectedIds(new Set());
   };
 
   return (
@@ -130,7 +145,16 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
               onChange={() => setFilterPending(!filterPending)}
               className="w-4 h-4 rounded text-ocean-500 focus:ring-ocean-500 border-gray-300"
             />
-            <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900 transition-colors">未承認のみ表示</span>
+            <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900 transition-colors">未承認</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer group">
+            <input
+              type="checkbox"
+              checked={filterRejected}
+              onChange={() => setFilterRejected(!filterRejected)}
+              className="w-4 h-4 rounded text-red-500 focus:ring-red-500 border-gray-300"
+            />
+            <span className="text-sm font-bold text-gray-600 group-hover:text-gray-900 transition-colors">却下・削除済み</span>
           </label>
 
           <div className="h-4 w-[1px] bg-gray-200" />
@@ -138,6 +162,8 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
           {selectedIds.size > 0 ? (
             <div className="flex items-center gap-2 animate-in fade-in slide-in-from-right-4">
               <span className="text-sm font-black text-ocean-600 mr-2">{selectedIds.size} selected</span>
+
+              <button onClick={handleDeselectAll} className="text-xs text-gray-400 hover:text-gray-600 underline mr-2">全解除</button>
               <button
                 onClick={handleBulkApprove}
                 disabled={processing}
@@ -179,6 +205,17 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
                     <span className="px-3 py-1 bg-gray-100 rounded-full text-[10px] font-black uppercase tracking-wider text-gray-500">
                       {group.items.length} ASSOCIATIONS
                     </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const newSet = new Set(selectedIds);
+                        group.items.forEach(i => newSet.add(i.id));
+                        setSelectedIds(newSet);
+                      }}
+                      className="ml-2 text-[10px] text-ocean-600 hover:text-ocean-700 font-bold underline bg-transparent"
+                    >
+                      Check Group
+                    </button>
                   </div>
                   <p className="text-sm text-gray-400 font-medium tracking-wide">
                     {viewMode === 'point' ? (group.parent as Point)?.area : (group.parent as Creature)?.family}
@@ -205,7 +242,7 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
                     >
                       <div className="flex items-center gap-4 flex-1">
                         <button
-                          onClick={(e) => { e.stopPropagation(); toggleSelect(item.id); }}
+                          onClick={(e) => { e.stopPropagation(); toggleSelect(item.id, !selectedIds.has(item.id)); }}
                           className={clsx(
                             "w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all",
                             selectedIds.has(item.id)
@@ -272,6 +309,6 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 };

@@ -75,7 +75,7 @@ export type PointCreature = {
   creatureId: string;
   localRarity: 'Common' | 'Rare' | 'Epic' | 'Legendary';
   lastSighted?: string;
-  status: 'approved' | 'pending' | 'deletion_requested';
+  status: 'approved' | 'pending' | 'deletion_requested' | 'rejected';
   reasoning?: string;    // AIによる紐付け根拠 (Issue #49)
   confidence?: number;   // AIによる信頼度スコア 0.0-1.0 (Issue #49)
 };

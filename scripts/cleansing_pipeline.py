@@ -285,7 +285,7 @@ class CleansingPipeline:
                 model=self.model_name,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search_retrieval=types.GoogleSearchRetrieval())],
+                    tools=[types.Tool(google_search=types.GoogleSearch())],
                     response_mime_type="application/json",
                     response_schema=response_schema,
                     max_output_tokens=4096,
