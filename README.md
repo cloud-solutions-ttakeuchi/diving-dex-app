@@ -12,6 +12,7 @@ React (Vite) + Firebase を用いたモダンなシングルページアプリ�
 - **[FUNCTIONALITY.md](./FUNCTIONALITY.md)**: 主要機能一覧・ユーザー体験・AIフロー
 - **[admin_manual.md](./admin_manual.md)**: 管理者向け操作マニュアル（AIパイプライン詳細）
 - **[design_and_specs.md](./design_and_specs.md)**: 全体設計書・UI/UX仕様
+- **[VERTEX_AI_SETUP_GUIDE.md](./VERTEX_AI_SETUP_GUIDE.md)**: Vertex AI Search (Managed RAG) の詳細設定・複数DSの連携ガイド
 
 ## 1. Architecture & Tech Stack
 
@@ -51,7 +52,10 @@ The following variables can be set in GitHub Actions Variables or Firebase Confi
 |----------|-------------|---------|
 | `LOG_LEVEL` | アプリ全体のログ出力レベル制御。`debug` に設定すると、Vertex AI とのやり取りに関する詳細なログを出力します。 | `info` |
 | `LOCATION` | 一般的なインフラ実行リージョン（例: `asia-northeast1`） | `asia-northeast1` |
-| `AI_AGENT_LOCATION` | **必須**。Gemini 2.0 Flash 及 Context Caching を利用するため `us-central1` を指定してください。 | `us-central1` |
+| `AI_AGENT_LOCATION` | **必須**。Gemini 2.0 Flash 及び Context Caching を利用するため `us-central1` を指定してください。 | `us-central1` |
+| `USE_VERTEX_AI_SEARCH` | **Feature Flag**。`true` で Managed RAG (Vertex AI Search) を有効化します。 | `false` |
+| `VERTEX_AI_CONCIERGE_DATA_STORE_IDS` | **AI コンシェルジュ専用**。参照するデータストア ID（複数指定はカンマ区切り）。WeDive マスタ、ガイドブックPDF等を指定します。 | - |
+| `VERTEX_AI_DRAFT_DATA_STORE_IDS` | **AI 自動登録・検証専用**。参照するデータストア ID（複数指定はカンマ区切り）。生物図鑑、公式公報、地点マスタ等を指定します。 | - |
 
 ---
 
@@ -70,7 +74,8 @@ The following variables can be set in GitHub Actions Variables or Firebase Confi
   - **Context Caching**: 最新の GenAI SDK を活用し、大規模データ処理時のAPIコストを大幅に削減。
   - **Batch Ops**: Cloud Run Jobs を用いた大規模バッチ処理エンジン。
   - **AI Concierge**: 自然言語によるダイビングスポット検索・提案。
-  - **Auto Content Generation**: 最新の検索結果に基づき登録情報を自動生成。
+  - **Auto Content Generation (Grounded)**: **Managed RAG (Vertex AI Search)** と Google Search を組み合わせた、根拠付きの自動登録ドラフト生成。ハルシネーションを最小化。
+  - **Knowledge Transparency**: 生成された情報のソース（URL）と根拠（Grounding Metadata）をフロントエンドに表示。
 
 ## Development
 

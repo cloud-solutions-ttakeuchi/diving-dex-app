@@ -129,3 +129,5 @@
 | `VITE_FIREBASE_API_KEY` | Firebase API キー | フロントエンドからの Firebase 接続認証。 |
 | `VITE_GOOGLE_MAPS_API_KEY` | Google Maps API キー | 地図の表示、座標選択、ジオコーディングに使用。 |
 | `VITE_FIREBASE_PROJECT_ID` | フロントエンド用プロジェクト ID | フロントエンドが接続する Firebase プロジェクトの指定。 |
+| `USE_VERTEX_AI_SEARCH` | Managed RAG 有効化フラグ | `true` の場合、Vertex AI Search を使用してコンシェルジュが回答します。 |
+| `VERTEX_AI_DATA_STORE_ID` | Vertex AI Search データストア ID | 高度な検索に使用するデータソースの ID を指定します。 |

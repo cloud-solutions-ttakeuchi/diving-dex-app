@@ -47,14 +47,22 @@
 
 ### 2.1 AI コンシェルジュ (`/concierge`) (参照: `points`, `creatures`, `ai_grounding_cache`)
 - **対話型検索**: 自然言語によるスポット・生物の質問・提案。
-- **Vertex AI 連携**: Gemini 2.0 Flash を使用したパーソナライズ提案。
+- **マルチ・ドメイン RAG (Vertex AI Search)**: 接客・提案に特化したデータストア（`VERTEX_AI_CONCIERGE_DATA_STORE_IDS`）を参照。WeDive マスタデータに加え、地域のガイドブックPDF等からパーソナライズされた回答を生成。
+- **情報の透明性**: 回答の根拠（Grounding Metadata）を表示し、信頼性の高い提案を提供。
+- **ユーザー文脈の考慮**: ユーザーの経験本数や好みに基づき、一人ひとりに最適なバディとしてアドバイス。
+- **フォールバック機構**: 従来のキーワードベース (Firestore limit 15) の検索も維持。
 
-### 2.2 トラストランク・システム (参照: `users`)
+### 2.2 AI 自動入力・検証機能 (Grounded Auto-fill)
+- **スポット・生物の自動ドラフト生成**: 名称を入力するだけで、AI が世界中のデータベースや Web 情報を調査し、詳細な説明・座標・生態情報を自動入力。
+- **ハルシネーション対策 (2段階検証)**: 登録専用の信頼データソース（`VERTEX_AI_DRAFT_DATA_STORE_IDS`）と Google Search をハイブリッドで利用。確証がない場合は「情報不足」としてユーザーに確認を促す。
+- **引用元の明示**: 生成された情報の根拠となった資料や Web サイトの URL を表示。
+
+### 2.3 トラストランク・システム (参照: `users`)
 - **トラストポイント (TP)**: データの提供・クレンジングへの貢献で獲得。
 - **ランクアイコン**: 「しずく(Droplet)」から「王冠(Crown)」までのランク進化。
 - **権限**: ランクに応じて提案の承認権限（モデレーター）が付与。
 
-### 2.3 パーソナル・アナリティクス (`/mypage`) (参照: `users/logs`, `users`, `creatures`, `point_creatures`)
+### 2.4 パーソナル・アナリティクス (`/mypage`) (参照: `users/logs`, `users`, `creatures`, `point_creatures`)
 - **統計**: 累計ダイブ数、発見種数、エリア分布（円グラフ）。
 - **ポイント・マスタリー**: 特定ポイントの生息生物の発見進捗率。
 - **シルエット表示**: 未発見生物をシルエットで表示し収集を促進。
@@ -119,7 +127,7 @@
 - **DBメンテナスクリーアップ (`scripts/cleanup_old_mappings.py`)**:
     - **ふるまい**: ID 規則に違反したゴミデータや、古いロジックで作成された重複・不要な紐付けデータを一括削除します。
     - **使い方**: `python scripts/cleanup_old_mappings.py --project [PROJECT_ID] --trash-only --execute`
-    - **コレクションへの影響**: Firestore の `point_creatures` コレクションから、条件に合致するドキュメントを**物理削除**します。
+    - **コレクションへの影響**: Firestore の `point_creatures` コレクション from、条件に合致するドキュメントを**物理削除**します。
 - **DB レア度整合性修正 (`scripts/maintenance/fix_rarities.py`)**:
     - **ふるまい**: `point_creatures` の `localRarity` フィールドに不正な値（AIの解説文など）が入っている場合、キーワード（Rare等）を抽出して正規化します。
     - **使い方**: `python scripts/maintenance/fix_rarities.py --project [PROJECT_ID] --execute`

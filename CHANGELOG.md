@@ -7,6 +7,14 @@
 - **AI Data Cleansing Pipeline Enhancements**:
     - **Rarity Normalization**: `cleansing_pipeline.py` に `localRarity` の自動正規化ロジックを追加。AIが解説文をレア度フィールドに出力するのを防止。
     - **Retry & Recovery**: AIのJSONレスポンスが途切れた際のリカバリロジックを強化。
+- **AI Concierge Enhancements**:
+    - **Personalized Advice**: ユーザーの経験本数、お気に入りの生物、ランクを考慮した回答生成を実装。
+    - **Multi-Domain RAG**: `VERTEX_AI_CONCIERGE_DATA_STORE_IDS` により、WeDive マスタデータと地域ガイドブック(PDF)等の複数ソースを横断検索可能に。
+    - **Hybrid Search Restoration**: Google Search ツールを復元し、内部データにない情報の裏取りを可能に。
+- **AI-Driven Registration Enhancements**:
+    - **Purpose-Driven RAG**: `VERTEX_AI_DRAFT_DATA_STORE_IDS` を新設。生物図録や公式マスタ等、登録に特化したデータソースをコンシェルジュと分離して指定可能。
+    - **Multi-ID Support**: 環境変数にカンマ区切りで複数のデータストア ID を指定できるロジックを実装。
+    - **2-Step Grounding Logic**: 内部データ（Managed RAG）を優先し、必要な場合のみ Google 検索を行うコスト最適化フローを導入。
 - **Maintenance Tools**:
     - **Rarity Data Fixer (`scripts/maintenance/fix_rarities.py`)**: 既存の `point_creatures` データ内の不正な `localRarity` 文字列をクリーンアップするバッチを導入。
 - **UI Improvements**:
@@ -43,6 +51,11 @@
     - **Legacy Data Cleanup Script**: 新エンジン (`python-batch-v1`) 以外で作成された古い `point_creatures` マッピングを一括削除するメンテナンススクリプト (`cleanup_old_mappings.py`) を作成。データベースの完全リセットと最新AIへの統一が可能に。
 - **Infrastructure & Reliability**:
     - **Ultra-Long Batch Support**: Cloud Run Job のタイムアウト制限を 24時間（最大で7日間）まで拡張。タイムアウトによる再起動リスクを排除。
+    - **Environment Variables**:
+        | `LOCATION` | 一般的なインフラ実行リージョン（例: `asia-northeast1`） | `asia-northeast1` |
+        | `AI_AGENT_LOCATION` | **必須**。Gemini 2.0 Flash 及 Context Caching を利用するため `us-central1` を指定してください。 | `us-central1` |
+        | `USE_VERTEX_AI_SEARCH` | **Feature Flag**。`true` で Managed RAG (Vertex AI Search) を有効化します。 | `false` |
+        | `VERTEX_AI_DATA_STORE_ID` | Vertex AI Search のデータストア ID。コンシェルジュの検索対象を指定します。 | - |
     - **Standardized AI Location**: Gemini 2.0 Flash と Caching API の互換性を確保するため、AI 処理用リージョンを `us-central1` に標準化。
 
 ### Fixed
@@ -87,7 +100,22 @@
 - **CORS Conflict Resolution**:
     - **Hosting Rewrites**: Firebase Hostingの `rewrites` を利用したリバースプロキシ設定を導入。`firebase.json` で `/api/*` パスを関数へマッピングし、フロントエンド（`.tsx`）では `httpsCallable` から `fetch` による同一オリジン呼び出しへ切り替えることで、ブラウザのCORSポリシーによるブロックを完全に解消。
     - **Region Unification**: 全てのAI Cloud Functionsを `asia-northeast1` (東京) に集約。
-    - **Vertex AI Location Fix**: Gemini 2.0 Flashが東京リージョン未提供（404エラー）であったため、APIの呼び出し先（Location）のみを `us-central1` に固定し、機能の安定稼働を確保。
+### 2.1 AI コンシェルジュ (`/concierge`) (参照: `points`, `creatures`, `ai_grounding_cache`)
+- **対話型検索**: 自然言語によるスポット・生物の質問・提案。
+- **Managed RAG (Vertex AI Search) 連携**: Google のエンタープライズ検索技術を活用し、ダイビング図鑑やスポット情報のメタデータから高精度な情報を抽出。
+- **情報の透明性**: 回答の根拠（Grounding Metadata）を表示し、信頼性の高い提案を提供。
+- **フォールバック機構**: 従来のキーワードベース (Firestore limit 15) の検索も維持。
+
+### 2.2 AI 自動入力・検証機能 (Grounded Auto-fill)
+- **スポット・生物の自動ドラフト生成**: 名称を入力するだけで、AI が世界中のデータベースや Web 情報を調査し、詳細な説明・座標・生態情報を自動入力。
+- **ハルシネーション対策**: Vertex AI Search と Google Search をハイブリッドで利用し、事実に基づいた情報のみを抽出。確証がない場合は「情報不足」としてユーザーに確認を促す。
+- **引用元の明示**: 生成された情報の根拠となった Web サイトや資料の URL を表示。
+
+### 2.2 AI 自動入力・検証機能 (Grounded Auto-fill)
+- **スポット・生物の自動ドラフト生成**: 名称を入力するだけで、AI が世界中のデータベースや Web 情報を調査し、詳細な説明・座標・生態情報を自動入力。
+- **ハルシネーション対策**: Vertex AI Search と Google Search をハイブリッドで利用し、事実に基づいた情報のみを抽出。確証がない場合は「情報不足」としてユーザーに確認を促す。
+- **引用元の明示**: 生成された情報の根拠となった Web サイトや資料の URL を表示。
+供（404エラー）であったため、APIの呼び出し先（Location）のみを `us-central1` に固定し、機能の安定稼働を確保。
 - **Deployment Security**:
     - Cloud Functionsデプロイ時の「IAM権限付与失敗（Invoker設定）」を、カスタムドメインとHostingの同一オリジン化により、認証トークンをヘッダーに付与するセキュアな構成で解決。
 

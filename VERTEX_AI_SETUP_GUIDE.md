@@ -1,96 +1,72 @@
-# Vertex AI (Gemini) Setup Guide
+# Vertex AI Search (Managed RAG) 設定・運用ガイド
 
-To enable the AI features (Spot Assistant, Concierge, Translation) in WeDive, follow these steps to configure your Google Cloud environment.
+WeDive プロジェクトでは、AI の回答精度を極限まで高め、ハルシネーション（嘘）を抑えるために **Vertex AI Search (Managed RAG)** を採用しています。本ドキュメントでは、複数のデータストアを活用した高度な知識連携の設定方法について解説します。
 
-## 1. Google Cloud コンソールでの設定
+## 1. 概要
+従来の AI（Gemini等）は Web 上の一般情報を元に回答しますが、WeDive では**自社で保有・定義した正確な知識**を優先的に参照させます。
 
-### 1. API の有効化
-まず、GCP コンソールで以下の API を有効にする必要があります。
-1. [Google Cloud Console](https://console.cloud.google.com/) に移動します。
-2. **[API とサービス] > [ライブラリ]** を開きます。
-3. 以下の API をそれぞれ検索して **有効化** してください：
-   - **Vertex AI API**
-   - **Cloud Functions API**
-   - **Cloud Build API**
-   - **Artifact Registry API**
+- **役割の分離**: 「コンシェルジュ（提案）」と「ドラフト生成（マスタ登録）」で参照するデータを分けることで、ノイズを排除し精度を最大化します。
+- **複数データストアの統合**: 構造化データ（Firestore）と非構造化データ（PDF/Web等）を、用途に応じて複数組み合わせることが可能です。
 
-### 2. IAM 権限の設定
-Cloud Functions が Vertex AI を呼び出すための権限設定をします。
+## 2. データストアの設計と作成
 
-#### デフォルトアカウントが一覧にない場合
-Cloud Functions API を有効化した直後や、まだ関数を一度もデプロイしていない場合、デフォルトのサービスアカウント（`PROJECT_NUMBER-compute@developer.gserviceaccount.com` 等）が IAM 一覧に表示されないことがあります。
+Google Cloud コンソールの **Search and Conversation** (旧 Gen App Builder) からデータストアを作成します。
 
-その場合は、**以下のいずれか**を行ってください：
+### ステップ 1: 用途別のデータストア作成
 
-- **方法A（推奨）**: **[権限を付与]** ボタンを押し、直打ちでサービスアカウント名を入力して追加する。
-  - プリンシパルに `PROJECT_NUMBER-compute@developer.gserviceaccount.com` を入力（PROJECT_NUMBERはダッシュボード等で確認可能）。
-  - ロールに **"Vertex AI ユーザー"** を設定。
-  
-- **方法B**: 新しい専用サービスアカウントを作成する。
-  1. **[サービス アカウント]** メニューから「新しいサービス アカウントを作成」をクリック。
-  2. 名前を `ai-functions-invoker` などにする。
-  3. ロールに **"Vertex AI ユーザー"** を付与。
-  4. 作成したアカウントを Cloud Functions のデプロイ設定で使用する。
+以下の 3 つのカテゴリでデータストアを作成することを推奨します。
 
----
+1.  **[構造化] WeDive マスタ (Firestore)**
+    - **内容**: `points`, `creatures`, `areas` コレクション。
+    - **設定**: Firestore をソースとして選択。
+    - **用途**: 既存のスポット情報や生物情報の検索。
+2.  **[非構造化] 生物図鑑・ガイドブック (PDF/ドキュメント)**
+    - **内容**: 提携している生物図鑑、地域ごとのダイビングルール、安全ガイド。
+    - **設定**: Cloud Storage (GCS) に PDF をアップロードし、フォルダ単位でソースに指定。
+    - **用途**: 生物の学名、詳細な生態、地域の特殊なルールの補完。
+3.  **[構造化/非構造化] 公報・外部信頼ソース (Web/JSON)**
+    - **内容**: 気象庁、海上保安庁の公報データや、信頼できる特定の Web サイト。
+    - **用途**: 海況、座標情報の最終検証。
 
-## 2. 実装時の注意点
+### ステップ 2: ID の取得
+作成した各データストアの詳細画面から **データストア ID** をコピーしてください。
+（例: `wedive-points-ds`, `creature-dictionary-v1`, `local-guide-pdf`）
 
-### リージョンの指定とモデルの可用性
-- **Cloud Functions**: レイテンシを抑えるため、`asia-northeast1` (東京) で稼働させます。
-- **Vertex AI (Gemini 2.0 Flash)**: 最新の Gemini 2.0 シリーズは現在、東京リージョンでは提供されていない場合があります（`404 Model Not Found`）。そのため、SDK の **`location` パラメータには `us-central1` を指定** する必要があります。
-  - 函数: `asia-northeast1`
-  - Vertex AI SDK: `us-central1`
+## 3. アプリケーションの設定（環境変数）
 
-### デプロイと CORS 改修
-ブラウザからの直接呼び出しにおける CORS エラーを回避するため、Firebase Hosting の `rewrites` を利用したリバースプロキシ構成を採用しています。
+WeDive アプリケーション（Cloud Functions）に対して、用途別に ID を割り当てます。
 
-#### 1. `firebase.json` の設定
-`/api/*` パスを、該当する Cloud Functions（東京リージョン）へ正確にルーティングします。
+### 指定方法
+- **カンマ区切り**: 複数のソースを参照させる場合は、ID をカンマ `,` で繋ぎます。
+- **パース規則**: プログラム側で自動的にトリミング（空白除去）と空値除外を行うため、多少のスペースがあっても問題ありません。
 
-```json
-"hosting": {
-  "rewrites": [
-    {
-      "source": "/api/concierge",
-      "function": "getConciergeResponse",
-      "region": "asia-northeast1"
-    },
-    {
-      "source": "/api/spot-draft",
-      "function": "generateSpotDraft",
-      "region": "asia-northeast1"
-    },
-    ...
-  ]
-}
+### 環境変数リスト
+| 変数名 | 指定例 / ベストプラクティス |
+| :--- | :--- |
+| `VERTEX_AI_CONCIERGE_DATA_STORE_IDS` | `wedive-master-ds, local-guide-pdf` |
+| `VERTEX_AI_DRAFT_DATA_STORE_IDS` | `creature-dictionary-v1, official-spot-master-ds` |
+
+### Firebase への反映コマンド例
+```bash
+# 全体フラグをONにする
+firebase functions:config:set ai.use_vertex_ai_search="true"
+
+# コンシェルジュ用データストア（複数指定）
+firebase functions:config:set ai.vertex_ai_concierge_data_store_ids="wedive-points,local-manuals-pdf"
+
+# ドラフト生成用データストア
+firebase functions:config:set ai.vertex_ai_draft_data_store_ids="bio-dictionary-v2,area-official-data"
 ```
 
-#### 2. フロントエンドでの呼び出し (`.tsx`)
-`httpsCallable` の代わりに、標準の `fetch` を使用して同一ドメインのエンドポイントを叩きます。認証情報を維持するため、Firebase Auth の ID トークンをヘッダーに付与します。
+## 4. 2段階検証（ハイブリッド RAG）の動作原理
 
-```typescript
-const token = await auth.currentUser?.getIdToken();
-const response = await fetch('/api/concierge', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`
-  },
-  body: JSON.stringify({ data: { ... } })
-});
-```
+WeDive の `generateAIDrafts` ツールは、コストと精度のバランスを取るため以下の挙動をとります。
 
-これにより、Cloud Run 特有の IAM 権限問題 (`allUsers` 許可の失敗) に左右されず、安全かつ確実に AI 機能を呼び出すことが可能になりました。
+1.  **内部検索 (Step 1)**: `VERTEX_AI_DRAFT_DATA_STORE_IDS` に指定した**自社データストアのみ**を検索します。ここで確実な答えが見つかれば、高額な Google 検索（Web）は行いません。
+2.  **ハルシネーション検知**: 回答が「確証なし」あるいは「内部データと矛盾」する場合、AI が内部的に `needs_search` フラグを立てます。
+3.  **外部グラウンディング (Step 2)**: 必要な場合のみ、Google 検索を実行して情報を補完・検証します。
 
----
-
-## 3. ローカル開発環境での実行
-
-ローカルで functions をテストする場合は、Google Cloud の認証資格情報が必要です。
-1. サービスアカウントキー (JSON) をダウンロードします。
-2. 環境変数をセットしてエミュレータを起動します。
-   ```bash
-   export GOOGLE_APPLICATION_CREDENTIALS="path/to/your/service-account-key.json"
-   firebase emulators:start --only functions
-   ```
+## 5. 運用上の注意点
+- **同期ラグ**: Firestore をソースにした場合、データの変更が検索結果に反映されるまで数十分程度のラグが発生することがあります。
+- **コスト管理**: Vertex AI Search のクエリ単価に注意してください。不要なデータストアは指定から外す、または `USE_VERTEX_AI_SEARCH` を `"false"` にすることで通常の LLM 動作に戻せます。
+- **リージョン**: Gemini 2.0 Flash を利用する場合、インフラ（Firebase）が日本にあっても、AI エージェントのロケーション（`AI_AGENT_LOCATION`）は `us-central1` に設定してください。

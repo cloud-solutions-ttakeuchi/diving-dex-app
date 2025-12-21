@@ -40,6 +40,8 @@ graph TD
         subgraph "Vertex AI Stack (us-central1 / Grounding)"
             Gemini[[Gemini 2.0 Flash]]
             Cache[(Context Cache)]
+            ManagedRAG[[Managed RAG / Vertex AI Search]]
+            DataStores[(Data Stores: Points, Creatures, Manuals)]
         end
         
         Artifact[Artifact Registry]
@@ -58,7 +60,8 @@ graph TD
     
     AI_API & DraftAPI -->|Inference| Gemini
     Gemini -->|Optimization| Cache
-    Gemini -->|Fetch Grounding| GoogleSearch
+    Gemini -->|Fetch Grounding| ManagedRAG & GoogleSearch
+    ManagedRAG -->|Read| DataStores
     
     Artifact -->|Deployment Image| CRJ
 ```
@@ -73,9 +76,9 @@ graph TD
 | 関数名 / エンドポイント | 役割 | 連携先 |
 | :--- | :--- | :--- |
 | `basicAuth` | ステージング環境等の基本認証、および SPA の配布 | Firebase Hosting |
-| `getConciergeResponse` | 自然言語によるスポット・生物の質問回答 | Vertex AI |
-| `generateSpotDraft` | ダイビングスポット情報の AI 自動生成（要グラウンディング） | Vertex AI (Google Search) |
-| `generateCreatureDraft` | 海洋生物情報の AI 自動生成 | Vertex AI (Google Search) |
+| `getConciergeResponse` | 自然言語によるスポット・生物の質問回答 | Vertex AI Search (Concierge DS) |
+| `generateSpotDraft` | ダイビングスポット情報の AI 自動生成（要グラウンディング） | Vertex AI Search (Draft DS) / Google Search |
+| `generateCreatureDraft` | 海洋生物情報の AI 自動生成 | Vertex AI Search (Draft DS) / Google Search |
 | `runDataCleansing` | データクレンジングバッチの起動命令 | Cloud Run Jobs |
 | `onPointUpdateTranslate` | 指定ドキュメント更新時の自動多言語翻訳（トリガー） | Firestore / Vertex AI |
 
@@ -132,6 +135,9 @@ GitHub Actions を通じて、以下の 3 段階でデプロイが実行され�
 | `BASIC_AUTH_USER` | Basic 認証ユーザー名 | ステージング・本番環境へのアクセス制限（未設定時は解除）。 |
 | `BASIC_AUTH_PASS` | Basic 認証パスワード | 同上。 |
 | `CLEANSING_JOB_NAME` | Cloud Run Jobs 名 | AI クレンジングを実行するジョブの名称指定。 |
+| `USE_VERTEX_AI_SEARCH` | Managed RAG 有効化フラグ | `true` で Vertex AI Search を使用。 |
+| `VERTEX_AI_CONCIERGE_DATA_STORE_IDS` | コンシェルジュ用データストア ID | カンマ区切りで複数指定可能。 |
+| `VERTEX_AI_DRAFT_DATA_STORE_IDS` | ドラフト生成用データストア ID | カンマ区切りで複数指定可能。 |
 | `VITE_FIREBASE_API_KEY` | Firebase API キー | フロントエンドからの Firebase 接続認証。 |
 | `VITE_GOOGLE_MAPS_API_KEY` | Google Maps API キー | 地図の表示、座標選択、ジオコーディングに使用。 |
 | `VITE_FIREBASE_PROJECT_ID` | フロントエンド用プロジェクト ID | フロントエンドが接続する Firebase プロジェクトの指定。 |
