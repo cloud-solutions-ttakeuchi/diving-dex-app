@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ChevronLeft, Upload, Info, MapPin, Thermometer, Ruler, Search, Sparkles } from 'lucide-react';
+import { ChevronLeft, Upload, Info, MapPin, Thermometer, Ruler, Sparkles } from 'lucide-react';
 import clsx from 'clsx';
 import type { Creature } from '../types';
 import { compressImage } from '../utils/imageUtils';

@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   ArrowLeft,
-  Settings,
   ShieldCheck,
   ChevronRight,
   Download,

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { ArrowLeft, Camera, Info, Search, Sparkles } from 'lucide-react';
+import { ArrowLeft, Camera, Info, Sparkles } from 'lucide-react';
 import { compressImage } from '../utils/imageUtils';
 import { httpsCallable } from 'firebase/functions';
 import { functions } from '../lib/firebase';
