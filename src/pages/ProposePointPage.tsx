@@ -3,19 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ArrowLeft, MapPin, Camera, Info, Anchor, Mountain } from 'lucide-react';
 import { compressImage } from '../utils/imageUtils';
-/* import type { Point } from '../types'; removed */
 
 export const ProposePointPage = () => {
   const navigate = useNavigate();
-  const { addPointProposal, isAuthenticated } = useApp();
+  const { addPointProposal, isAuthenticated, regions, zones, areas } = useApp();
   const [loading, setLoading] = useState(false);
 
   // Initial State without ID
   const [formData, setFormData] = useState({
     name: '',
-    region: '',
-    zone: '',
-    area: '',
     level: 'Beginner',
     maxDepth: '',
     entryType: 'boat',
@@ -28,14 +24,31 @@ export const ProposePointPage = () => {
     images: [] as string[],
   });
 
+  const [selectedRegionId, setSelectedRegionId] = useState('');
+  const [selectedZoneId, setSelectedZoneId] = useState('');
+  const [selectedAreaId, setSelectedAreaId] = useState('');
+
   if (!isAuthenticated) {
     return <div className="p-8 text-center bg-gray-50 min-h-screen">Please login to propose points.</div>;
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedRegionId(e.target.value);
+    setSelectedZoneId('');
+    setSelectedAreaId('');
   };
+
+  const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedZoneId(e.target.value);
+    setSelectedAreaId('');
+  };
+
+  const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedAreaId(e.target.value);
+  };
+
+  const visibleZones = regions.length > 0 ? zones.filter(z => z.regionId === selectedRegionId) : [];
+  const visibleAreas = zones.length > 0 ? areas.filter(a => a.zoneId === selectedZoneId) : [];
 
   const handleTopographyChange = (type: string) => {
     setFormData(prev => {
@@ -69,16 +82,34 @@ export const ProposePointPage = () => {
     }));
   };
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedRegionId || !selectedZoneId || !selectedAreaId) {
+      alert('地域・エリア・地区をすべて選択してください');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      const region = regions.find(r => r.id === selectedRegionId);
+      const zone = zones.find(z => z.id === selectedZoneId);
+      const area = areas.find(a => a.id === selectedAreaId);
+
       const pointData = {
         name: formData.name,
-        region: formData.region,
-        zone: formData.zone,
-        area: formData.area,
+        region: region?.name || '',
+        zone: zone?.name || '',
+        area: area?.name || '',
+        regionId: selectedRegionId,
+        zoneId: selectedZoneId,
+        areaId: selectedAreaId,
         level: formData.level as any,
         maxDepth: Number(formData.maxDepth),
         entryType: formData.entryType as any,
@@ -147,37 +178,48 @@ export const ProposePointPage = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">国・地域 (Region)</label>
-                <input
-                  type="text"
-                  name="region"
-                  value={formData.region}
-                  onChange={handleChange}
+                <label className="block text-sm font-medium text-gray-700 mb-1">地域 (Region)</label>
+                <select
+                  value={selectedRegionId}
+                  onChange={handleRegionChange}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  placeholder="例: 沖縄本島"
-                />
+                  required
+                >
+                  <option value="">地域を選択</option>
+                  {regions.map(r => (
+                    <option key={r.id} value={r.id}>{r.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">エリア (Zone)</label>
-                <input
-                  type="text"
-                  name="zone"
-                  value={formData.zone}
-                  onChange={handleChange}
+                <select
+                  value={selectedZoneId}
+                  onChange={handleZoneChange}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  placeholder="例: 恩納村"
-                />
+                  disabled={!selectedRegionId}
+                  required
+                >
+                  <option value="">{selectedRegionId ? 'エリアを選択' : '地域を選択してください'}</option>
+                  {visibleZones.map(z => (
+                    <option key={z.id} value={z.id}>{z.name}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">地区 (Area)</label>
-                <input
-                  type="text"
-                  name="area"
-                  value={formData.area}
-                  onChange={handleChange}
+                <select
+                  value={selectedAreaId}
+                  onChange={handleAreaChange}
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  placeholder="例: 真栄田岬"
-                />
+                  disabled={!selectedZoneId}
+                  required
+                >
+                  <option value="">{selectedZoneId ? '地区を選択' : 'エリアを選択してください'}</option>
+                  {visibleAreas.map(a => (
+                    <option key={a.id} value={a.id}>{a.name}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </section>
@@ -275,33 +317,6 @@ export const ProposePointPage = () => {
                 placeholder="例: カメが見れる, 光が綺麗, マクロ派向け"
               />
             </div>
-
-            {/*
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">緯度 (Latitude)</label>
-                <input
-                  type="number"
-                  step="any"
-                  name="lat"
-                  value={formData.lat}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">経度 (Longitude)</label>
-                <input
-                  type="number"
-                  step="any"
-                  name="lng"
-                  value={formData.lng}
-                  onChange={handleChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                />
-              </div>
-            </div>
-            */}
           </section>
 
           {/* Photos */}

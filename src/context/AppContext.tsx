@@ -426,16 +426,22 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const approveProposal = async (type: 'creature' | 'point', id: string, data: any) => {
     const targetCol = type === 'creature' ? 'creatures' : 'points';
-
-    // If it's an update, data may have targetId. If new, generate realId.
+    const isUpdate = data.proposalType === 'update' || !!data.targetId;
     const realId = data.targetId || (data.id && !data.id.startsWith('prop') ? data.id : `${type === 'creature' ? 'c' : 'p'}${Date.now()}`);
 
-    // For Point, ensure we are not losing hierarchy IDs during approval
-    const finalData = { ...data, id: realId, status: 'approved' };
-    delete finalData.targetId;
-    delete finalData.proposalType;
+    if (isUpdate) {
+      // For updates, we MUST only update changed fields (diffData)
+      const updatePayload = { ...data.diffData, status: 'approved' };
+      await updateDoc(doc(firestore, targetCol, realId), sanitizePayload(updatePayload));
+    } else {
+      // For new entries
+      const finalData = { ...data, id: realId, status: 'approved' };
+      delete finalData.targetId;
+      delete finalData.proposalType;
+      await setDoc(doc(firestore, targetCol, realId), sanitizePayload(finalData));
+    }
 
-    await setDoc(doc(firestore, targetCol, realId), sanitizePayload(finalData));
+    // Update the proposal document itself
     await updateDoc(doc(firestore, type === 'creature' ? 'creature_proposals' : 'point_proposals', id), { status: 'approved' });
   };
 

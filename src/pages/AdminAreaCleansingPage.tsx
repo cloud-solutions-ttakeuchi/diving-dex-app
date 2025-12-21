@@ -513,14 +513,49 @@ export const AdminAreaCleansingPage = () => {
       // 3. For Area, apply ID logic
       if (targetField === 'area') {
         if (targetItem.isMaster && targetItem.id) {
+          // Find hierarchy for target Master Area
+          const targetArea = areas.find(a => a.id === targetItem.id);
+          const targetZone = targetArea ? zones.find(z => z.id === targetArea.zoneId) : null;
+          const targetRegion = targetZone ? regions.find(r => r.id === targetZone.regionId) : null;
+
           updateData['areaId'] = targetItem.id;
+          updateData['area'] = targetItem.name;
+          if (targetZone) {
+            updateData['zoneId'] = targetZone.id;
+            updateData['zone'] = targetZone.name;
+          }
+          if (targetRegion) {
+            updateData['regionId'] = targetRegion.id;
+            updateData['region'] = targetRegion.name;
+          }
         } else {
-          // Target is Orphan? Maybe clear ID?
-          // Actually if merging into Orphan, we shouldn't have an ID.
-          // But we should probably clear the old ID if it existed.
+          // Target is Orphan
           updateData['areaId'] = deleteField();
         }
-      } else if (targetField === 'zone' || targetField === 'region') {
+      } else if (targetField === 'zone') {
+        if (targetItem.isMaster && targetItem.id) {
+          const targetZone = zones.find(z => z.id === targetItem.id);
+          const targetRegion = targetZone ? regions.find(r => r.id === targetZone.regionId) : null;
+
+          updateData['zoneId'] = targetItem.id;
+          updateData['zone'] = targetItem.name;
+          if (targetRegion) {
+            updateData['regionId'] = targetRegion.id;
+            updateData['region'] = targetRegion.name;
+          }
+        } else {
+          updateData['zoneId'] = deleteField();
+        }
+      } else if (targetField === 'region') {
+        if (targetItem.isMaster && targetItem.id) {
+          updateData['regionId'] = targetItem.id;
+          updateData['region'] = targetItem.name;
+        } else {
+          updateData['regionId'] = deleteField();
+        }
+      }
+
+      if (targetField === 'zone' || targetField === 'region') {
         // Update Hierarchy for Master Data Childs
         // If merging Zone A -> Zone B. We need to find Areas in Zone A and move them to Zone B.
 
@@ -922,7 +957,9 @@ export const AdminAreaCleansingPage = () => {
           description: masterFormData.description,
           areaId: newArea.id,
           area: newArea.name,
+          zoneId: newZone ? newZone.id : '',
           zone: newZone ? newZone.name : '',
+          regionId: newRegion ? newRegion.id : '',
           region: newRegion ? newRegion.name : ''
         };
         await updateDoc(doc(db, 'points', masterFormData.id), updateData);
@@ -949,7 +986,7 @@ export const AdminAreaCleansingPage = () => {
         // Generate ID: {first_char}_{timestamp}
         if (!docId) {
           const prefix = masterEditType[0]; // r, z, a
-          docId = `${prefix}_${Math.floor(Date.now() / 1000)}`;
+          docId = `${prefix}${Math.floor(Date.now() / 1000)}`;
         }
         data.id = docId;
         await setDoc(doc(db, collectionName, docId), data);
@@ -972,6 +1009,26 @@ export const AdminAreaCleansingPage = () => {
           const idField = targetField + 'Id';
           // Update Linkage
           const updates: any = { [idField]: docId };
+
+          // Hierarchical ID Recovery
+          if (masterEditType === 'area') {
+            const parentZone = zones.find(z => z.id === masterFormData.parentId);
+            if (parentZone) {
+              updates.zoneId = parentZone.id;
+              updates.zone = parentZone.name;
+              const parentRegion = regions.find(r => r.id === parentZone.regionId);
+              if (parentRegion) {
+                updates.regionId = parentRegion.id;
+                updates.region = parentRegion.name;
+              }
+            }
+          } else if (masterEditType === 'zone') {
+            const parentRegion = regions.find(r => r.id === masterFormData.parentId);
+            if (parentRegion) {
+              updates.regionId = parentRegion.id;
+              updates.region = parentRegion.name;
+            }
+          }
 
           // If Name changed (Rename during Recovery), update Name field too
           if (data.name !== searchName) {
