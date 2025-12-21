@@ -137,7 +137,7 @@ class CleansingPipeline:
                 logger.warning(f"⚠️ Failed to delete cache: {e}")
 
     def _safe_json_parse(self, text: str):
-        """Clean and parse JSON from AI response."""
+        """Clean and parse JSON from AI response, with basic truncation recovery."""
         try:
             # Remove Markdown code blocks if present
             clean_text = text.strip()
@@ -148,9 +148,35 @@ class CleansingPipeline:
                 else:
                     clean_text = "\n".join(lines[1:-1])
 
-            return json.loads(clean_text)
+            # Attempt to parse
+            try:
+                return json.loads(clean_text)
+            except json.JSONDecodeError as e:
+                # If nested in a list and truncated, try to close it
+                if clean_text.startswith("[") and not clean_text.endswith("]"):
+                    logger.warning("🔍 Attempting to recover from truncated JSON array...")
+                    # Find the last complete object
+                    last_brace = clean_text.rfind("}")
+                    if last_brace != -1:
+                        recovered = clean_text[:last_brace+1] + "]"
+                        try:
+                            return json.loads(recovered)
+                        except: pass
+
+                # If nested in an object and truncated, try to close it
+                if clean_text.startswith("{") and not clean_text.endswith("}"):
+                    logger.warning("🔍 Attempting to recover from truncated JSON object...")
+                    last_quote = clean_text.rfind('"')
+                    if last_quote != -1:
+                        # This is very naive but might handle some cases
+                        recovered = clean_text[:last_quote] + '": "truncated"}'
+                        try:
+                            return json.loads(recovered)
+                        except: pass
+
+                raise e
         except Exception as e:
-            logger.error(f"Failed to parse JSON: {e}\nRaw Text: {text}")
+            logger.error(f"Failed to parse JSON: {e}\nRaw Text Preview: {text[:500]}... [Total Length: {len(text)}]")
             return None
 
     def run_stage1_batch(self, point) -> List[Dict[str, Any]]:
@@ -187,9 +213,10 @@ class CleansingPipeline:
 
         【指示】
         {filter_instr}
-        - キャッシュされた生物リストにある「ID」を一切変更せず、そのまま使用してください（例：c12345）。
+        - IDを一切変更せず、そのまま使用してください（例：c12345）。
         - 生息可能（is_possible=true）な生物のみをリストアップしてください。
         - 期待される希少度(rarity)、確信度(confidence: 0.0-1.0)、理由(reasoning)を含めてください。
+        - **理由(reasoning)は100文字以内で簡潔に記述してください。**
         - 出力形式は以下のJSON配列のみとし、それ以外のテキスト（Markdownの装飾等）は含めないでください。
 
         [
@@ -208,6 +235,7 @@ class CleansingPipeline:
             config = types.GenerateContentConfig(
                 response_mime_type="application/json",
                 response_schema=response_schema,
+                max_output_tokens=8192,
             )
             # Use cache only if available
             if self.cache:
@@ -257,9 +285,10 @@ class CleansingPipeline:
                 model=self.model_name,
                 contents=prompt,
                 config=types.GenerateContentConfig(
-                    tools=[types.Tool(google_search=types.GoogleSearch())],
+                    tools=[types.Tool(google_search_retrieval=types.GoogleSearchRetrieval())],
                     response_mime_type="application/json",
                     response_schema=response_schema,
+                    max_output_tokens=4096,
                 )
             )
             text = getattr(response, 'text', '') or response.candidates[0].content.parts[0].text
