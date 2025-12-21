@@ -102,9 +102,7 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
     setSelectedIds(next);
   };
 
-  const handleSelectAll = (ids: string[]) => {
-    setSelectedIds(new Set(ids));
-  };
+
 
   const handleDeselectAll = () => {
     setSelectedIds(new Set());

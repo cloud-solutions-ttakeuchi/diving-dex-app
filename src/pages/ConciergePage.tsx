@@ -27,6 +27,7 @@ export const ConciergePage = () => {
     }
   ]);
   const [input, setInput] = useState('');
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -64,13 +65,23 @@ export const ConciergePage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ data: { query: input } })
+        body: JSON.stringify({
+          data: {
+            query: input,
+            sessionId: sessionId // Send sessionId if we have it
+          }
+        })
       });
 
       if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
 
       const result = await response.json();
       const aiResult = result.result; // httpsCallable format wrapper
+
+      // Store sessionId for next turn
+      if (aiResult.sessionId) {
+        setSessionId(aiResult.sessionId);
+      }
 
       setMessages(prev => [...prev, {
         id: Date.now().toString(),
