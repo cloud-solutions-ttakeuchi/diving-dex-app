@@ -35,8 +35,6 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
       if (filterPending && pc.status === 'pending') return true;
       // 2. Rejected/Auto-Rejected Filter
       if (filterRejected && (pc.status === 'rejected' || pc.status === 'deletion_requested')) return true;
-      // 3. Fallback (if no filters)
-      if (!filterPending && !filterRejected) return true;
       return false;
     });
 
@@ -67,7 +65,7 @@ export const ReviewListView: React.FC<ReviewListViewProps> = ({ initialViewMode 
         items: items.sort((a, b) => (b.confidence || 0) - (a.confidence || 0))
       })).filter(g => g.parent);
     }
-  }, [pointCreatures, points, creatures, viewMode, filterPending]);
+  }, [pointCreatures, points, creatures, viewMode, filterPending, filterRejected]);
 
   // Bulk Actions
   const handleBulkApprove = async () => {
