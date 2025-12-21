@@ -21,6 +21,9 @@ export const getConciergeResponse = onCall({
   const query = data.query;
   if (!query) throw new Error("missing-query");
 
+  const sessionId = data.sessionId;
+  let historyInput = data.history || [];
+
   // --- Feature Flags and Configuration ---
   const useVertexSearch = process.env.USE_VERTEX_AI_SEARCH === "true";
   const dataStoreIds = process.env.VERTEX_AI_CONCIERGE_DATA_STORE_IDS;
@@ -30,6 +33,18 @@ export const getConciergeResponse = onCall({
     project: projectId,
     location: "us-central1"
   });
+
+  // --- Session Management (Restore History if sessionId provided) ---
+  if (sessionId && historyInput.length === 0) {
+    try {
+      const sessionDoc = await db.collection("concierge_sessions").doc(sessionId).get();
+      if (sessionDoc.exists) {
+        historyInput = sessionDoc.data()?.messages || [];
+      }
+    } catch (e) {
+      logger.warn(`[Concierge] Failed to restore session ${sessionId}:`, e);
+    }
+  }
 
   // --- User Context Acquisition ---
   let userContext = "";
@@ -47,12 +62,12 @@ export const getConciergeResponse = onCall({
 `;
     }
   }
-  let promptBody = "";
-  const tools: Tool[] = [{ googleSearch: {} } as any];
 
-  // 1. Determine RAG Version
+  const tools: Tool[] = [{ googleSearch: {} } as any];
+  let legacyContext = "";
+
+  // 1. Determine RAG Data Sources
   if (useVertexSearch && dataStoreIds && projectId) {
-    // --- Managed RAG (Version A) ---
     const ids = dataStoreIds.split(",").map(id => id.trim()).filter(id => id.length > 0);
     logger.info(`[Concierge] Using Managed RAG with ${ids.length} DataStore(s): ${dataStoreIds}`);
 
@@ -63,68 +78,76 @@ export const getConciergeResponse = onCall({
         }
       } as any);
     });
-
-    promptBody = `
-あなたはWeDiveのダイビングコンシェルジュです。
-${userContext}
-
-提供されたデータベース（Vertex AI Search）およびGoogle検索を併用し、ユーザーの質問に日本語で親身に回答してください。
-
-【ユーザーの質問】
-${query}
-
-【回答のルール】
-- ユーザーの経験本数や好みに基づいて、最適なスポットや生物を提案してください。
-- 具体的かつ魅力的なスポット名を挙げて推奨してください。
-- データベースに情報がない場合でも、Google検索を使用して正確な情報を提供し、回答の根拠（引用元）を示してください。
-- 回答は読みやすく、ダイバーがワクワクするようなトーンにしてください。`;
   } else {
-    // --- Legacy RAG (Version B) / Fallback ---
     logger.info("[Concierge] Using Legacy RAG (Firestore limit 15)");
-
     const spotsSnapshot = await db.collection("points")
       .where("status", "==", "approved")
       .limit(15)
       .get();
 
-    const context = spotsSnapshot.docs.map(doc => {
+    legacyContext = spotsSnapshot.docs.map(doc => {
       const d = doc.data();
       return `スポット名: ${d.name} (${d.area}), レベル: ${d.level}, 特徴: ${d.features}, 深度: ${d.maxDepth}m, 説明: ${d.description}`;
     }).join("\n---\n");
+  }
 
-    promptBody = `
-あなたはWeDiveのダイビングコンシェルジュです。
+  const systemPrompt = `
+あなたはWeDiveのダイビングコンシェルジュとして、ユーザーに親身に寄り添い、最適なダイビング体験を提案するバディです。
 ${userContext}
 
-以下のデータベース情報を参考にして、ユーザーの質問に日本語で親身に回答してください。
+【知識ソース】
+1. Managed RAG (Vertex AI Search):
+   - 独自のダイビングスポット、生物図解、エリア情報を参照します。
+   - 特に「wedive-users-ds」というデータストアが利用可能な場合、そこにはこのユーザーの過去のダイビング記録（ログ）が含まれています。必要に応じて参照し、「以前行かれたOOというポイントの近くでおすすめはありますか？」や「以前OOを見たいとおっしゃっていましたね」といった、非常にパーソナライズされた会話を心がけてください。
+2. Google検索:
+   - 内部データベースにない最新の情報や天候、詳細な目撃情報を補完するために活用してください。
+${legacyContext ? `3. スポット情報（直接提供）:\n${legacyContext}` : ""}
 
-【ユーザーの質問】
-${query}
-
-【データベースからの情報】
-${context}
-
-【回答のルール】
-- ユーザーのスキルレベルや好みに合わせ、データベースから1〜2つのスポットを具体的に選んで推奨してください。
-- 回答は簡潔かつ魅力的にしてください。`;
-  }
+【チャットのルール】
+- 文脈の理解: 履歴を参照し、「それ」「そこ」「もっと」といった代名詞や文脈を理解した回答を行ってください。
+- パーソナライズ: ユーザーの経験本数や好みに合わせ、ビギナーなら安全な場所、ベテランならマニアックな場所などを提案してください。
+- トーン: 丁寧でありつつ、ダイバー同士のようなワクワク感を共有できる明るいトーンで話してください。
+- 引用: 回答の根拠となった情報源がある場合は、適宜示してください。
+`;
 
   const model = vertexAI.getGenerativeModel({
     model: "gemini-2.0-flash-exp",
-    tools: tools.length > 0 ? tools : undefined
+    tools: tools,
+    systemInstruction: {
+      role: "system",
+      parts: [{ text: systemPrompt }]
+    }
   });
 
   try {
-    const response = await model.generateContent(promptBody);
-    const candidate = response.response.candidates?.[0];
+    const chat = model.startChat({
+      history: historyInput.map((m: any) => ({
+        role: m.role,
+        parts: Array.isArray(m.parts) ? m.parts : [{ text: m.parts }]
+      }))
+    });
+
+    const result = await chat.sendMessage(query);
+    const candidate = result.response.candidates?.[0];
     const content = candidate?.content?.parts?.[0]?.text || "申し訳ありません。回答を生成できませんでした。";
     const groundingMetadata = candidate?.groundingMetadata;
+
+    // --- Session Persistence ---
+    if (sessionId) {
+      const updatedHistory = await chat.getHistory();
+      await db.collection("concierge_sessions").doc(sessionId).set({
+        messages: updatedHistory,
+        updatedAt: new Date().toISOString(),
+        userId: auth.uid
+      }, { merge: true });
+    }
 
     return {
       content,
       suggestions: [],
       method: useVertexSearch ? "managed-rag" : "legacy-rag",
-      groundingMetadata: groundingMetadata || null
+      groundingMetadata: groundingMetadata || null,
+      sessionId: sessionId
     };
   } catch (error) {
     logger.error("Concierge Error:", error);
