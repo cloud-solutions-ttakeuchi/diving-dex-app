@@ -3,15 +3,18 @@ from firebase_admin import credentials, firestore
 import os
 import sys
 
-# --- Configuration ---
-PROJECT_ID = (
-    os.environ.get("GOOGLE_CLOUD_PROJECT") or
-    os.environ.get("GCLOUD_PROJECT") or
-    os.environ.get("VITE_FIREBASE_PROJECT_ID")
-)
+import argparse
+
+# --- Argument Parsing ---
+parser = argparse.ArgumentParser(description="Fix invalid localRarity values in Firestore.")
+parser.add_argument("--project", help="Firebase Project ID")
+parser.add_argument("--execute", action="store_true", help="Actually execute the updates in Firestore")
+args = parser.parse_args()
+
+PROJECT_ID = args.project or os.environ.get("VITE_FIREBASE_PROJECT_ID")
 
 if not PROJECT_ID:
-    print("❌ FATAL: PROJECT_ID is not set.")
+    print("❌ FATAL: PROJECT_ID is not set. Use --project or VITE_FIREBASE_PROJECT_ID env var.")
     sys.exit(1)
 
 # Initialize Firestore
@@ -34,6 +37,9 @@ def normalize_rarity(rarity_text):
     return "Rare"
 
 def fix_rarities():
+    if not args.execute:
+        print("🔍 DRY RUN: Use --execute to apply changes to Firestore.")
+
     print(f"🚀 Starting maintenance batch to fix point_creatures rarities in project: {PROJECT_ID}")
 
     collection_ref = db.collection('point_creatures')
@@ -56,24 +62,27 @@ def fix_rarities():
 
         # Only update if it changed or was an invalid long string
         if old_rarity != new_rarity or len(str(old_rarity)) > 15:
-            print(f"  Fixing {doc.id}: '{str(old_rarity)[:30]}...' -> {new_rarity}")
-            batch.update(collection_ref.document(doc.id), {'localRarity': new_rarity})
-            updated += 1
-            batch_count += 1
+            print(f"  {'[DRY RUN]' if not args.execute else '[FIXING]'} {doc.id}: '{str(old_rarity)[:30]}...' -> {new_rarity}")
+            if args.execute:
+                batch.update(collection_ref.document(doc.id), {'localRarity': new_rarity})
+                updated += 1
+                batch_count += 1
+            else:
+                updated += 1 # Count for dry run reporting
 
         count += 1
 
-        if batch_count >= 400:
+        if batch_count >= 400 and args.execute:
             print("💾 Committing batch...")
             batch.commit()
             batch = db.batch()
             batch_count = 0
 
-    if batch_count > 0:
+    if batch_count > 0 and args.execute:
         print("💾 Committing final batch...")
         batch.commit()
 
-    print(f"✅ Maintenance complete. Total scanned: {count}, Total updated: {updated}")
+    print(f"✅ Maintenance complete. Total scanned: {count}, Total {'identified' if not args.execute else 'updated'}: {updated}")
 
 if __name__ == "__main__":
     fix_rarities()
