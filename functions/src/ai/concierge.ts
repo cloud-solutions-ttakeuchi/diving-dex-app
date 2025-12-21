@@ -46,6 +46,20 @@ export const getConciergeResponse = onCall({
     }
   }
 
+  // --- History Normalization (Important for Context) ---
+  const normalizedHistory = historyInput.map((m: any) => {
+    // Normalize roles to 'user' or 'model' (Vertex AI requirement)
+    let role = m.role?.toLowerCase() === "assistant" || m.role?.toLowerCase() === "ai" ? "model" : "user";
+    if (m.role?.toLowerCase() === "system") return null; // System should be in systemInstruction
+
+    // Ensure parts are in the correct format
+    const parts = Array.isArray(m.parts)
+      ? m.parts.map((p: any) => ({ text: p.text || p }))
+      : [{ text: m.parts || m.content || "" }];
+
+    return { role, parts };
+  }).filter(Boolean);
+
   // --- User Context Acquisition ---
   let userContext = "";
   if (auth.uid) {
@@ -69,7 +83,7 @@ export const getConciergeResponse = onCall({
   // 1. Determine RAG Data Sources
   if (useVertexSearch && dataStoreIds && projectId) {
     const ids = dataStoreIds.split(",").map(id => id.trim()).filter(id => id.length > 0);
-    logger.info(`[Concierge] Using Managed RAG with ${ids.length} DataStore(s): ${dataStoreIds}`);
+    logger.info(`[Concierge] Using Managed RAG with ${ids.length} DataStore(s): ${dataStoreIds}. History length: ${normalizedHistory.length}`);
 
     ids.forEach(id => {
       tools.push({
@@ -96,18 +110,15 @@ export const getConciergeResponse = onCall({
 ${userContext}
 
 【知識ソース】
-1. Managed RAG (Vertex AI Search):
-   - 独自のダイビングスポット、生物図解、エリア情報を参照します。
-   - 特に「wedive-users-ds」というデータストアが利用可能な場合、そこにはこのユーザーの過去のダイビング記録（ログ）が含まれています。必要に応じて参照し、「以前行かれたOOというポイントの近くでおすすめはありますか？」や「以前OOを見たいとおっしゃっていましたね」といった、非常にパーソナライズされた会話を心がけてください。
-2. Google検索:
-   - 内部データベースにない最新の情報や天候、詳細な目撃情報を補完するために活用してください。
+1. Managed RAG (Vertex AI Search): 独自のダイビング履歴「wedive-users-ds」やスポット情報「wedive-points-ds」を参照。
+2. Google検索: 内部データベースにない最新の情報や天候を補完。
 ${legacyContext ? `3. スポット情報（直接提供）:\n${legacyContext}` : ""}
 
 【チャットのルール】
-- 文脈の理解: 履歴を参照し、「それ」「そこ」「もっと」といった代名詞や文脈を理解した回答を行ってください。
-- パーソナライズ: ユーザーの経験本数や好みに合わせ、ビギナーなら安全な場所、ベテランならマニアックな場所などを提案してください。
-- トーン: 丁寧でありつつ、ダイバー同士のようなワクワク感を共有できる明るいトーンで話してください。
-- 引用: 回答の根拠となった情報源がある場合は、適宜示してください。
+- 継続的な会話: あなたは履歴をすべて把握しています。2回目以降のメッセージで挨拶を繰り返したり、自己紹介をやり直したりしないでください。
+- 文脈の理解: 「それ」「そこ」「さっきの場所」といった指示語を理解してください。
+- パーソナライズ: ユーザーの経験本数や好みに合わせ、一人ひとりに最適なアドバイスを提示してください。
+- 回答はワクワクするような、ダイバー同士の親しみやすいトーンで。
 `;
 
   const model = vertexAI.getGenerativeModel({
@@ -121,10 +132,7 @@ ${legacyContext ? `3. スポット情報（直接提供）:\n${legacyContext}` :
 
   try {
     const chat = model.startChat({
-      history: historyInput.map((m: any) => ({
-        role: m.role,
-        parts: Array.isArray(m.parts) ? m.parts : [{ text: m.parts }]
-      }))
+      history: normalizedHistory as any
     });
 
     const result = await chat.sendMessage(query);
@@ -132,9 +140,12 @@ ${legacyContext ? `3. スポット情報（直接提供）:\n${legacyContext}` :
     const content = candidate?.content?.parts?.[0]?.text || "申し訳ありません。回答を生成できませんでした。";
     const groundingMetadata = candidate?.groundingMetadata;
 
-    // --- Session Persistence ---
+    // --- Session Persistence (Manual management for reliability) ---
     if (sessionId) {
-      const updatedHistory = await chat.getHistory();
+      const userMessage = { role: "user", parts: [{ text: query }] };
+      const modelMessage = { role: "model", parts: [{ text: content }] };
+      const updatedHistory = [...normalizedHistory, userMessage, modelMessage];
+
       await db.collection("concierge_sessions").doc(sessionId).set({
         messages: updatedHistory,
         updatedAt: new Date().toISOString(),
