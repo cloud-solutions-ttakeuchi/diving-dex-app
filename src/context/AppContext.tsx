@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import type { User, Log, Rarity, Creature, Point, PointCreature } from '../types';
 import { INITIAL_DATA } from '../data/initialData';
-import { TRUST_RANKS } from '../constants/masterData';
 import { auth, googleProvider, db as firestore } from '../lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import {
@@ -14,7 +13,6 @@ import {
   deleteDoc,
   doc,
   setDoc,
-  getDoc,
   collectionGroup,
   limit,
   writeBatch
@@ -288,7 +286,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const calculateRarity = (creatureId: string, spotId?: string): Rarity => {
+  const calculateRarity = (creatureId: string): Rarity => {
     const creature = creatures.find(c => c.id === creatureId);
     if (creature?.rarity) return creature.rarity;
     return 'Common';

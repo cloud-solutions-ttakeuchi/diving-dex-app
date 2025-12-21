@@ -126,7 +126,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
         : selectedRegionId
           ? areas.filter((a: { regionId: string }) => a.regionId === selectedRegionId)
           : areas,
-    [areas, selectedZoneId, selectedRegionId]
+    [areas, selectedZoneId, selectedRegionId, selectedAreaId]
   );
 
   const visiblePoints = useMemo(() => {
