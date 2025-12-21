@@ -180,3 +180,14 @@ erDiagram
 
 ### 3.8 `ai_grounding_cache` (AI事実確認キャッシュ)
 AIによる再構築結果や検索結果を保存し、費用の抑制と高速化を図る。
+
+---
+
+## 4. 外部知識インフラ (Knowledge Infrastructure)
+
+Managed RAG (Vertex AI Search) を連携させるための設定規則です。
+
+| 項目 | 環境変数名 | 説明 |
+| :--- | :--- | :--- |
+| コンシェルジュ用 | `VERTEX_AI_CONCIERGE_DATA_STORE_IDS` | 提案・接客に使用するデータストア群 (カンマ区切り) |
+| ドラフト生成用 | `VERTEX_AI_DRAFT_DATA_STORE_IDS` | マスタ登録・検証に使用するデータストア群 (カンマ区切り) |
