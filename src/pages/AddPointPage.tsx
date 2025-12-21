@@ -4,8 +4,7 @@ import { useApp } from '../context/AppContext';
 import { ChevronLeft, MapPin, Camera, Info, Anchor, Mountain, Sparkles, Loader2 } from 'lucide-react';
 import { compressImage } from '../utils/imageUtils';
 import type { Point } from '../types';
-import { httpsCallable } from 'firebase/functions';
-import { functions, auth } from '../lib/firebase';
+import { auth } from '../lib/firebase';
 import { MapPickerModal } from '../components/MapPickerModal';
 
 export const AddPointPage = () => {

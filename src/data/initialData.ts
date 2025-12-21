@@ -2,7 +2,6 @@ import type { Region, Zone, Area, Point, Creature, User, Log, Rarity, CreatureSt
 
 // 生成した生物データをインポート
 import creaturesSeed from './creatures_seed.json';
-import pointCreaturesSeed from './point_creatures_seed.json';
 import locationsSeed from './locations_seed.json';
 
 // --- Helper Types for JSON Import ---
@@ -33,14 +32,6 @@ let POINTS: Point[] = [];
 const rawLocations = locationsSeed as SeedLocationNode[];
 
 // Deterministic hash for clean, alphanumeric IDs
-const getHash = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash).toString(16).slice(0, 8);
-};
 
 rawLocations.forEach(regionNode => {
   const regionId = regionNode.id;
@@ -210,7 +201,9 @@ function calculateCreatureStats(c: {
 
 // 3. Point-Creature Associations Loading
 import type { PointCreature } from '../types';
-export const POINT_CREATURES: PointCreature[] = pointCreaturesSeed as PointCreature[];
+// Use Vite's glob import to optionally load the seed file if it exists
+const seedModules = import.meta.glob('./point_creatures_seed.json', { eager: true, import: 'default' });
+export const POINT_CREATURES = (seedModules['./point_creatures_seed.json'] as PointCreature[]) || [];
 
 // Update POINTS to add random bookmarks via simpler logic
 POINTS = POINTS.map(point => {

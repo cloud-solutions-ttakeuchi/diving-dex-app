@@ -32,8 +32,6 @@ export const functions = getFunctions(app, "asia-northeast1");
 // 2. Emulator Connection (MUST BE DONE BEFORE INITIALIZING FIRESTORE)
 // ---------------------------------------------------------
 if (import.meta.env.DEV) {
-  const { connectFirestoreEmulator } = await import("firebase/firestore");
-  const { connectAuthEmulator } = await import("firebase/auth");
   const { connectFunctionsEmulator } = await import("firebase/functions");
 
   // @ts-ignore

@@ -92,8 +92,6 @@ export const ProposePointPage = () => {
         } : undefined,
         images: formData.images,
         imageUrl: formData.images[0] || '/images/seascape.png',
-        creatures: [],
-        bookmarkCount: 0,
       };
 
       await addPointProposal(pointData);

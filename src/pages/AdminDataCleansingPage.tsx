@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   ArrowLeft,
-  Database,
-  CheckCircle,
-  Layers,
   Settings,
   ShieldCheck,
   ChevronRight,

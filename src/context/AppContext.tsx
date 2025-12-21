@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from 'react';
 import type { User, Log, Rarity, Creature, Point, PointCreature } from '../types';
 import { INITIAL_DATA } from '../data/initialData';
-import { auth, googleProvider, db as firestore } from '../lib/firebase';
+import { auth, googleProvider, db as firestore, functions } from '../lib/firebase';
 import { signInWithPopup, signOut, onAuthStateChanged } from 'firebase/auth';
 import {
   collection,
@@ -17,7 +17,7 @@ import {
   limit,
   writeBatch
 } from 'firebase/firestore';
-
+import { connectFunctionsEmulator } from 'firebase/functions';
 
 // Helper to remove undefined values
 const sanitizePayload = (data: any): any => {
@@ -41,7 +41,7 @@ interface AppContextType {
   isLoading: boolean;
   login: () => void;
   logout: () => void;
-  calculateRarity: (creatureId: string, spotId?: string) => Rarity;
+  calculateRarity: (creatureId: string) => Rarity;
   addLog: (logData: Omit<Log, 'id' | 'userId'>) => Promise<void>;
   addCreature: (creatureData: Omit<Creature, 'id'>) => Promise<Creature>;
   addPoint: (pointData: Omit<Point, 'id'>) => Promise<Point>;
@@ -61,8 +61,8 @@ interface AppContextType {
   addPointCreature: (pointId: string, creatureId: string, localRarity: Rarity) => Promise<void>;
   removePointCreature: (pointId: string, creatureId: string) => Promise<void>;
   addCreatureProposal: (creatureData: Omit<Creature, 'id' | 'status' | 'submitterId'>) => Promise<void>;
-  addPointProposal: (pointData: Omit<Point, 'id' | 'status' | 'submitterId' | 'createdAt' | 'areaId'>) => Promise<void>;
-  approveProposal: (type: 'creature' | 'point', id: string, data: any, submitterId: string) => Promise<void>;
+  addPointProposal: (pointData: Omit<Point, 'id' | 'status' | 'submitterId' | 'createdAt' | 'areaId' | 'zoneId' | 'regionId' | 'bookmarkCount'>) => Promise<void>;
+  approveProposal: (type: 'creature' | 'point', id: string, data: any) => Promise<void>;
   rejectProposal: (type: 'creature' | 'point', id: string) => Promise<void>;
 
   // Expose data directly
@@ -116,6 +116,16 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [regions, setRegions] = useState<typeof INITIAL_DATA.regions>(INITIAL_DATA.regions);
   const [zones, setZones] = useState<typeof INITIAL_DATA.zones>(INITIAL_DATA.zones);
   const [areas, setAreas] = useState<typeof INITIAL_DATA.areas>(INITIAL_DATA.areas);
+
+  // Emulator connections (development only)
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      if (!(window as any)._firebaseFunctionsConnected) {
+        connectFunctionsEmulator(functions, "localhost", 5001);
+        (window as any)._firebaseFunctionsConnected = true;
+      }
+    }
+  }, []);
 
   // 1. Master Data Sync (Regions, Zones, Areas)
   useEffect(() => {
@@ -414,7 +424,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await setDoc(doc(firestore, 'point_proposals', `propp${Date.now()}`), { ...data, status: 'pending', submitterId: currentUser.id, createdAt: new Date().toISOString() });
   };
 
-  const approveProposal = async (type: 'creature' | 'point', id: string, data: any, submitterId: string) => {
+  const approveProposal = async (type: 'creature' | 'point', id: string, data: any) => {
     const targetCol = type === 'creature' ? 'creatures' : 'points';
 
     // If it's an update, data may have targetId. If new, generate realId.
@@ -433,7 +443,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     await updateDoc(doc(firestore, type === 'creature' ? 'creature_proposals' : 'point_proposals', id), { status: 'rejected' });
   };
 
-  const updateUserRole = async (uid: string, newRole: any) => {
+  const updateUserRole = async (uid: string, newRole: 'user' | 'moderator' | 'admin') => {
     if (currentUser.role === 'admin') await updateDoc(doc(firestore, 'users', uid), { role: newRole });
   };
 
@@ -445,6 +455,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useApp = () => {
   const context = useContext(AppContext);
   if (context === undefined) throw new Error('useApp must be used within an AppProvider');
