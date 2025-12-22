@@ -14,7 +14,7 @@ import { useLanguage } from '../context/LanguageContext';
 
 export const BulkEditModal = ({ isOpen, onClose, selectedCount, onSave }: BulkEditModalProps) => {
   const { t } = useLanguage();
-  const { points } = useApp(); // [NEW] Get points to look up name
+  const { points, regions, zones, areas } = useApp();
 
   // Basic Info
   const [date, setDate] = useState('');
@@ -187,17 +187,15 @@ export const BulkEditModal = ({ isOpen, onClose, selectedCount, onSave }: BulkEd
               <h3 className="text-lg font-bold text-gray-800 border-b pb-2">{t('bulk.location_team' as any)}</h3>
 
               {/* Hierarchical Point Selector */}
-              <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-                <HierarchicalPointSelector
-                  value={pointId}
-                  onChange={setPointId}
-                  onHierarchyChange={(r, z, a) => {
-                    setRegion(r);
-                    setZone(z);
-                    setArea(a);
-                  }}
-                />
-              </div>
+              <HierarchicalPointSelector
+                value={pointId}
+                onChange={setPointId}
+                onHierarchyChange={(regionId, zoneId, areaId) => {
+                  setRegion(regions.find(r => r.id === regionId)?.name || '');
+                  setZone(zones.find(z => z.id === zoneId)?.name || '');
+                  setArea(areas.find(a => a.id === areaId)?.name || '');
+                }}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

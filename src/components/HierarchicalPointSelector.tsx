@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
-import { ChevronRight, MapPin } from 'lucide-react';
+import { ChevronDown, MapPin, Search } from 'lucide-react';
 import clsx from 'clsx';
 
 interface HierarchicalPointSelectorProps {
@@ -8,6 +8,7 @@ interface HierarchicalPointSelectorProps {
   onChange: (pointId: string) => void;
   onHierarchyChange?: (region: string, zone: string, area: string) => void;
   className?: string;
+  label?: string;
 }
 
 export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps> = ({
@@ -15,6 +16,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
   onChange,
   onHierarchyChange,
   className,
+  label = "POINT SELECTION"
 }) => {
   const { regions, zones, areas, points } = useApp();
 
@@ -22,6 +24,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
   const [selectedRegionId, setSelectedRegionId] = useState<string>('');
   const [selectedZoneId, setSelectedZoneId] = useState<string>('');
   const [selectedAreaId, setSelectedAreaId] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Initialization: If value (pointId) is provided, reverse engineer the hierarchy
   useEffect(() => {
@@ -33,7 +36,6 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     // Find Area
     const area = areas.find((a: { id: string; zoneId: string }) => a.id === point.areaId);
     if (area) {
-      // eslint-disable-next-line
       setSelectedAreaId(area.id);
 
       // Find Zone
@@ -45,8 +47,6 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
         const region = regions.find((r: { id: string }) => r.id === zone.regionId);
         if (region) {
           setSelectedRegionId(region.id);
-          // Notify parent of full hierarchy (optional, usually parent knows if it passed value)
-          // But effectively we want to sync
         }
       }
     }
@@ -129,108 +129,125 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     [areas, selectedZoneId, selectedRegionId, selectedAreaId]
   );
 
-  const visiblePoints = useMemo(() => {
+  const filteredPoints = useMemo(() => {
+    let pts = points;
     if (selectedAreaId) {
-      return points.filter((p: { areaId: string }) => p.areaId === selectedAreaId);
+      pts = pts.filter((p: { areaId: string }) => p.areaId === selectedAreaId);
+    } else if (selectedZoneId) {
+      pts = pts.filter((p: { zoneId: string }) => p.zoneId === selectedZoneId);
+    } else if (selectedRegionId) {
+      pts = pts.filter((p: { regionId: string }) => p.regionId === selectedRegionId);
     }
-    if (selectedZoneId) {
-      return points.filter((p: { zoneId: string }) => p.zoneId === selectedZoneId);
+
+    if (searchTerm) {
+      const s = searchTerm.toLowerCase();
+      pts = pts.filter((p: { name: string }) => p.name.toLowerCase().includes(s));
     }
-    if (selectedRegionId) {
-      return points.filter((p: { regionId: string }) => p.regionId === selectedRegionId);
-    }
-    return points;
-  }, [points, selectedAreaId, selectedZoneId, selectedRegionId]);
+
+    return pts;
+  }, [points, selectedAreaId, selectedZoneId, selectedRegionId, searchTerm]);
 
   return (
-    <div className={clsx("space-y-3", className)}>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+    <div className={clsx("bg-gray-50/50 p-6 rounded-3xl border border-gray-100 space-y-6", className)}>
+      {/* Top Filtering Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Region */}
-        <div className="relative">
-          <label className="block text-xs font-bold text-gray-500 mb-1">地域 (Region)</label>
-          <select
-            value={selectedRegionId}
-            onChange={handleRegionChange}
-            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500 appearance-none"
-          >
-            <option value="">地域を選択...</option>
-            {regions.map((r: { id: string; name: string }) => (
-              <option key={r.id} value={r.id}>
-                {r.name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-[2.2rem] pointer-events-none text-gray-400">
-            <ChevronRight size={14} className="rotate-90" />
+        <div className="space-y-1.5">
+          <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1">REGION</label>
+          <div className="relative group">
+            <select
+              value={selectedRegionId}
+              onChange={handleRegionChange}
+              className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer group-hover:border-gray-300"
+            >
+              <option value="">全地域 (All Regions)</option>
+              {regions.map((r: { id: string; name: string }) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform group-hover:text-ocean" />
           </div>
         </div>
 
         {/* Zone */}
-        <div className="relative">
-          <label className="block text-xs font-bold text-gray-500 mb-1">エリア (Zone)</label>
-          <select
-            value={selectedZoneId}
-            onChange={handleZoneChange}
-            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500 appearance-none"
-          >
-            <option value="">{selectedRegionId ? 'エリアを選択...' : '全エリアから選択'}</option>
-            {visibleZones.map((z: { id: string; name: string }) => (
-              <option key={z.id} value={z.id}>
-                {z.name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-[2.2rem] pointer-events-none text-gray-400">
-            <ChevronRight size={14} className="rotate-90" />
-          </div>
-        </div>
-
-        {/* Area */}
-        <div className="relative">
-          <label className="block text-xs font-bold text-gray-500 mb-1">詳細エリア (Area)</label>
-          <select
-            value={selectedAreaId}
-            onChange={handleAreaChange}
-            className="w-full p-3 bg-gray-50 border border-gray-200 rounded-lg text-sm font-bold focus:outline-none focus:border-blue-500 appearance-none"
-          >
-            <option value="">{selectedZoneId ? '詳細エリアを選択...' : '全詳細エリアから選択'}</option>
-            {visibleAreas.map((a: { id: string; name: string }) => (
-              <option key={a.id} value={a.id}>
-                {a.name}
-              </option>
-            ))}
-          </select>
-          <div className="absolute right-3 top-[2.2rem] pointer-events-none text-gray-400">
-            <ChevronRight size={14} className="rotate-90" />
+        <div className="space-y-1.5">
+          <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1">ZONE</label>
+          <div className="relative group">
+            <select
+              value={selectedZoneId}
+              onChange={handleZoneChange}
+              className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer group-hover:border-gray-300"
+            >
+              <option value="">全ゾーン (All Zones)</option>
+              {visibleZones.map((z: { id: string; name: string }) => (
+                <option key={z.id} value={z.id}>{z.name}</option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform group-hover:text-ocean" />
           </div>
         </div>
       </div>
 
-      {/* Point */}
-      <div className="relative">
-        <label className="block text-sm font-bold text-gray-700 mb-1">ポイント (Point)</label>
-        <div className="relative">
-          <MapPin size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-ocean" />
+      {/* Area Selection */}
+      <div className="space-y-1.5">
+        <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1">AREA</label>
+        <div className="relative group">
           <select
-            value={value}
-            onChange={handlePointChange}
-            disabled={!selectedAreaId}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-gray-300 rounded-xl font-bold text-gray-900 focus:ring-2 focus:ring-ocean-200 focus:border-ocean outline-none appearance-none disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all"
+            value={selectedAreaId}
+            onChange={handleAreaChange}
+            className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer group-hover:border-gray-300"
           >
-            <option value="">ポイントを選択してください</option>
-            {visiblePoints.map((p: { id: string; name: string }) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
+            <option value="">全エリア (All Areas)</option>
+            {visibleAreas.map((a: { id: string; name: string }) => (
+              <option key={a.id} value={a.id}>{a.name}</option>
             ))}
           </select>
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
-            <ChevronRight size={16} className="rotate-90" />
+          <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform group-hover:text-ocean" />
+        </div>
+      </div>
+
+      <div className="h-[1px] bg-gray-100 mx-1"></div>
+
+      {/* Point Selection with Search */}
+      <div className="space-y-4 pt-2">
+        <div className="flex items-center justify-between px-1">
+          <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase">{label}</label>
+          <span className="text-[10px] font-black text-ocean tracking-widest uppercase">{filteredPoints.length} hits</span>
+        </div>
+
+        <div className="space-y-3">
+          {/* Search Box */}
+          <div className="relative group">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-ocean transition-colors" />
+            <input
+              type="text"
+              placeholder="ポイント名で絞り込み..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all placeholder:text-gray-300"
+            />
+          </div>
+
+          {/* Point Result Dropdown */}
+          <div className="relative group">
+            <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-ocean" />
+            <select
+              value={value}
+              onChange={handlePointChange}
+              className="w-full pl-11 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-900 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer"
+            >
+              <option value="">ポイントを選択してください</option>
+              {filteredPoints.map((p: { id: string; name: string }) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none transition-transform group-hover:text-ocean" />
           </div>
         </div>
-        {!selectedAreaId && (
-          <p className="text-xs text-gray-400 mt-1 pl-1">
-            ※ 上の選択ボックスから地域・エリアを選択してください
+
+        {!selectedAreaId && !searchTerm && (
+          <p className="text-[10px] text-gray-400 font-bold px-1 italic">
+            ※ 地域・エリア・キーワードでポイントを絞り込めます
           </p>
         )}
       </div>

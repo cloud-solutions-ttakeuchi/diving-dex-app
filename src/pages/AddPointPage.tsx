@@ -6,6 +6,7 @@ import { compressImage } from '../utils/imageUtils';
 import type { Point } from '../types';
 import { auth } from '../lib/firebase';
 import { MapPickerModal } from '../components/MapPickerModal';
+import { HierarchicalAreaSelector } from '../components/HierarchicalAreaSelector';
 
 export const AddPointPage = () => {
   const navigate = useNavigate();
@@ -54,19 +55,19 @@ export const AddPointPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedRegionId(e.target.value);
+  const handleRegionChange = (id: string) => {
+    setSelectedRegionId(id);
     setSelectedZoneId('');
     setSelectedAreaId('');
   };
 
-  const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedZoneId(e.target.value);
+  const handleZoneChange = (id: string) => {
+    setSelectedZoneId(id);
     setSelectedAreaId('');
   };
 
-  const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAreaId(e.target.value);
+  const handleAreaChange = (id: string) => {
+    setSelectedAreaId(id);
   };
 
   const handleTopographyChange = (type: string) => {
@@ -319,52 +320,15 @@ export const AddPointPage = () => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">国・地域 (Region)</label>
-                <select
-                  value={selectedRegionId}
-                  onChange={handleRegionChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  required
-                >
-                  <option value="">地域を選択</option>
-                  {regions.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">エリア (Zone)</label>
-                <select
-                  value={selectedZoneId}
-                  onChange={handleZoneChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  disabled={!selectedRegionId}
-                  required
-                >
-                  <option value="">{selectedRegionId ? 'エリアを選択' : '地域を選択してください'}</option>
-                  {visibleZones.map(z => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">地区 (Area)</label>
-                <select
-                  value={selectedAreaId}
-                  onChange={handleAreaChange}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  disabled={!selectedZoneId}
-                  required
-                >
-                  <option value="">{selectedZoneId ? '地区を選択' : 'エリアを選択してください'}</option>
-                  {visibleAreas.map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
+            <HierarchicalAreaSelector
+              regionId={selectedRegionId}
+              zoneId={selectedZoneId}
+              areaId={selectedAreaId}
+              onRegionChange={handleRegionChange}
+              onZoneChange={handleZoneChange}
+              onAreaChange={handleAreaChange}
+              className="mb-4"
+            />
           </section>
 
           {/* Attributes */}
