@@ -28,26 +28,28 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
   });
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  // Initialization: If value (pointId) is provided, reverse engineer the hierarchy
-  useEffect(() => {
-    if (!value) return;
-
-    const point = points.find((p: { id: string; areaId: string }) => p.id === value);
-    if (!point) return;
-
-    // Find Area
-    const area = areas.find((a: { id: string; zoneId: string }) => a.id === point.areaId);
-    if (area) {
-      const zone = zones.find((z: { id: string; regionId: string }) => z.id === area.zoneId);
-      const region = zone ? regions.find((r: { id: string }) => r.id === zone.regionId) : null;
-
-      setHierarchy({
-        areaId: area.id,
-        zoneId: zone?.id || '',
-        regionId: region?.id || ''
-      });
+  // Sync hierarchy with value during render to avoid useEffect cascading renders
+  const [prevValue, setPrevValue] = useState(value);
+  if (value !== prevValue) {
+    setPrevValue(value);
+    if (value) {
+      const point = points.find((p: { id: string; areaId: string }) => p.id === value);
+      if (point) {
+        const area = areas.find((a: { id: string; zoneId: string }) => a.id === point.areaId);
+        if (area) {
+          const zone = zones.find((z: { id: string; regionId: string }) => z.id === area.zoneId);
+          const region = zone ? regions.find((r: { id: string }) => r.id === zone.regionId) : null;
+          setHierarchy({
+            areaId: area.id,
+            zoneId: zone?.id || '',
+            regionId: region?.id || ''
+          });
+        }
+      }
+    } else {
+      setHierarchy({ regionId: '', zoneId: '', areaId: '' });
     }
-  }, [value, regions, zones, areas, points]);
+  }
 
   // Handlers
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
