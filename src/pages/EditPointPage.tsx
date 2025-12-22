@@ -4,6 +4,7 @@ import { useApp } from '../context/AppContext';
 import { ChevronLeft, MapPin, Camera, Info, Anchor, Mountain } from 'lucide-react';
 import { compressImage } from '../utils/imageUtils';
 import { MapPickerModal } from '../components/MapPickerModal';
+import { HierarchicalAreaSelector } from '../components/HierarchicalAreaSelector';
 
 export const EditPointPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -235,74 +236,24 @@ export const EditPointPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">国・地域 (Region)</label>
-                <select
-                  value={formData.regionId}
-                  onChange={(e) => {
-                    const r = regions.find(reg => reg.id === e.target.value);
-                    setFormData(prev => ({
-                      ...prev,
-                      regionId: e.target.value,
-                      region: r?.name || '',
-                      zoneId: '',
-                      zone: '',
-                      areaId: '',
-                      area: ''
-                    }));
-                  }}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                >
-                  <option value="">地域を選択</option>
-                  {regions.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">エリア (Zone)</label>
-                <select
-                  value={formData.zoneId}
-                  onChange={(e) => {
-                    const z = zones.find(zn => zn.id === e.target.value);
-                    setFormData(prev => ({
-                      ...prev,
-                      zoneId: e.target.value,
-                      zone: z?.name || '',
-                      areaId: '',
-                      area: ''
-                    }));
-                  }}
-                  disabled={!formData.regionId}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                >
-                  <option value="">エリアを選択</option>
-                  {zones.filter(z => z.regionId === formData.regionId).map(z => (
-                    <option key={z.id} value={z.id}>{z.name}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">地区 (Area)</label>
-                <select
-                  value={formData.areaId}
-                  onChange={(e) => {
-                    const a = areas.find(ar => ar.id === e.target.value);
-                    setFormData(prev => ({
-                      ...prev,
-                      areaId: e.target.value,
-                      area: a?.name || ''
-                    }));
-                  }}
-                  disabled={!formData.zoneId}
-                  className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                >
-                  <option value="">地区を選択</option>
-                  {areas.filter(a => a.zoneId === formData.zoneId).map(a => (
-                    <option key={a.id} value={a.id}>{a.name}</option>
-                  ))}
-                </select>
-              </div>
+              <HierarchicalAreaSelector
+                regionId={formData.regionId}
+                zoneId={formData.zoneId}
+                areaId={formData.areaId}
+                onRegionChange={(id) => {
+                  const r = regions.find(x => x.id === id);
+                  setFormData(prev => ({ ...prev, regionId: id, region: r?.name || '', zoneId: '', zone: '', areaId: '', area: '' }));
+                }}
+                onZoneChange={(id) => {
+                  const z = zones.find(x => x.id === id);
+                  setFormData(prev => ({ ...prev, zoneId: id, zone: z?.name || '', areaId: '', area: '' }));
+                }}
+                onAreaChange={(id) => {
+                  const a = areas.find(x => x.id === id);
+                  setFormData(prev => ({ ...prev, areaId: id, area: a?.name || '' }));
+                }}
+                className="mb-4"
+              />
             </div>
 
             {/* Location Picker */}

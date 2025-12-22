@@ -3,9 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ChevronLeft, Calendar, Clock, ArrowDown, Sun, Fish, Camera, Users, Settings, Search, Check, Info } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import clsx from 'clsx';
 import type { DiveLog } from '../types';
 import { compressImage } from '../utils/imageUtils';
 import { HierarchicalPointSelector } from '../components/HierarchicalPointSelector';
+import { SearchableCreatureSelector } from '../components/SearchableCreatureSelector';
 
 interface LogFormData {
   title: string;
@@ -49,7 +51,7 @@ interface LogFormData {
 export const AddLogPage = () => {
   const navigate = useNavigate();
   // Refactor: use points, creatures from context
-  const { addLog, points, creatures, pointCreatures, isAuthenticated, currentUser } = useApp();
+  const { addLog, points, creatures, pointCreatures, isAuthenticated, currentUser, regions, zones, areas } = useApp();
 
   // Note: points and creatures should be loaded in AppContext
 
@@ -433,15 +435,16 @@ export const AddLogPage = () => {
           >
             <div className="space-y-4">
               {/* Hierarchical Location Selector */}
-              <div className="space-y-4">
-                <HierarchicalPointSelector
-                  value={formData.pointId}
-                  onChange={(pointId) => setFormData(prev => ({ ...prev, pointId }))}
-                  onHierarchyChange={(region, zone, area) => {
-                    setFormData(prev => ({ ...prev, region, zone, area }));
-                  }}
-                />
-              </div>
+              <HierarchicalPointSelector
+                value={formData.pointId}
+                onChange={(pointId) => setFormData(prev => ({ ...prev, pointId }))}
+                onHierarchyChange={(regionId, zoneId, areaId) => {
+                  const r = regions.find(x => x.id === regionId)?.name || '';
+                  const z = zones.find(x => x.id === zoneId)?.name || '';
+                  const a = areas.find(x => x.id === areaId)?.name || '';
+                  setFormData(prev => ({ ...prev, region: r, zone: z, area: a }));
+                }}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-gray-100">
                 <div>
@@ -722,53 +725,66 @@ export const AddLogPage = () => {
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">見た生物を選択</label>
 
-                {/* 1. Area/Point Creatures (Thumbnails) */}
-                {areaCreatures.length > 0 && (
-                  <div className="mb-4">
-                    <p className="text-xs text-gray-500 mb-2 font-bold">このエリアの生物</p>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
-                      {areaCreatures.map(c => {
-                        const isSelected = formData.sightedCreatures.includes(c.id);
-                        return (
-                          <button
-                            type="button"
-                            key={c.id}
-                            onClick={() => handleSightedCreatureToggle(c.id)}
-                            className={`relative aspect-square rounded-xl overflow-hidden border-2 transition-all ${isSelected ? 'border-green-500 ring-2 ring-green-200' : 'border-gray-100 hover:border-gray-300'
-                              }`}
-                          >
-                            <img src={c.imageUrl || '/images/no-image-creature.png'} alt={c.name} className="w-full h-full object-cover" />
-                            <div className="absolute inset-x-0 bottom-0 bg-black/60 p-1">
-                              <p className="text-[10px] text-white font-bold truncate text-center">{c.name}</p>
-                            </div>
-                            {isSelected && (
-                              <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5">
-                                <Check size={12} />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
+                {/* 2. Modern Searchable Selector */}
+                <SearchableCreatureSelector
+                  value={formData.creatureId}
+                  onChange={(id) => setFormData(prev => ({ ...prev, creatureId: id }))}
+                  label="TARGET CREATURE (MAIN)"
+                  className="mb-6"
+                />
 
-                {/* 2. Search for others */}
-                <div className="bg-gray-50 p-3 rounded-xl border border-gray-200">
-                  <p className="text-xs text-gray-500 mb-2 font-bold">その他の生物を検索</p>
-                  <div className="relative">
-                    <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                {/* 3. Multi-select (Sighted Creatures) */}
+                <div className="bg-gray-50/50 p-6 rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black text-gray-400 tracking-widest uppercase mb-4 ml-1 flex items-center justify-between">
+                    SIGHTED CREATURES (COLLECTION)
+                    <span className="text-ocean">{formData.sightedCreatures.length} selected</span>
+                  </p>
+
+                  {areaCreatures.length > 0 && (
+                    <div className="mb-6">
+                      <p className="text-[10px] text-gray-400 mb-2 font-bold ml-1 italic">Suggested for this area:</p>
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                        {areaCreatures.slice(0, 10).map(c => {
+                          const isSelected = formData.sightedCreatures.includes(c.id);
+                          return (
+                            <button
+                              type="button"
+                              key={c.id}
+                              onClick={() => handleSightedCreatureToggle(c.id)}
+                              className={clsx(
+                                "relative aspect-square rounded-2xl overflow-hidden border-2 transition-all group",
+                                isSelected ? "border-green-500 ring-4 ring-green-100" : "border-white hover:border-gray-200"
+                              )}
+                            >
+                              <img src={c.imageUrl || '/images/no-image-creature.png'} alt={c.name} className="w-full h-full object-cover transition-transform group-hover:scale-110" />
+                              <div className="absolute inset-x-0 bottom-0 bg-black/40 backdrop-blur-[2px] p-1">
+                                <p className="text-[8px] text-white font-black truncate text-center uppercase tracking-tighter">{c.name}</p>
+                              </div>
+                              {isSelected && (
+                                <div className="absolute top-1 right-1 bg-green-500 text-white rounded-full p-0.5 shadow-lg">
+                                  <Check size={10} strokeWidth={4} />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="relative group">
+                    <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-hover:text-ocean transition-colors" />
                     <input
                       type="text"
-                      placeholder="生物名を入力..."
+                      placeholder="他の生物を追加..."
                       value={creatureSearchTerm}
                       onChange={e => setCreatureSearchTerm(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                      className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all"
                     />
                   </div>
-                  {/* Search Results */}
+
                   {creatureSearchTerm && (
-                    <div className="mt-2 space-y-1 max-h-40 overflow-y-auto">
+                    <div className="mt-3 space-y-1 max-h-60 overflow-y-auto scrollbar-hide">
                       {searchResults.map(c => {
                         const isSelected = formData.sightedCreatures.includes(c.id);
                         return (
@@ -776,49 +792,25 @@ export const AddLogPage = () => {
                             type="button"
                             key={c.id}
                             onClick={() => handleSightedCreatureToggle(c.id)}
-                            className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-colors ${isSelected ? 'bg-green-50 border border-green-200' : 'bg-white hover:bg-gray-100'
-                              }`}
+                            className={clsx(
+                              "w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all border",
+                              isSelected ? "bg-green-50 border-green-200" : "bg-white border-transparent hover:bg-gray-100"
+                            )}
                           >
-                            <img src={c.imageUrl || '/images/no-image-creature.png'} className="w-8 h-8 rounded object-cover bg-gray-200" />
-                            <span className={`text-sm font-bold flex-1 ${isSelected ? 'text-green-700' : 'text-gray-700'}`}>{c.name}</span>
-                            {isSelected && <Check size={16} className="text-green-600" />}
+                            <img src={c.imageUrl || '/images/no-image-creature.png'} className="w-10 h-10 rounded-xl object-cover bg-gray-100" />
+                            <div className="flex-1">
+                              <p className={clsx("text-sm font-black", isSelected ? "text-green-700" : "text-gray-700")}>{c.name}</p>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase">{c.category}</p>
+                            </div>
+                            {isSelected && <Check size={18} className="text-green-600" strokeWidth={3} />}
                           </button>
                         );
                       })}
-                      {searchResults.length === 0 && <p className="text-center text-xs text-gray-400 py-2">見つかりませんでした</p>}
                     </div>
                   )}
                 </div>
 
 
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <label className="block text-sm font-medium text-gray-700">メインの生物</label>
-                    <button type="button" onClick={() => toggleHelp('mainCreature')} className="text-gray-400 hover:text-blue-500 transition-colors">
-                      <Info size={16} />
-                    </button>
-                  </div>
-                  {activeHelp === 'mainCreature' && (
-                    <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded-lg mb-2 animate-fade-in text-left">
-                      ※写真が登録されていない場合、この生物の画像がログ一覧の紹介画像（サムネイル）として使用されます
-                    </div>
-                  )}
-                  <select
-                    name="creatureId"
-                    value={formData.creatureId}
-                    onChange={handleChange}
-                    className="w-full px-4 py-2 rounded-lg border border-gray-300 outline-none"
-                  >
-                    <option value="">選択なし</option>
-                    {/* Scope to Sighted + Area creatures */}
-                    {Array.from(new Set([...formData.sightedCreatures, ...areaCreatures.map(c => c.id)])).map(id => {
-                      const c = creatures.find(x => x.id === id);
-                      if (!c) return null;
-                      return <option key={c.id} value={c.id}>{c.name}</option>;
-                    })}
-                  </select>
-                  <p className="text-xs text-gray-400 mt-1">※「見た生物」またはエリア内の生物から選択できます</p>
-                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">コメント</label>
