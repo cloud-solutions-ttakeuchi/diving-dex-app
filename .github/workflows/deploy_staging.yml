@@ -7,8 +7,7 @@ on:
     paths:
       - 'wedive-web/**'
       - '.github/workflows/deploy_staging.yml'
-    paths-ignore:
-      - '**.md'
+      - '!wedive-web/**/*.md'
   workflow_dispatch:
 
 jobs:
