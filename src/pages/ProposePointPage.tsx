@@ -48,8 +48,6 @@ export const ProposePointPage = () => {
     setSelectedAreaId(id);
   };
 
-  const visibleZones = regions.length > 0 ? zones.filter(z => z.regionId === selectedRegionId) : [];
-  const visibleAreas = zones.length > 0 ? areas.filter(a => a.zoneId === selectedZoneId) : [];
 
   const handleTopographyChange = (type: string) => {
     setFormData(prev => {

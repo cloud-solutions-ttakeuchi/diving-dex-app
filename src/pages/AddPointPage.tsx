@@ -41,14 +41,6 @@ export const AddPointPage = () => {
     images: [] as string[],
   });
 
-  // Filtered Options
-  const visibleZones = selectedRegionId
-    ? zones.filter(z => z.regionId === selectedRegionId)
-    : [];
-
-  const visibleAreas = selectedZoneId
-    ? areas.filter(a => a.zoneId === selectedZoneId)
-    : [];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;

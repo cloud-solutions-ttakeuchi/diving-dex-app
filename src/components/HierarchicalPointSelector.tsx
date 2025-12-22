@@ -21,9 +21,11 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
   const { regions, zones, areas, points } = useApp();
 
   // Selection State
-  const [selectedRegionId, setSelectedRegionId] = useState<string>('');
-  const [selectedZoneId, setSelectedZoneId] = useState<string>('');
-  const [selectedAreaId, setSelectedAreaId] = useState<string>('');
+  const [hierarchy, setHierarchy] = useState({
+    regionId: '',
+    zoneId: '',
+    areaId: ''
+  });
   const [searchTerm, setSearchTerm] = useState<string>('');
 
   // Initialization: If value (pointId) is provided, reverse engineer the hierarchy
@@ -36,72 +38,70 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     // Find Area
     const area = areas.find((a: { id: string; zoneId: string }) => a.id === point.areaId);
     if (area) {
-      setSelectedAreaId(area.id);
-
-      // Find Zone
       const zone = zones.find((z: { id: string; regionId: string }) => z.id === area.zoneId);
-      if (zone) {
-        setSelectedZoneId(zone.id);
+      const region = zone ? regions.find((r: { id: string }) => r.id === zone.regionId) : null;
 
-        // Find Region
-        const region = regions.find((r: { id: string }) => r.id === zone.regionId);
-        if (region) {
-          setSelectedRegionId(region.id);
-        }
-      }
+      setHierarchy({
+        areaId: area.id,
+        zoneId: zone?.id || '',
+        regionId: region?.id || ''
+      });
     }
   }, [value, regions, zones, areas, points]);
 
   // Handlers
   const handleRegionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const rId = e.target.value;
-    setSelectedRegionId(rId);
-    setSelectedZoneId('');
-    setSelectedAreaId('');
+    setHierarchy({
+      regionId: rId,
+      zoneId: '',
+      areaId: ''
+    });
     onChange(''); // Reset point
     onHierarchyChange?.(rId, '', '');
   };
 
   const handleZoneChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newZoneId = e.target.value;
-    setSelectedZoneId(newZoneId);
+    let rId = hierarchy.regionId;
 
-    // Reverse lookup: Find Region
-    let rId = selectedRegionId;
     if (newZoneId) {
       const zone = zones.find((z: { id: string; regionId: string }) => z.id === newZoneId);
       if (zone) {
-        setSelectedRegionId(zone.regionId);
         rId = zone.regionId;
       }
     }
 
-    setSelectedAreaId('');
+    setHierarchy({
+      regionId: rId,
+      zoneId: newZoneId,
+      areaId: ''
+    });
     onChange(''); // Reset point
     onHierarchyChange?.(rId, newZoneId, '');
   };
 
   const handleAreaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newAreaId = e.target.value;
-    setSelectedAreaId(newAreaId);
-
-    // Reverse lookup: Find Zone and Region
-    let zId = selectedZoneId;
-    let rId = selectedRegionId;
+    let zId = hierarchy.zoneId;
+    let rId = hierarchy.regionId;
 
     if (newAreaId) {
       const area = areas.find((a: { id: string; zoneId: string }) => a.id === newAreaId);
       if (area) {
-        setSelectedZoneId(area.zoneId);
         zId = area.zoneId;
-
         const zone = zones.find((z: { id: string; regionId: string }) => z.id === area.zoneId);
         if (zone) {
-          setSelectedRegionId(zone.regionId);
           rId = zone.regionId;
         }
       }
     }
+
+    setHierarchy({
+      regionId: rId,
+      zoneId: zId,
+      areaId: newAreaId
+    });
     onChange(''); // Reset point
     onHierarchyChange?.(rId, zId, newAreaId);
   };
@@ -112,31 +112,31 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
 
   // Filtered Options Logic
   const visibleZones = useMemo(
-    () => selectedRegionId
-      ? zones.filter((z: { regionId: string }) => z.regionId === selectedRegionId)
+    () => hierarchy.regionId
+      ? zones.filter((z: { regionId: string }) => z.regionId === hierarchy.regionId)
       : zones,
-    [zones, selectedRegionId]
+    [zones, hierarchy.regionId]
   );
 
   const visibleAreas = useMemo(
-    () => selectedAreaId && !selectedZoneId // Fallback for reverse lookup if needed
+    () => hierarchy.areaId && !hierarchy.zoneId // Fallback for reverse lookup if needed
       ? areas
-      : selectedZoneId
-        ? areas.filter((a: { zoneId: string }) => a.zoneId === selectedZoneId)
-        : selectedRegionId
-          ? areas.filter((a: { regionId: string }) => a.regionId === selectedRegionId)
+      : hierarchy.zoneId
+        ? areas.filter((a: { zoneId: string }) => a.zoneId === hierarchy.zoneId)
+        : hierarchy.regionId
+          ? areas.filter((a: { regionId: string }) => a.regionId === hierarchy.regionId)
           : areas,
-    [areas, selectedZoneId, selectedRegionId, selectedAreaId]
+    [areas, hierarchy.zoneId, hierarchy.regionId, hierarchy.areaId]
   );
 
   const filteredPoints = useMemo(() => {
     let pts = points;
-    if (selectedAreaId) {
-      pts = pts.filter((p: { areaId: string }) => p.areaId === selectedAreaId);
-    } else if (selectedZoneId) {
-      pts = pts.filter((p: { zoneId: string }) => p.zoneId === selectedZoneId);
-    } else if (selectedRegionId) {
-      pts = pts.filter((p: { regionId: string }) => p.regionId === selectedRegionId);
+    if (hierarchy.areaId) {
+      pts = pts.filter((p: { areaId: string }) => p.areaId === hierarchy.areaId);
+    } else if (hierarchy.zoneId) {
+      pts = pts.filter((p: { zoneId: string }) => p.zoneId === hierarchy.zoneId);
+    } else if (hierarchy.regionId) {
+      pts = pts.filter((p: { regionId: string }) => p.regionId === hierarchy.regionId);
     }
 
     if (searchTerm) {
@@ -145,7 +145,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
     }
 
     return pts;
-  }, [points, selectedAreaId, selectedZoneId, selectedRegionId, searchTerm]);
+  }, [points, hierarchy, searchTerm]);
 
   return (
     <div className={clsx("bg-gray-50/50 p-6 rounded-3xl border border-gray-100 space-y-6", className)}>
@@ -156,7 +156,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
           <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1">REGION</label>
           <div className="relative group">
             <select
-              value={selectedRegionId}
+              value={hierarchy.regionId}
               onChange={handleRegionChange}
               className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer group-hover:border-gray-300"
             >
@@ -174,7 +174,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
           <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1">ZONE</label>
           <div className="relative group">
             <select
-              value={selectedZoneId}
+              value={hierarchy.zoneId}
               onChange={handleZoneChange}
               className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer group-hover:border-gray-300"
             >
@@ -193,7 +193,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
         <label className="block text-[10px] font-black text-gray-400 tracking-widest uppercase ml-1">AREA</label>
         <div className="relative group">
           <select
-            value={selectedAreaId}
+            value={hierarchy.areaId}
             onChange={handleAreaChange}
             className="w-full pl-4 pr-10 py-3 bg-white border border-gray-200 rounded-2xl text-sm font-bold text-gray-700 outline-none focus:border-ocean focus:ring-4 focus:ring-ocean-50/50 transition-all appearance-none cursor-pointer group-hover:border-gray-300"
           >
@@ -245,7 +245,7 @@ export const HierarchicalPointSelector: React.FC<HierarchicalPointSelectorProps>
           </div>
         </div>
 
-        {!selectedAreaId && !searchTerm && (
+        {!hierarchy.areaId && !searchTerm && (
           <p className="text-[10px] text-gray-400 font-bold px-1 italic">
             ※ 地域・エリア・キーワードでポイントを絞り込めます
           </p>
