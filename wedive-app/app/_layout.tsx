@@ -45,15 +45,22 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+import { AuthProvider } from '../src/context/AuthContext';
+import { TermsAgreementModal } from '../components/TermsAgreementModal';
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-      </Stack>
+      <AuthProvider>
+        <TermsAgreementModal />
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        </Stack>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

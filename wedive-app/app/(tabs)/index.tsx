@@ -1,18 +1,58 @@
-import { StyleSheet, FlatList, Image, TouchableOpacity, ScrollView, Dimensions, Platform } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, FlatList, Image, TouchableOpacity, ScrollView, Dimensions, Platform, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { MOCK_CREATURES, MOCK_POINTS } from '../../src/data/mockData';
-import { calculateRarity } from '../../src/utils/logic';
-import { Star, MapPin, ChevronRight, Sparkles, Plus } from 'lucide-react-native';
+import { collection, getDocs, query, limit, orderBy, where } from 'firebase/firestore';
+import { db } from '../../src/firebase';
+import { Point, Creature } from '../../src/types';
+import { Star, MapPin, Sparkles, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { ImageWithFallback } from '../../src/components/ImageWithFallback';
 
 const { width } = Dimensions.get('window');
 
+const NO_IMAGE_POINT = require('../../assets/images/no-image-point.png');
+const NO_IMAGE_CREATURE = require('../../assets/images/no-image-creature.png');
+
 export default function TabOneScreen() {
   const router = useRouter();
-  const displayCreatures = MOCK_CREATURES.map(c => ({
-    ...c,
-    calculatedRarity: calculateRarity(c.id, MOCK_CREATURES as any)
-  }));
+  const [points, setPoints] = useState<Point[]>([]);
+  const [creatures, setCreatures] = useState<Creature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch Featured Points (Top 5 recently added or by some criteria)
+        // For now, simple limit 5
+        const pointsQuery = query(collection(db, 'points'), limit(5));
+        const pointsSnapshot = await getDocs(pointsQuery);
+        const pointsData = pointsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point));
+
+        // Fetch Popular Creatures (Top 10)
+        // Ideally should be sorted by popularity or similar
+        const creaturesQuery = query(collection(db, 'creatures'), limit(10));
+        const creaturesSnapshot = await getDocs(creaturesQuery);
+        const creaturesData = creaturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature));
+
+        setPoints(pointsData);
+        setCreatures(creaturesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1 }}>
@@ -58,37 +98,45 @@ export default function TabOneScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>FEATURED SPOTS</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>See All</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/search?tab=spots')}><Text style={styles.seeAll}>See All</Text></TouchableOpacity>
             </View>
-            {MOCK_POINTS.map(point => (
-              <TouchableOpacity
-                key={point.id}
-                style={styles.pointCard}
-                onPress={() => router.push(`/details/spot/${point.id}`)}
-              >
-                <Image source={{ uri: point.imageUrl }} style={styles.pointImage} />
-                <View style={styles.pointInfo}>
-                  <View style={styles.levelBadge}>
-                    <Text style={styles.levelText}>{point.level}</Text>
+            {points.length === 0 ? (
+              <Text style={styles.emptyText}>No spots found.</Text>
+            ) : (
+              points.map(point => (
+                <TouchableOpacity
+                  key={point.id}
+                  style={styles.pointCard}
+                  onPress={() => router.push(`/details/spot/${point.id}`)}
+                >
+                  <ImageWithFallback
+                    source={point.imageUrl ? { uri: point.imageUrl } : null}
+                    fallbackSource={NO_IMAGE_POINT}
+                    style={styles.pointImage}
+                  />
+                  <View style={styles.pointInfo}>
+                    <View style={styles.levelBadge}>
+                      <Text style={styles.levelText}>{point.level}</Text>
+                    </View>
+                    <Text style={styles.pointName}>{point.name}</Text>
+                    <View style={styles.locationRow}>
+                      <MapPin size={12} color="#64748b" />
+                      <Text style={styles.pointLocation}>{point.region} • {point.area}</Text>
+                    </View>
                   </View>
-                  <Text style={styles.pointName}>{point.name}</Text>
-                  <View style={styles.locationRow}>
-                    <MapPin size={12} color="#64748b" />
-                    <Text style={styles.pointLocation}>{point.region} • {point.area}</Text>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))
+            )}
           </View>
 
           {/* Popular Creatures */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>POPULAR CREATURES</Text>
-              <TouchableOpacity><Text style={styles.seeAll}>See All</Text></TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/search?tab=creatures')}><Text style={styles.seeAll}>See All</Text></TouchableOpacity>
             </View>
             <FlatList
-              data={displayCreatures}
+              data={creatures}
               horizontal
               showsHorizontalScrollIndicator={false}
               keyExtractor={(item) => item.id}
@@ -99,14 +147,19 @@ export default function TabOneScreen() {
                   onPress={() => router.push(`/details/creature/${item.id}`)}
                 >
                   <View style={styles.creatureImageWrapper}>
-                    <Image source={{ uri: item.imageUrl }} style={styles.creatureImage} />
+                    <ImageWithFallback
+                      source={item.imageUrl ? { uri: item.imageUrl } : null}
+                      fallbackSource={NO_IMAGE_CREATURE}
+                      style={styles.creatureImage}
+                    />
                   </View>
                   <View style={styles.creatureInfo}>
                     <Text style={styles.creatureCategory}>{item.category}</Text>
                     <Text style={styles.creatureName} numberOfLines={1}>{item.name}</Text>
                     <View style={styles.rarityRow}>
                       <Star size={10} color="#fbbf24" fill="#fbbf24" />
-                      <Text style={styles.rarityText}>{item.calculatedRarity}</Text>
+                      {/* Note: rarity logic requires complex calculation, falling back to static for now or item.rarity */}
+                      <Text style={styles.rarityText}>{item.rarity || 'Common'}</Text>
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -364,5 +417,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 8,
+  },
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    color: '#94a3b8',
+    textAlign: 'center',
+    marginVertical: 20,
   },
 });

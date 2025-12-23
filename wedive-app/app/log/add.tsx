@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
-import { StyleSheet, TextInput, ScrollView, TouchableOpacity, Switch, Dimensions, Modal, FlatList, Image } from 'react-native';
+import { StyleSheet, TextInput, ScrollView, TouchableOpacity, Switch, Dimensions, Modal, FlatList, Image, Alert, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useRouter } from 'expo-router';
 import { ChevronLeft, Calendar, MapPin, Fish, Clock, Droplets, Thermometer, Save, X } from 'lucide-react-native';
-import { MOCK_POINTS, MOCK_CREATURES } from '../../src/data/mockData';
+import { addDoc, collection, serverTimestamp, doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { db } from '../../src/firebase';
+import { useAuth } from '../../src/context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
 export default function AddLogScreen() {
   const router = useRouter();
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [title, setTitle] = useState('');
+  const [spotName, setSpotName] = useState(''); // 手入力用
   const [selectedSpotId, setSelectedSpotId] = useState('');
   const [selectedCreatureId, setSelectedCreatureId] = useState('');
   const [maxDepth, setMaxDepth] = useState('');
@@ -22,13 +27,57 @@ export default function AddLogScreen() {
   const [spotModalVisible, setSpotModalVisible] = useState(false);
   const [creatureModalVisible, setCreatureModalVisible] = useState(false);
 
-  const selectedSpot = MOCK_POINTS.find(p => p.id === selectedSpotId);
-  const selectedCreature = MOCK_CREATURES.find(c => c.id === selectedCreatureId);
+  const selectedSpot = null as any; // Temporary fix
+  const selectedCreature = null as any; // Temporary fix
 
-  const handleSave = () => {
-    // In a real app, this would call an API
-    alert('ログを保存しました');
-    router.back();
+  const handleSave = async () => {
+    if (!title || !date) {
+      Alert.alert('入力エラー', 'タイトルと日付は必須です');
+      return;
+    }
+
+    if (!user) {
+      Alert.alert('エラー', 'ログインが必要です');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const logData = {
+        userId: user.id,
+        userName: user.name || 'Anonymous',
+        userImage: user.profileImage || null,
+        title,
+        date,
+        spotName: spotName || (selectedSpot ? selectedSpot.name : ''),
+        spotId: selectedSpotId || null,
+        creatureId: selectedCreatureId || null,
+        maxDepth: parseFloat(maxDepth) || 0,
+        waterTemp: parseFloat(waterTemp) || 0,
+        comment,
+        isPrivate,
+        likes: 0,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      // 1. Logsコレクションに追加
+      const docRef = await addDoc(collection(db, 'logs'), logData);
+
+      // 2. Userのlogs配列に追加
+      await updateDoc(doc(db, 'users', user.id), {
+        logs: arrayUnion(docRef.id)
+      });
+
+      Alert.alert('完了', 'ログを保存しました', [
+        { text: 'OK', onPress: () => router.back() }
+      ]);
+    } catch (e: any) {
+      console.error("Log Save Error:", e);
+      Alert.alert('保存失敗', 'ログの保存中にエラーが発生しました');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -38,8 +87,8 @@ export default function AddLogScreen() {
           <ChevronLeft size={24} color="#0f172a" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>新規ログ登録</Text>
-        <TouchableOpacity onPress={handleSave} style={styles.saveBtn}>
-          <Save size={20} color="#0ea5e9" />
+        <TouchableOpacity onPress={handleSave} style={styles.saveBtn} disabled={isLoading}>
+          {isLoading ? <ActivityIndicator size="small" color="#0ea5e9" /> : <Save size={20} color="#0ea5e9" />}
         </TouchableOpacity>
       </View>
 
@@ -78,6 +127,14 @@ export default function AddLogScreen() {
               {selectedSpot ? selectedSpot.name : "ダイビングポイントを選択"}
             </Text>
           </TouchableOpacity>
+
+          <TextInput
+            style={[styles.titleInput, { fontSize: 16, borderBottomWidth: 1, borderColor: '#f1f5f9', marginBottom: 16 }]}
+            placeholder="またはスポット名を手入力"
+            value={spotName}
+            onChangeText={setSpotName}
+            placeholderTextColor="#94a3b8"
+          />
 
           <TouchableOpacity
             style={[styles.selector, !selectedCreatureId && styles.selectorEmpty]}
@@ -172,9 +229,9 @@ export default function AddLogScreen() {
               </TouchableOpacity>
             </View>
             <FlatList
-              data={MOCK_POINTS}
+              data={[]}
               keyExtractor={item => item.id}
-              renderItem={({ item }) => (
+              renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity
                   style={styles.modalItem}
                   onPress={() => {
@@ -205,9 +262,9 @@ export default function AddLogScreen() {
               </TouchableOpacity>
             </View>
             <FlatList
-              data={MOCK_CREATURES}
+              data={[]}
               keyExtractor={item => item.id}
-              renderItem={({ item }) => (
+              renderItem={({ item }: { item: any }) => (
                 <TouchableOpacity
                   style={styles.modalItem}
                   onPress={() => {

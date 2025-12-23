@@ -1,32 +1,75 @@
-import React from 'react';
-import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { MOCK_CREATURES } from '../../../src/data/mockData';
-import { calculateRarity } from '../../../src/utils/logic';
 import { ChevronLeft, Star, Heart, Bookmark, Share2, Info } from 'lucide-react-native';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../../../src/firebase';
+import { Creature } from '../../../src/types';
+
+import { ImageWithFallback } from '../../../src/components/ImageWithFallback';
 
 const { width } = Dimensions.get('window');
+
+const NO_IMAGE_CREATURE = require('../../../assets/images/no-image-creature.png');
 
 export default function CreatureDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const creature = MOCK_CREATURES.find(c => c.id === id);
+  const [creature, setCreature] = useState<Creature | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  if (!creature) {
+  useEffect(() => {
+    const fetchCreature = async () => {
+      if (!id || typeof id !== 'string') return;
+      try {
+        const docRef = doc(db, 'creatures', id);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setCreature({ id: docSnap.id, ...docSnap.data() } as Creature);
+        } else {
+          setCreature(null);
+        }
+      } catch (error) {
+        console.error("Error fetching creature:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCreature();
+  }, [id]);
+
+  if (isLoading) {
     return (
-      <View style={styles.container}>
-        <Text>生物が見つかりませんでした。</Text>
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
       </View>
     );
   }
 
-  const rarity = calculateRarity(creature.id, MOCK_CREATURES as any);
+  if (!creature) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <Text>生物が見つかりませんでした。</Text>
+        <TouchableOpacity style={styles.backBtnSimple} onPress={() => router.back()}>
+          <Text style={styles.backBtnText}>戻る</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const rarity = creature.rarity || 'Common';
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.imageContainer}>
-        <Image source={{ uri: creature.imageUrl }} style={styles.image} />
+        <ImageWithFallback
+          source={creature.imageUrl ? { uri: creature.imageUrl } : null}
+          fallbackSource={NO_IMAGE_CREATURE}
+          style={styles.image}
+        />
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <ChevronLeft size={24} color="#fff" />
         </TouchableOpacity>
@@ -68,12 +111,12 @@ export default function CreatureDetailScreen() {
           <View style={styles.infoRow}>
             <Info size={16} color="#64748b" />
             <Text style={styles.infoLabel}>Scientific Name:</Text>
-            <Text style={styles.infoValue}>Chelonia mydas</Text>
+            <Text style={styles.infoValue}>{creature.scientificName || '-'}</Text>
           </View>
           <View style={styles.infoRow}>
             <Bookmark size={16} color="#64748b" />
             <Text style={styles.infoLabel}>Family:</Text>
-            <Text style={styles.infoValue}>Cheloniidae</Text>
+            <Text style={styles.infoValue}>{creature.family || '-'}</Text>
           </View>
         </View>
 
@@ -89,6 +132,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imageContainer: {
     width: width,
@@ -109,6 +156,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.3)',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 10,
+  },
+  backBtnSimple: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+  },
+  backBtnText: {
+    color: '#0ea5e9',
+    fontWeight: 'bold',
   },
   actionBtns: {
     position: 'absolute',
@@ -117,6 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     backgroundColor: 'transparent',
+    zIndex: 10,
   },
   actionBtn: {
     width: 44,
@@ -208,6 +267,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#334155',
     flex: 1,
+    fontStyle: 'italic',
   },
   trackBtn: {
     backgroundColor: '#0ea5e9',

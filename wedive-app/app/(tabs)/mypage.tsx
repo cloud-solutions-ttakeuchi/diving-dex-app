@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, Pressable, ScrollView, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { StyleSheet, Pressable, ScrollView, Image, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { User, LogOut, ChevronRight, Bookmark, Heart, Settings, Activity, BookOpen, Grid, List, Award, Star, MapPin, Plus } from 'lucide-react-native';
+import { LogOut, ChevronRight, Bookmark, Heart, Settings, Activity, BookOpen, Grid, User as UserIcon, Award, Star, MapPin, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
+import { useAuth } from '../../src/context/AuthContext';
 
 const { width } = Dimensions.get('window');
 
@@ -10,7 +11,41 @@ type TabType = 'dashboard' | 'logbook' | 'collection' | 'favorites';
 
 export default function MyPageScreen() {
   const router = useRouter();
+  const { user, isLoading, signOut } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.replace('/(auth)/login');
+  };
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
+      </View>
+    );
+  }
+
+  if (!user) {
+    return (
+      <View style={[styles.container, styles.center, { padding: 40 }]}>
+        <View style={styles.guestIconBg}>
+          <UserIcon size={48} color="#94a3b8" />
+        </View>
+        <Text style={styles.guestTitle}>ログインが必要です</Text>
+        <Text style={styles.guestText}>
+          ログブックの記録やコレクション、お気に入りの保存にはログインが必要です。
+        </Text>
+        <TouchableOpacity style={styles.loginBtn} onPress={() => router.push('/(auth)/login')}>
+          <Text style={styles.loginBtnText}>ログインする</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.signupBtn} onPress={() => router.push('/(auth)/signup')}>
+          <Text style={styles.signupBtnText}>アカウント作成</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   const renderContent = () => {
     switch (activeTab) {
@@ -21,15 +56,15 @@ export default function MyPageScreen() {
               <Text style={styles.cardTitle}>Diving Stats</Text>
               <View style={styles.statsGrid}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>12</Text>
+                  <Text style={styles.statNumber}>{user.logs?.length || 0}</Text>
                   <Text style={styles.statLabel}>Total Dives</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>45</Text>
+                  <Text style={styles.statNumber}>{user.favoriteCreatureIds?.length || 0}</Text>
                   <Text style={styles.statLabel}>Creatures</Text>
                 </View>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>8</Text>
+                  <Text style={styles.statNumber}>{user.bookmarkedPointIds?.length || 0}</Text>
                   <Text style={styles.statLabel}>Spots</Text>
                 </View>
               </View>
@@ -40,7 +75,7 @@ export default function MyPageScreen() {
               <View style={styles.badgeRow}>
                 <View style={styles.badgeIcon}><Award color="#fbbf24" size={24} /></View>
                 <View style={[styles.badgeIcon, { backgroundColor: '#f0fdf4' }]}><Activity color="#22c55e" size={24} /></View>
-                <View style={[styles.badgeIcon, { backgroundColor: '#fef2f2' }]}><Heart color="#ef4444" size={24} /></View>
+                {/* Placeholder badges */}
               </View>
             </View>
           </View>
@@ -88,13 +123,13 @@ export default function MyPageScreen() {
         <View style={styles.profileRow}>
           <View style={styles.avatarContainer}>
             <Image
-              source={{ uri: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200' }}
+              source={{ uri: user.profileImage || 'https://via.placeholder.com/150' }}
               style={styles.avatar}
             />
           </View>
           <View style={styles.profileInfo}>
-            <Text style={styles.name}>Mina Rai</Text>
-            <Text style={styles.role}>Advanced Diver</Text>
+            <Text style={styles.name}>{user.name || 'Diver'}</Text>
+            <Text style={styles.role}>{user.role === 'admin' ? 'Admin' : 'Diver'}</Text>
             <View style={styles.rankBadge}>
               <Star size={10} color="#0ea5e9" fill="#0ea5e9" />
               <Text style={styles.rankText}>Explorer Rank</Text>
@@ -130,7 +165,7 @@ export default function MyPageScreen() {
         <Text style={styles.sectionTitle}>ACTIVITY</Text>
         <Pressable
           style={styles.menuItem}
-          onPress={() => router.push('/(tabs)/search')}
+          onPress={() => router.push('/(tabs)/search?tab=spots')}
         >
           <View style={styles.menuLeft}>
             <Bookmark size={20} color="#0ea5e9" />
@@ -140,7 +175,7 @@ export default function MyPageScreen() {
         </Pressable>
         <Pressable
           style={styles.menuItem}
-          onPress={() => router.push('/(tabs)/search')}
+          onPress={() => router.push('/(tabs)/search?tab=creatures')}
         >
           <View style={styles.menuLeft}>
             <Heart size={20} color="#ef4444" />
@@ -159,21 +194,7 @@ export default function MyPageScreen() {
           </View>
           <ChevronRight size={20} color="#cbd5e1" />
         </Pressable>
-        <Pressable style={styles.menuItem}>
-          <View style={styles.menuLeft}>
-            <MapPin size={20} color="#0ea5e9" />
-            <Text style={styles.menuLabel}>Propose New Spot</Text>
-          </View>
-          <ChevronRight size={20} color="#cbd5e1" />
-        </Pressable>
-        <Pressable style={styles.menuItem}>
-          <View style={styles.menuLeft}>
-            <Star size={20} color="#fbbf24" />
-            <Text style={styles.menuLabel}>Propose New Creature</Text>
-          </View>
-          <ChevronRight size={20} color="#cbd5e1" />
-        </Pressable>
-        <Pressable style={[styles.menuItem, styles.lastItem]}>
+        <Pressable style={[styles.menuItem, styles.lastItem]} onPress={handleSignOut}>
           <View style={styles.menuLeft}>
             <LogOut size={20} color="#94a3b8" />
             <Text style={styles.menuLabel}>Log Out</Text>
@@ -190,6 +211,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   scrollContent: {
     paddingBottom: 40,
@@ -405,6 +430,56 @@ const styles = StyleSheet.create({
   addLogBtnInlineText: {
     color: '#fff',
     fontSize: 14,
+    fontWeight: 'bold',
+  },
+  guestIconBg: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#f1f5f9',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  guestTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  guestText: {
+    fontSize: 15,
+    color: '#64748b',
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 24,
+  },
+  loginBtn: {
+    backgroundColor: '#0ea5e9',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  loginBtnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  signupBtn: {
+    backgroundColor: '#fff',
+    width: '100%',
+    paddingVertical: 16,
+    borderRadius: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  signupBtnText: {
+    color: '#1e293b',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });

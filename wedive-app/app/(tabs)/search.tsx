@@ -1,37 +1,79 @@
-import React, { useState } from 'react';
-import { StyleSheet, TextInput, TouchableOpacity, FlatList, Image, Dimensions, ScrollView } from 'react-native';
+import { useState, useEffect } from 'react';
+import { StyleSheet, TextInput, TouchableOpacity, FlatList, Dimensions, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Search as SearchIcon, MapPin, Filter, Star, ChevronRight, Anchor, BookOpen, Clock, Droplets } from 'lucide-react-native';
-import { MOCK_CREATURES, MOCK_POINTS, MOCK_LOGS } from '../../src/data/mockData';
-import { calculateRarity } from '../../src/utils/logic';
-import { useRouter } from 'expo-router';
+import { Search as SearchIcon, MapPin, Star, ChevronRight, Anchor, BookOpen, Clock, Droplets } from 'lucide-react-native';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { collection, query, getDocs } from 'firebase/firestore';
+import { db } from '../../src/firebase';
+import { Point, Creature } from '../../src/types';
+import { ImageWithFallback } from '../../src/components/ImageWithFallback';
 
 const { width } = Dimensions.get('window');
+
+const NO_IMAGE_POINT = require('../../assets/images/no-image-point.png');
+const NO_IMAGE_CREATURE = require('../../assets/images/no-image-creature.png');
 
 type SearchMode = 'spots' | 'creatures' | 'logs';
 
 export default function SearchScreen() {
   const router = useRouter();
-  const [mode, setMode] = useState<SearchMode>('spots');
+  const { tab } = useLocalSearchParams();
+  const [mode, setMode] = useState<SearchMode>((tab as SearchMode) || 'spots');
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredSpots = MOCK_POINTS.filter(p =>
-    p.name.includes(searchTerm) || p.area.includes(searchTerm) || p.region.includes(searchTerm)
+  const [points, setPoints] = useState<Point[]>([]);
+  const [creatures, setCreatures] = useState<Creature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (tab && ['spots', 'creatures', 'logs'].includes(tab as string)) {
+      setMode(tab as SearchMode);
+    }
+  }, [tab]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const pointsQuery = query(collection(db, 'points'));
+        const pointsSnapshot = await getDocs(pointsQuery);
+        const pointsData = pointsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point));
+        setPoints(pointsData);
+
+        const creaturesQuery = query(collection(db, 'creatures'));
+        const creaturesSnapshot = await getDocs(creaturesQuery);
+        const creaturesData = creaturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature));
+        setCreatures(creaturesData);
+      } catch (error) {
+        console.error("Error fetching search data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const filteredSpots = points.filter(p =>
+    (p.name && p.name.includes(searchTerm)) ||
+    (p.area && p.area.includes(searchTerm)) ||
+    (p.region && p.region.includes(searchTerm))
   );
 
-  const filteredCreatures = MOCK_CREATURES.filter(c =>
-    c.name.includes(searchTerm) || c.category.includes(searchTerm)
-  ).map(c => ({
-    ...c,
-    calculatedRarity: calculateRarity(c.id, MOCK_CREATURES as any)
-  }));
+  const filteredCreatures = creatures.filter(c =>
+    (c.name && c.name.includes(searchTerm)) ||
+    (c.category && c.category.includes(searchTerm))
+  );
 
-  const renderSpotItem = ({ item }: { item: typeof MOCK_POINTS[0] }) => (
+  const renderSpotItem = ({ item }: { item: Point }) => (
     <TouchableOpacity
       style={styles.spotCard}
       onPress={() => router.push(`/details/spot/${item.id}`)}
     >
-      <Image source={{ uri: item.imageUrl }} style={styles.spotImage} />
+      <ImageWithFallback
+        source={item.imageUrl ? { uri: item.imageUrl } : null}
+        fallbackSource={NO_IMAGE_POINT}
+        style={styles.spotImage}
+      />
       <View style={styles.spotInfo}>
         <View style={styles.row}>
           <Text style={styles.spotName}>{item.name}</Text>
@@ -44,8 +86,8 @@ export default function SearchScreen() {
           <Text style={styles.locationText}>{item.region} • {item.area}</Text>
         </View>
         <View style={styles.featuresRow}>
-          {item.features.map(f => (
-            <View key={f} style={styles.featureTag}>
+          {item.features && item.features.map((f, i) => (
+            <View key={i} style={styles.featureTag}>
               <Text style={styles.featureText}>#{f}</Text>
             </View>
           ))}
@@ -54,12 +96,16 @@ export default function SearchScreen() {
     </TouchableOpacity>
   );
 
-  const renderCreatureItem = ({ item }: { item: any }) => (
+  const renderCreatureItem = ({ item }: { item: Creature }) => (
     <TouchableOpacity
       style={styles.creatureCard}
       onPress={() => router.push(`/details/creature/${item.id}`)}
     >
-      <Image source={{ uri: item.imageUrl }} style={styles.creatureImage} />
+      <ImageWithFallback
+        source={item.imageUrl ? { uri: item.imageUrl } : null}
+        fallbackSource={NO_IMAGE_CREATURE}
+        style={styles.creatureImage}
+      />
       <View style={styles.creatureContent}>
         <View style={styles.creatureInfo}>
           <Text style={styles.creatureCategory}>{item.category}</Text>
@@ -67,40 +113,27 @@ export default function SearchScreen() {
         </View>
         <View style={styles.rarityBadge}>
           <Star size={10} color="#fbbf24" fill="#fbbf24" />
-          <Text style={styles.rarityValue}>{item.calculatedRarity}</Text>
+          <Text style={styles.rarityValue}>{item.rarity || 'Common'}</Text>
         </View>
       </View>
       <ChevronRight size={16} color="#cbd5e1" />
     </TouchableOpacity>
   );
 
-  const renderLogItem = ({ item }: { item: typeof MOCK_LOGS[0] }) => (
-    <TouchableOpacity style={styles.logCard}>
-      <View style={styles.logHeader}>
-        <Image source={{ uri: item.userAvatar }} style={styles.userAvatar} />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{item.userName}</Text>
-          <Text style={styles.logDate}>{item.date}</Text>
-        </View>
-      </View>
-      <Image source={{ uri: item.imageUrl }} style={styles.logImage} />
-      <View style={styles.logContent}>
-        <Text style={styles.logPointName}>{item.pointName}</Text>
-        <Text style={styles.logCreatureName}>観察: {item.creatureName}</Text>
-        <View style={styles.logStats}>
-          <View style={styles.logStat}>
-            <Clock size={12} color="#94a3b8" />
-            <Text style={styles.logStatText}>{item.depth}m</Text>
-          </View>
-          <View style={styles.logStat}>
-            <Droplets size={12} color="#94a3b8" />
-            <Text style={styles.logStatText}>{item.temp}℃</Text>
-          </View>
-        </View>
-        <Text style={styles.logComment} numberOfLines={2}>"{item.comment}"</Text>
-      </View>
-    </TouchableOpacity>
+  // TODO: Log rendering logic with real data
+  const renderLogItem = ({ item }: { item: any }) => (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyText}>ログ機能は準備中です</Text>
+    </View>
   );
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, styles.center]}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -110,7 +143,7 @@ export default function SearchScreen() {
           <SearchIcon size={20} color="#94a3b8" />
           <TextInput
             style={styles.input}
-            placeholder={mode === 'spots' ? "スポットを検索..." : "生物を検索..."}
+            placeholder={mode === 'spots' ? "スポットを検索..." : mode === 'creatures' ? "生物を検索..." : "ログを検索..."}
             value={searchTerm}
             onChangeText={setSearchTerm}
             placeholderTextColor="#94a3b8"
@@ -142,9 +175,9 @@ export default function SearchScreen() {
       </View>
 
       <FlatList
-        data={(mode === 'spots' ? filteredSpots : mode === 'creatures' ? filteredCreatures : MOCK_LOGS) as any}
-        renderItem={(mode === 'spots' ? renderSpotItem : mode === 'creatures' ? renderCreatureItem : renderLogItem) as any}
-        keyExtractor={item => item.id}
+        data={mode === 'spots' ? filteredSpots : mode === 'creatures' ? filteredCreatures : []}
+        renderItem={mode === 'spots' ? renderSpotItem : mode === 'creatures' ? renderCreatureItem : renderLogItem}
+        keyExtractor={item => item.id || Math.random().toString()}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -220,6 +253,10 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: 20,
+  },
+  center: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   spotCard: {
     backgroundColor: '#fff',
