@@ -17,7 +17,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../src/firebase';
 import { LogService } from '../../src/services/LogService';
 import * as DocumentPicker from 'expo-document-picker';
-import { parseGarminZip } from '../../src/utils/garminParser';
+import { parseGarminZip, parseGarminCsv } from '../../src/utils/garminParser';
 
 const { width } = Dimensions.get('window');
 
@@ -77,6 +77,7 @@ export default function AddLogScreen() {
   const [spotSearchTerm, setSpotSearchTerm] = useState('');
   const [creatureSearchTerm, setCreatureSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
+  const [helpModalVisible, setHelpModalVisible] = useState(false);
 
   // Accordion State
   const [openSections, setOpenSections] = useState({
@@ -195,36 +196,44 @@ export default function AddLogScreen() {
   const handleImportGarmin = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['application/zip', 'application/octet-stream'],
+        type: ['application/zip', 'text/csv', 'application/vnd.ms-excel', 'application/octet-stream'],
         copyToCacheDirectory: true,
       });
 
       if (result.canceled) return;
 
       const fileUri = result.assets[0].uri;
+      const fileName = result.assets[0].name.toLowerCase();
       setIsLoading(true);
 
-      const response = await fetch(fileUri);
-      const arrayBuffer = await response.arrayBuffer();
+      let parsedResult;
+      if (fileName.endsWith('.csv')) {
+        const response = await fetch(fileUri);
+        const text = await response.text();
+        parsedResult = await parseGarminCsv(text);
+      } else {
+        // ZIP or octet-stream (often zip inside)
+        const response = await fetch(fileUri);
+        const arrayBuffer = await response.arrayBuffer();
+        parsedResult = await parseGarminZip(arrayBuffer);
+      }
 
-      const { logs } = await parseGarminZip(arrayBuffer);
+      const { logs } = parsedResult;
 
       if (logs.length === 0) {
-        Alert.alert('インポート失敗', '有効なダイブログが見つかりませんでした。');
+        Alert.alert('インポート失敗', '有効なダイブログが見つかりませんでした。ファイル形式を確認してください。');
         return;
       }
 
       if (logs.length === 1) {
         applyGarminLog(logs[0]);
       } else {
-        // 多すぎる場合は最新の10件程度から選ばせるなどのUIが理想だが、
-        // まずは単純に最新（配列の最初）を適用。
         Alert.alert('複数ログ検出', `${logs.length}件のログが見つかりました。最新のものを読み込みます。`);
         applyGarminLog(logs[0]);
       }
     } catch (e) {
       console.error('Garmin import failed', e);
-      Alert.alert('エラー', 'インポート中にエラーが発生しました。Garmin Connectからの正しいZIPエクスポートであることを確認してください。');
+      Alert.alert('エラー', 'インポート中にエラーが発生しました。Garmin Connectからの正しい形式であることを確認してください。');
     } finally {
       setIsLoading(false);
     }
@@ -472,9 +481,14 @@ export default function AddLogScreen() {
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeaderRow}>
             <SectionHeader title="基本情報" icon={Calendar} section="basic" color="#3b82f6" />
-            <TouchableOpacity style={styles.importBtn} onPress={handleImportGarmin}>
-              <Text style={styles.importBtnText}>Garmin連携</Text>
-            </TouchableOpacity>
+            <View style={styles.importActions}>
+              <TouchableOpacity style={styles.helpIconBtn} onPress={() => setHelpModalVisible(true)}>
+                <Info size={16} color="#94a3b8" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.importBtn} onPress={handleImportGarmin}>
+                <Text style={styles.importBtnText}>Garmin連携</Text>
+              </TouchableOpacity>
+            </View>
           </View>
           {openSections.basic && (
             <View style={styles.sectionBody}>
@@ -834,8 +848,53 @@ export default function AddLogScreen() {
           />
         </View>
       </Modal>
+
+      {/* Garmin Help Modal */}
+      <Modal visible={helpModalVisible} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.helpModalContent}>
+            <View style={styles.helpModalHeader}>
+              <Text style={styles.helpModalTitle}>Garminインポートについて</Text>
+              <TouchableOpacity onPress={() => setHelpModalVisible(false)}>
+                <X size={20} color="#64748b" />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.helpModalBody}>
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>1. ZIP形式（詳細インポート）</Text>
+                <Text style={styles.helpText}>
+                  Garmin Connectの「個人データの書き出し」から取得できるZIPファイルです。
+                </Text>
+                <View style={styles.benefitBox}>
+                  <Text style={styles.benefitText}>• 潜水プロフィール（水深グラフ）</Text>
+                  <Text style={styles.benefitText}>• 水温の変化 / 心拍数</Text>
+                  <Text style={styles.benefitText}>• タンク情報 (Descent使用時)</Text>
+                </View>
+                <Text style={styles.helpSmall}>※DI_CONNECTフォルダを含むZIPを選択してください。</Text>
+              </View>
+
+              <View style={styles.helpSection}>
+                <Text style={styles.helpSectionTitle}>2. CSV形式（簡易インポート）</Text>
+                <Text style={styles.helpText}>
+                  アクティビティ一覧からダウンロードできるCSVファイルです。
+                </Text>
+                <View style={styles.benefitBox}>
+                  <Text style={styles.benefitText}>• 日付 / 潜水時間 / 最大水深</Text>
+                  <Text style={styles.benefitText}>• ポイント名（タイトル）</Text>
+                  <Text style={styles.benefitText}>• 最低水温</Text>
+                </View>
+                <Text style={styles.helpSmall}>※グラフデータは含まれません。</Text>
+              </View>
+            </ScrollView>
+            <TouchableOpacity style={styles.helpCloseBtn} onPress={() => setHelpModalVisible(false)}>
+              <Text style={styles.helpCloseBtnText}>閉じる</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {renderLoadingOverlay()}
-    </View>
+    </View >
   );
 }
 
@@ -904,6 +963,85 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: 'bold',
+  },
+  importActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 12,
+  },
+  helpIconBtn: {
+    padding: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  helpModalContent: {
+    backgroundColor: '#fff',
+    borderRadius: 24,
+    width: '100%',
+    maxHeight: '80%',
+    padding: 24,
+  },
+  helpModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  helpModalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  helpModalBody: {
+    marginBottom: 20,
+  },
+  helpSection: {
+    marginBottom: 24,
+  },
+  helpSectionTitle: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#3b82f6',
+    marginBottom: 8,
+  },
+  helpText: {
+    fontSize: 14,
+    color: '#475569',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  benefitBox: {
+    backgroundColor: '#f8fafc',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  benefitText: {
+    fontSize: 13,
+    color: '#334155',
+    marginBottom: 4,
+  },
+  helpSmall: {
+    fontSize: 11,
+    color: '#94a3b8',
+  },
+  helpCloseBtn: {
+    backgroundColor: '#f1f5f9',
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  helpCloseBtnText: {
+    color: '#475569',
+    fontSize: 16,
+    fontWeight: '600',
   },
   sectionHeaderLeft: {
     flexDirection: 'row',

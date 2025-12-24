@@ -32,6 +32,7 @@
     "fit-file-parser": "^2.1.0",
     "jszip": "^3.10.1",
     "lucide-react-native": "^0.562.0",
+    "papaparse": "^5.5.3",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -43,6 +44,7 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@types/papaparse": "^5.5.2",
     "@types/react": "~19.1.0",
     "dotenv": "^17.2.3",
     "react-test-renderer": "19.1.0",
