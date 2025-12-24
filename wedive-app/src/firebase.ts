@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 // @ts-ignore
-import { Auth, initializeAuth, getReactNativePersistence, GoogleAuthProvider, getAuth } from 'firebase/auth';
+import { Auth, initializeAuth, getReactNativePersistence, GoogleAuthProvider, getAuth, browserLocalPersistence } from 'firebase/auth';
 import { Firestore, initializeFirestore, persistentLocalCache, persistentSingleTabManager, getFirestore } from "firebase/firestore";
 import { getFunctions } from "firebase/functions";
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,20 +16,26 @@ const firebaseConfig = {
   measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
+import { Platform } from 'react-native';
+
 // 1. Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// 2. Auth with Persistence (AsyncStorage)
-// getReactNativePersistence が関数として存在するかチェック
-let auth: Auth;
-try {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(ReactNativeAsyncStorage)
-  });
-} catch (e) {
-  console.warn("Retrying auth init without persistence customization", e);
-  auth = getAuth(app);
-}
+// 2. Auth with Persistence
+// Web: browserLocalPersistence
+// Native: getReactNativePersistence(ReactNativeAsyncStorage)
+const auth = (() => {
+  const persistence = Platform.OS === 'web'
+    ? browserLocalPersistence
+    : getReactNativePersistence(ReactNativeAsyncStorage);
+
+  try {
+    return initializeAuth(app, { persistence });
+  } catch (e) {
+    // If already initialized (e.g. during HMR), use getAuth
+    return getAuth(app);
+  }
+})();
 
 export { auth };
 export const googleProvider = new GoogleAuthProvider();

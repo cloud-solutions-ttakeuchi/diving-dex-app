@@ -10,8 +10,8 @@ export interface AiResponse {
   sessionId?: string;
 }
 
-// 本番環境のURL
-const API_BASE_URL = 'https://asia-northeast1-we-dive.cloudfunctions.net';
+// Firebase Cloud FunctionsのベースURL（.env.localで管理）
+const API_BASE_URL = process.env.EXPO_PUBLIC_FUNCTIONS_BASE_URL;
 
 export const aiService = {
   sendMessage: async (query: string, history: Message[] = []): Promise<AiResponse> => {

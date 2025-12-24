@@ -16,6 +16,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../../src/firebase';
 import { LogService } from '../../src/services/LogService';
+import * as DocumentPicker from 'expo-document-picker';
+import { parseGarminZip } from '../../src/utils/garminParser';
 
 const { width } = Dimensions.get('window');
 
@@ -183,9 +185,75 @@ export default function AddLogScreen() {
     return (
       <View style={styles.loadingOverlay}>
         <ActivityIndicator size="large" color="#0ea5e9" />
-        <Text style={styles.loadingText}>ログを保存中...</Text>
+        <Text style={styles.loadingText}>
+          {formData.date === '' ? '解析中...' : 'ログを保存中...'}
+        </Text>
       </View>
     );
+  };
+
+  const handleImportGarmin = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/zip', 'application/octet-stream'],
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) return;
+
+      const fileUri = result.assets[0].uri;
+      setIsLoading(true);
+
+      const response = await fetch(fileUri);
+      const arrayBuffer = await response.arrayBuffer();
+
+      const { logs } = await parseGarminZip(arrayBuffer);
+
+      if (logs.length === 0) {
+        Alert.alert('インポート失敗', '有効なダイブログが見つかりませんでした。');
+        return;
+      }
+
+      if (logs.length === 1) {
+        applyGarminLog(logs[0]);
+      } else {
+        // 多すぎる場合は最新の10件程度から選ばせるなどのUIが理想だが、
+        // まずは単純に最新（配列の最初）を適用。
+        Alert.alert('複数ログ検出', `${logs.length}件のログが見つかりました。最新のものを読み込みます。`);
+        applyGarminLog(logs[0]);
+      }
+    } catch (e) {
+      console.error('Garmin import failed', e);
+      Alert.alert('エラー', 'インポート中にエラーが発生しました。Garmin Connectからの正しいZIPエクスポートであることを確認してください。');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const applyGarminLog = (log: any) => {
+    setFormData(prev => ({
+      ...prev,
+      title: log.title || prev.title,
+      date: log.date || prev.date,
+      diveNumber: log.diveNumber?.toString() || prev.diveNumber,
+      entryTime: log.time?.entry || prev.entryTime,
+      exitTime: log.time?.exit || prev.exitTime,
+      maxDepth: log.depth?.max?.toString() || prev.maxDepth,
+      avgDepth: log.depth?.average?.toString() || prev.avgDepth,
+      waterTempBottom: log.condition?.waterTemp?.bottom?.toString() || prev.waterTempBottom,
+      waterTempSurface: log.condition?.waterTemp?.surface?.toString() || prev.waterTempSurface,
+      transparency: log.condition?.transparency?.toString() || prev.transparency,
+      buddy: log.team?.buddy || prev.buddy,
+      comment: log.comment || prev.comment,
+      tankMaterial: log.gear?.tank?.material || prev.tankMaterial,
+      tankCapacity: log.gear?.tank?.capacity?.toString() || prev.tankCapacity,
+      pressureStart: log.gear?.tank?.pressureStart?.toString() || prev.pressureStart,
+      pressureEnd: log.gear?.tank?.pressureEnd?.toString() || prev.pressureEnd,
+      entryType: log.entryType || prev.entryType,
+    }));
+    // インポート時は自動でセクションを開く
+    setOpenSections(prev => ({ ...prev, data: true, conditions: true }));
+    Alert.alert('成功', 'Garminデータを読み込みました。内容を確認して保存してください。');
   };
 
   const handleSave = async () => {
@@ -402,7 +470,12 @@ export default function AddLogScreen() {
 
         {/* Basic Info */}
         <View style={styles.sectionCard}>
-          <SectionHeader title="基本情報" icon={Calendar} section="basic" color="#3b82f6" />
+          <View style={styles.sectionHeaderRow}>
+            <SectionHeader title="基本情報" icon={Calendar} section="basic" color="#3b82f6" />
+            <TouchableOpacity style={styles.importBtn} onPress={handleImportGarmin}>
+              <Text style={styles.importBtnText}>Garmin連携</Text>
+            </TouchableOpacity>
+          </View>
           {openSections.basic && (
             <View style={styles.sectionBody}>
               <View style={styles.inputGroup}>
@@ -809,11 +882,28 @@ const styles = StyleSheet.create({
     borderColor: '#f1f5f9',
   },
   sectionHeader: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    paddingVertical: 12,
     backgroundColor: 'transparent',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  importBtn: {
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  importBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   sectionHeaderLeft: {
     flexDirection: 'row',
