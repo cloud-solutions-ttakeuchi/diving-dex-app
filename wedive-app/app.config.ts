@@ -34,6 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: getName(),
     slug: "wedive-app",
+    owner: "t.takeuchi",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
@@ -65,7 +66,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     },
     plugins: [
       "expo-router",
-      "expo-image-picker"
+      "expo-image-picker",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          iosClientId: "1066677586396-1avhn8hbahfrc1kmv9rbefi3toacjqn3.apps.googleusercontent.com",
+          iosUrlScheme: "com.googleusercontent.apps.1066677586396-1avhn8hbahfrc1kmv9rbefi3toacjqn3"
+        }
+      ]
     ],
     experiments: {
       typedRoutes: true

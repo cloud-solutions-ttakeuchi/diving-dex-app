@@ -3,10 +3,10 @@ import { StyleSheet, TextInput, TouchableOpacity, ActivityIndicator, Image, Keyb
 import { Text, View } from '@/components/Themed';
 import { useRouter, Link } from 'expo-router';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithCredential } from 'firebase/auth';
-import * as Google from 'expo-auth-session/providers/google';
-import { makeRedirectUri } from 'expo-auth-session';
-import { auth } from '../../src/firebase';
+import { auth, db } from '../../src/firebase';
 import { Mail, Lock, ArrowRight } from 'lucide-react-native';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -14,36 +14,42 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-
-  const redirectUri = makeRedirectUri({
-    scheme: 'wediveapp',
-    // @ts-ignore - プロキシ経由で戻すためのフラグ（最新の型定義でエラーが出る場合があるため）
-    useProxy: true,
-    projectNameForProxy: 'wedive-app',
-  });
-  console.log("Redirect URI (Proxy):", redirectUri);
-
-  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
-    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    redirectUri,
-  });
-
   useEffect(() => {
-    if (response?.type === 'success') {
-      const { id_token } = response.params;
-      const credential = GoogleAuthProvider.credential(id_token);
+    GoogleSignin.configure({
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+      iosClientId: '1066677586396-1avhn8hbahfrc1kmv9rbefi3toacjqn3.apps.googleusercontent.com',
+      offlineAccess: true,
+    });
+  }, []);
+
+  const handleGoogleLogin = async () => {
+    try {
       setIsLoading(true);
-      signInWithCredential(auth, credential)
-        .then(() => {
-          router.replace('/(tabs)/mypage');
-        })
-        .catch((err) => {
-          console.error("Google Sign-In Error:", err);
-          setError('Googleログインに失敗しました');
-          setIsLoading(false);
-        });
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      const idToken = userInfo.data?.idToken;
+      if (!idToken) throw new Error('ID Token not found');
+
+      const credential = GoogleAuthProvider.credential(idToken);
+      await signInWithCredential(auth, credential);
+      router.replace('/(tabs)/mypage');
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation (e.g. sign in) is in progress already
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        // play services not available or outdated
+        setError('Google Play Servicesが利用できません');
+      } else {
+        console.error("Google Sign-In Error:", error);
+        setError('Googleログインに失敗しました');
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }, [response]);
+  };
 
   const handleLogin = async () => {
     const trimmedEmail = email.trim();
@@ -68,12 +74,7 @@ export default function LoginScreen() {
       console.log("Login successful");
       router.replace('/(tabs)/mypage');
     } catch (err: any) {
-      console.error("Login Error Full:", JSON.stringify(err, null, 2));
-
-      Alert.alert(
-        "Login Error Debug",
-        `Code: ${err.code}\nMessage: ${err.message}\nEmail: ${trimmedEmail}`
-      );
+      console.error("Login Error:", err.code, err.message);
 
       let msg = 'ログインに失敗しました';
       if (err.code === 'auth/invalid-email') {
@@ -162,8 +163,8 @@ export default function LoginScreen() {
 
           <TouchableOpacity
             style={styles.googleBtn}
-            onPress={() => promptAsync()}
-            disabled={!request || isLoading}
+            onPress={handleGoogleLogin}
+            disabled={isLoading}
           >
             {/* Google Icon SVG or Image here if available, using text for now */}
             <Text style={styles.googleBtnText}>Googleでログイン</Text>

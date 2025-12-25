@@ -63,6 +63,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         // 2. Sync User Logs (Sub-collection)
+        // Web版の「リストが空」という状態に左右されないよう、サブコレクションを直接監視する
         const logsQuery = query(
           collection(db, 'users', fbUser.uid, 'logs'),
           orderBy('date', 'desc')
@@ -70,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         unsubLogs = onSnapshot(logsQuery, (snap) => {
           const logsData = snap.docs.map(d => ({ ...d.data(), id: d.id } as DiveLog));
           setLogs(logsData);
-          setIsLoading(false);
+          setIsLoading(false); // ログが空の場合でも、読み込み完了とみなす
         }, (err) => {
           console.error("Logs sync error:", err);
           setIsLoading(false);

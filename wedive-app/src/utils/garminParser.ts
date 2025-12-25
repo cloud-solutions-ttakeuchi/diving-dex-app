@@ -5,7 +5,7 @@ import FitParser from 'fit-file-parser';
 import Papa from 'papaparse';
 import { DiveLog } from '../types';
 
-// Global Buffer shim for fit-file-parser if needed
+// Global Buffer shim for fit-file-parser
 if (typeof global.Buffer === 'undefined') {
   global.Buffer = Buffer as any;
 }
@@ -18,7 +18,6 @@ export interface ParsedLog extends Partial<DiveLog> {
   originalPoint?: string;
   originalActivityId?: string;
   hasProfileData?: boolean;
-  sourceType?: 'csv' | 'zip';
 }
 
 export interface ParseResult {
@@ -72,7 +71,6 @@ export const parseGarminCsv = (csvContent: string): Promise<ParseResult> => {
             depth: { max: maxDepth, average: avgDepth },
             condition: { waterTemp: { bottom: tempStr ? parseFloat(tempStr) : undefined } },
             location: { pointId: '', pointName: titleStr || 'Imported Log', region: '' },
-            sourceType: 'csv',
             originalDate: dateStr,
             originalTime: timeStr,
             originalDepth: `${maxDepth}m`,
@@ -87,75 +85,102 @@ export const parseGarminCsv = (csvContent: string): Promise<ParseResult> => {
 };
 
 /**
- * ZIP parser for Garmin (Detailed Import)
+ * ZIP parser for Garmin (Ported from WeDive-Web)
  */
-export const parseGarminZip = async (fileData: ArrayBuffer, options: { skipFit?: boolean } = {}): Promise<ParseResult> => {
+export interface ParseOptions {
+  skipFit?: boolean;
+  onProgress?: (message: string) => void;
+}
+
+export const parseGarminZip = async (fileData: any, options: ParseOptions = {}): Promise<ParseResult> => {
+  const { skipFit, onProgress } = options;
+  const logDebug = (msg: string) => onProgress?.(msg);
+
   const zip = new JSZip();
-  const loadedZip = await zip.loadAsync(fileData);
+  // In mobile, fileData is usually base64 string or ArrayBuffer
+  const isBase64 = typeof fileData === 'string';
+  const loadedZip = await zip.loadAsync(fileData, { base64: isBase64 });
   const logs: ParsedLog[] = [];
   const debugLogs: string[] = [];
-  const { skipFit } = options;
-
-  const logDebug = (msg: string) => {
-    debugLogs.push(msg);
-    console.log(msg);
-  };
 
   const files = Object.keys(loadedZip.files);
-  logDebug(`Total files in ZIP: ${files.length}`);
+  logDebug(`ZIP内のファイル数: ${files.length}`);
 
+  // 1. JSONファイルを特定 (DI_CONNECT/DI-DIVE/Dive-ACTIVITY*.json)
   const diveJsonFiles = files.filter(path =>
     path.match(/DI_CONNECT\/DI-DIVE\/Dive-ACTIVITY\d+\.json$/i) ||
     path.match(/^Dive-ACTIVITY\d+\.json$/i)
   );
 
+  // 2. FITファイルを特定
+  const fitFiles = files.filter(path => path.match(/\.fit$/i));
+  const nestedZips = files.filter(path => path.toLowerCase().endsWith('.zip'));
+
+  logDebug(`初期スキャン: ${fitFiles.length}個のFITファイル, ${nestedZips.length}個の入れ子ZIP。`);
+
   const fitDataMap = new Map<number, any[]>();
 
   if (!skipFit) {
-    const nestedZips = files.filter(path => path.toLowerCase().endsWith('.zip'));
-    const fitFiles = files.filter(path => path.match(/\.fit$/i));
-
+    // 入れ子ZIPの展開
     for (const zipPath of nestedZips) {
       try {
+        logDebug(`入れ子ZIPを展開中: ${zipPath}`);
         const zipData = await loadedZip.files[zipPath].async('arraybuffer');
         const innerZip = await new JSZip().loadAsync(zipData);
-        const innerFits = Object.keys(innerZip.files).filter(f => f.match(/\.fit$/i));
+        const innerFiles = Object.keys(innerZip.files).filter(f => f.match(/\.fit$/i));
 
-        for (const innerPath of innerFits) {
+        for (const innerPath of innerFiles) {
           try {
             const fitBuf = await innerZip.files[innerPath].async('arraybuffer');
             const records = await parseFitFileSimple(fitBuf);
             if (records && records.length > 0) {
-              fitDataMap.set(records[0].timestamp.getTime(), records);
+              const startTs = records[0].timestamp.getTime();
+              fitDataMap.set(startTs, records);
             }
-          } catch (e) { }
+          } catch { }
         }
-      } catch (err) { }
+      } catch (err) {
+        logDebug(`入れ子ZIP ${zipPath} の展開に失敗: ${err}`);
+      }
     }
 
+    // ルートレベルのFITファイルの解析
     for (const path of fitFiles) {
       try {
         const arrayBuffer = await loadedZip.files[path].async('arraybuffer');
         const records = await parseFitFileSimple(arrayBuffer);
         if (records && records.length > 0) {
-          fitDataMap.set(records[0].timestamp.getTime(), records);
+          const startTs = records[0].timestamp.getTime();
+          fitDataMap.set(startTs, records);
         }
-      } catch (err) { }
+      } catch (err) {
+        logDebug(`FITファイル ${path} の解析に失敗: ${err}`);
+      }
     }
   }
 
+  // JSONデータの処理
+  let count = 0;
   for (const path of diveJsonFiles) {
+    count++;
+    if (count % 5 === 0 || count === diveJsonFiles.length) {
+      logDebug(`解析中 (${count}/${diveJsonFiles.length}件)...`);
+    }
+
     try {
       const content = await loadedZip.files[path].async('string');
       const json = JSON.parse(content);
       const parsed = mapGarminJsonToLog(json);
 
       if (parsed) {
+        // FITデータとの紐付け (時差を考慮して1時間以内の誤差を許容)
         if (fitDataMap.size > 0 && parsed.date && parsed.time?.entry) {
-          const logTs = new Date(`${parsed.date}T${parsed.time.entry}`).getTime();
+          const logDate = new Date(`${parsed.date}T${parsed.time.entry}`);
+          const logTs = logDate.getTime();
+
           let bestMatchTs = -1;
           let minDiff = 24 * 60 * 60 * 1000;
-          const MAX_TOLERANCE = 60 * 60 * 1000;
+          const MAX_TOLERANCE = 60 * 60 * 1000; // 1時間
 
           for (const fitTs of fitDataMap.keys()) {
             const diff = Math.abs(fitTs - logTs);
@@ -175,14 +200,20 @@ export const parseGarminZip = async (fileData: ArrayBuffer, options: { skipFit?:
             }
           }
         }
-        parsed.sourceType = 'zip';
         logs.push(parsed);
       }
-    } catch (err) { }
+    } catch (err) {
+      logDebug(`JSON ${path} の解析に失敗: ${err}`);
+    }
   }
 
+  logDebug('解析完了');
   return {
-    logs: logs.sort((a, b) => (new Date(b.date || '').getTime() - new Date(a.date || '').getTime())),
+    logs: logs.sort((a, b) => {
+      const dateA = a.date ? new Date(a.date).getTime() : 0;
+      const dateB = b.date ? new Date(b.date).getTime() : 0;
+      return dateB - dateA;
+    }),
     debugLogs
   };
 };
@@ -198,9 +229,11 @@ const parseFitFileSimple = (buffer: ArrayBuffer): Promise<any[]> => {
 };
 
 const mapGarminJsonToLog = (json: any): ParsedLog | null => {
+  // Check for wrapped structure
   if (json.data && json.type === 'ACTIVITY') return mapGarminJsonDataToLog(json.data);
   if (!json?.startTime) return null;
 
+  const activityName = json.name || json.activityName || 'Garmin Dive';
   const startTime = new Date(json.startTime);
   const dateStr = json.startTime.split('T')[0];
   const timeStr = startTime.toTimeString().split(' ')[0].substring(0, 5);
@@ -219,20 +252,44 @@ const mapGarminJsonToLog = (json: any): ParsedLog | null => {
 
   return {
     date: dateStr,
-    title: json.name || json.activityName || 'Garmin Dive',
-    time: { entry: timeStr, exit: '', duration: durationMin },
+    title: activityName,
+    garminActivityId: String(json.activityId || json.data?.id || ''),
+    diveNumber: json.diveNumber || json.diveNo || json.number || 0,
+    time: {
+      entry: timeStr,
+      exit: '',
+      duration: durationMin,
+      surfaceInterval: json.profile?.surfaceInterval ? Math.round(json.profile.surfaceInterval / 60) : undefined
+    },
     depth: { max: json.profile?.maxDepth || 0, average: json.profile?.averageDepth || 0 },
     condition: { waterTemp: { bottom: json.environment?.minTemperature || json.environment?.avgTemperature || undefined } },
-    location: { pointId: '', pointName: json.name || json.activityName || 'Garmin Dive', region: '', lat: json.location?.exitLoc?.latitude, lng: json.location?.exitLoc?.longitude },
-    gear: { tank: tankData, suitType: 'wet' }
+    location: {
+      pointId: '',
+      pointName: activityName,
+      region: '',
+      lat: json.location?.exitLoc?.latitude || json.location?.startLoc?.latitude,
+      lng: json.location?.exitLoc?.longitude || json.location?.startLoc?.longitude
+    },
+    gear: { tank: tankData, suitType: 'wet' },
+    originalDate: dateStr,
+    originalTime: timeStr,
+    originalDepth: `${json.profile?.maxDepth || 0}m`,
+    originalPoint: activityName,
+    originalActivityId: String(json.activityId || json.data?.id || '')
   };
 };
 
 const mapGarminJsonDataToLog = (data: any): ParsedLog => {
-  const startTime = new Date(data.startTime);
-  const dateStr = data.startTime.split('T')[0];
+  const startTimeStr = data.startTime;
+  const startTime = new Date(startTimeStr);
+  const dateStr = typeof startTimeStr === 'string' ? startTimeStr.split('T')[0] : startTime.toISOString().split('T')[0];
   const timeStr = startTime.toTimeString().split(' ')[0].substring(0, 5);
-  const durationMin = Math.round((data.totalTime || 0) / 60);
+  const activityName = data.name || 'Garmin Dive';
+
+  const totalTime = data.totalTime || 0;
+  const durationMin = Math.round(totalTime / 60);
+  const exitTime = new Date(startTime.getTime() + totalTime * 1000);
+  const exitTimeStr = exitTime.toTimeString().split(' ')[0].substring(0, 5);
 
   const gas = data.equipment?.gases?.[0];
   const tankData: any = {};
@@ -242,16 +299,40 @@ const mapGarminJsonDataToLog = (data: any): ParsedLog => {
     if (gas.tankSize) tankData.capacity = Math.round(gas.tankSize);
     if (gas.startPressure) tankData.pressureStart = Math.round(gas.startPressure);
     if (gas.endPressure) tankData.pressureEnd = Math.round(gas.endPressure);
+    tankData.gasType = gas.gasType;
   }
 
   return {
     date: dateStr,
-    title: data.name || 'Garmin Dive',
-    time: { entry: timeStr, exit: '', duration: durationMin },
+    title: activityName,
+    garminActivityId: String(data.connectActivityId || data.activityId || data.id),
+    diveNumber: data.number || data.diveNumber || 0,
+    time: {
+      entry: timeStr,
+      exit: exitTimeStr,
+      duration: durationMin,
+      surfaceInterval: data.profile?.surfaceInterval ? Math.round(data.profile.surfaceInterval / 60) : 0
+    },
     depth: { max: data.profile?.maxDepth || 0, average: data.profile?.averageDepth || 0 },
-    condition: { waterTemp: { bottom: data.environment?.minTemperature }, waterType: data.environment?.waterType === 'SALT' ? 'salt' : 'fresh' },
-    location: { pointId: '', pointName: data.name || 'Garmin Dive', region: '', lat: data.location?.entryLoc?.latitude, lng: data.location?.entryLoc?.longitude },
+    condition: {
+      waterTemp: {
+        bottom: data.environment?.minTemperature,
+        surface: data.environment?.maxTemperature
+      }
+    },
+    location: {
+      pointId: '',
+      pointName: activityName,
+      region: '',
+      lat: data.location?.entryLoc?.latitude,
+      lng: data.location?.entryLoc?.longitude
+    },
     comment: data.notes || '',
-    gear: { tank: tankData, suitType: 'wet' }
+    gear: { tank: tankData, suitType: 'wet' },
+    originalDate: dateStr,
+    originalTime: timeStr,
+    originalDepth: `${data.profile?.maxDepth || 0}m`,
+    originalPoint: activityName,
+    originalActivityId: String(data.id)
   };
 };

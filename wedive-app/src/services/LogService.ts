@@ -38,7 +38,7 @@ export class LogService {
   /**
    * Saves a new dive log following the sub-collection schema and updating the user array.
    */
-  static async addLog(userId: string, logData: Omit<DiveLog, 'id' | 'userId'>): Promise<string> {
+  static async addLog(userId: string, logData: Omit<DiveLog, 'id' | 'userId'>, options?: { skipUserUpdate?: boolean }): Promise<string> {
     const logId = this.generateLogId();
     const now = new Date().toISOString();
 
@@ -56,16 +56,23 @@ export class LogService {
     const logRef = doc(db, 'users', userId, 'logs', logId);
     await setDoc(logRef, sanitizedData);
 
-    // 2. Update user's logs array (legacy/lookup compatibility)
-    const userRef = doc(db, 'users', userId);
-    try {
-      await updateDoc(userRef, {
+    // 2. Update user's logs array (Skip if in bulk mode)
+    if (!options?.skipUserUpdate) {
+      const userRef = doc(db, 'users', userId);
+      updateDoc(userRef, {
         logs: arrayUnion(logId)
+      }).catch(e => {
+        console.warn("Non-critical: User array update failed:", e);
       });
-    } catch (e) {
-      console.error("Failed to update user's log array, but log was saved:", e);
     }
 
     return logId;
+  }
+
+  static async updateUserLogList(userId: string, logIds: string[]): Promise<void> {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, {
+      logs: arrayUnion(...logIds)
+    });
   }
 }

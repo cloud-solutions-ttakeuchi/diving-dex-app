@@ -1,115 +1,91 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { StyleSheet, TextInput, ScrollView, TouchableOpacity, Switch, Dimensions, Modal, FlatList, Image, Alert, ActivityIndicator, Platform } from 'react-native';
-import { Text, View } from '@/components/Themed';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Platform,
+  Dimensions,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import {
-  ChevronLeft, Calendar, MapPin, Fish, Clock, Droplets,
-  Thermometer, Save, X, Users, Settings, Search, Check,
-  Sun, Camera, Info, ChevronDown, ChevronUp
+  Calendar,
+  Clock,
+  MapPin,
+  Thermometer,
+  Save,
+  X,
+  Users,
+  Settings,
+  Search,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  Image as ImageIcon,
+  Wind,
+  Droplets,
+  Waves,
+  Maximize2,
+  Minimize2,
+  Trash2,
+  ChevronLeft,
+  Info
 } from 'lucide-react-native';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { db } from '../../src/firebase';
-import { useAuth } from '../../src/context/AuthContext';
-import { Point, Creature, DiveLog } from '../../src/types';
-import { ImageWithFallback } from '../../src/components/ImageWithFallback';
 import * as ImagePicker from 'expo-image-picker';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../src/firebase';
+import { useAuth } from '../../src/context/AuthContext';
+import { db, storage } from '../../src/firebase';
 import { LogService } from '../../src/services/LogService';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system/legacy';
 import { parseGarminZip, parseGarminCsv } from '../../src/utils/garminParser';
+import { DiveLog, Point } from '../../src/types';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const { width } = Dimensions.get('window');
 
-interface LogFormData {
-  title: string;
-  date: string;
-  diveNumber: string;
-  pointId: string;
-  pointName: string;
-  shopName: string;
-  region: string;
-  zone: string;
-  area: string;
-  buddy: string;
-  guide: string;
-  members: string;
-  entryTime: string;
-  exitTime: string;
-  maxDepth: string;
-  avgDepth: string;
-  weather: string;
-  airTemp: string;
-  waterTempSurface: string;
-  waterTempBottom: string;
-  transparency: string;
-  wave: string;
-  current: string;
-  surge: string;
-  suitType: string;
-  suitThickness: string;
-  weight: string;
-  tankMaterial: string;
-  tankCapacity: string;
-  pressureStart: string;
-  pressureEnd: string;
-  entryType: 'beach' | 'boat';
-  creatureId: string;
-  sightedCreatures: string[];
-  comment: string;
-  isPrivate: boolean;
-  photos: string[];
-}
-
+/**
+ * Add Log Screen
+ * Enhanced for Garmin Import and beautiful UI.
+ */
 export default function AddLogScreen() {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, logs } = useAuth();
+
   const [isLoading, setIsLoading] = useState(false);
-  const [isDataLoaded, setIsDataLoaded] = useState(false);
-
-  // Master Data
+  const [saveStatus, setSaveStatus] = useState('');
   const [masterPoints, setMasterPoints] = useState<Point[]>([]);
-  const [masterCreatures, setMasterCreatures] = useState<Creature[]>([]);
-
-  // Selection Modals
-  const [spotModalVisible, setSpotModalVisible] = useState(false);
-  const [creatureModalVisible, setCreatureModalVisible] = useState(false);
+  const [masterCreatures, setMasterCreatures] = useState<any[]>([]);
   const [spotSearchTerm, setSpotSearchTerm] = useState('');
   const [creatureSearchTerm, setCreatureSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
   const [helpModalVisible, setHelpModalVisible] = useState(false);
 
-  // Accordion State
-  const [openSections, setOpenSections] = useState({
-    basic: true,
-    location: true,
-    data: false,
-    conditions: false,
-    content: true
-  });
-
-  const [formData, setFormData] = useState<LogFormData>({
+  // Form State
+  const [formData, setFormData] = useState({
     title: '',
     date: new Date().toISOString().split('T')[0],
     diveNumber: '',
     pointId: '',
     pointName: '',
-    shopName: '',
     region: '',
-    zone: '',
-    area: '',
+    shopName: '',
     buddy: '',
     guide: '',
     members: '',
     entryTime: '10:00',
     exitTime: '10:45',
-    maxDepth: '18',
-    avgDepth: '12',
+    maxDepth: '',
+    avgDepth: '',
     weather: 'sunny',
-    airTemp: '25',
-    waterTempSurface: '24',
-    waterTempBottom: '22',
-    transparency: '15',
+    airTemp: '',
+    waterTempSurface: '',
+    waterTempBottom: '',
+    transparency: '',
     wave: 'none',
     current: 'none',
     surge: 'none',
@@ -120,122 +96,181 @@ export default function AddLogScreen() {
     tankCapacity: '10',
     pressureStart: '200',
     pressureEnd: '50',
-    entryType: 'boat',
-    creatureId: '',
-    sightedCreatures: [],
     comment: '',
+    photos: [] as string[],
     isPrivate: false,
-    photos: [],
+    creatureId: '',
+    sightedCreatures: [] as string[],
+    entryType: 'boat' as 'boat' | 'beach',
+    importProfile: [] as any[],
+    garminActivityId: '',
   });
 
-  useEffect(() => {
-    const fetchMasterData = async () => {
-      try {
-        const pointsSnap = await getDocs(query(collection(db, 'points'), orderBy('name')));
-        const pointsData = pointsSnap.docs.map(d => ({ id: d.id, ...d.data() } as Point));
-        setMasterPoints(pointsData);
-
-        const creaturesSnap = await getDocs(query(collection(db, 'creatures'), orderBy('name')));
-        const creaturesData = creaturesSnap.docs.map(d => ({ id: d.id, ...d.data() } as Creature));
-        setMasterCreatures(creaturesData);
-
-        // Set Defaults from User Favorites
-        if (user && user.favorites) {
-          const primaryPoint = user.favorites.points?.find(p => p.isPrimary);
-          const primaryShop = user.favorites.shops?.find(s => s.isPrimary);
-          const primaryTank = user.favorites.gear?.tanks?.find(t => t.isPrimary);
-
-          setFormData(prev => ({
-            ...prev,
-            pointId: primaryPoint?.id || prev.pointId,
-            shopName: primaryShop?.name || prev.shopName,
-            tankMaterial: primaryTank?.specs?.material || prev.tankMaterial,
-            tankCapacity: primaryTank?.specs?.capacity?.toString() || prev.tankCapacity,
-          }));
-        }
-
-        setIsDataLoaded(true);
-      } catch (e) {
-        console.error("Error fetching master data:", e);
-      }
-    };
-    fetchMasterData();
-  }, [user]);
+  // UI Control: Sections
+  const [openSections, setOpenSections] = useState({
+    basic: true,
+    location: false,
+    data: false,
+    conditions: false,
+    gear: false,
+    creatures: false,
+    photos: false,
+    comment: false,
+  });
 
   const toggleSection = (section: keyof typeof openSections) => {
     setOpenSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  const updateField = (name: keyof LogFormData, value: any) => {
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    fetchMasterData();
+  }, []);
 
-  const toggleSightedCreature = (creatureId: string) => {
-    setFormData(prev => {
-      const exists = prev.sightedCreatures.includes(creatureId);
-      if (exists) {
-        return { ...prev, sightedCreatures: prev.sightedCreatures.filter(id => id !== creatureId) };
-      } else {
-        return { ...prev, sightedCreatures: [...prev.sightedCreatures, creatureId] };
-      }
-    });
-  };
+  const fetchMasterData = async () => {
+    try {
+      const pointsSnap = await getDocs(query(collection(db, 'points'), where('status', '==', 'approved')));
+      setMasterPoints(pointsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point)));
 
-  const renderLoadingOverlay = () => {
-    if (!isLoading) return null;
-    return (
-      <View style={styles.loadingOverlay}>
-        <ActivityIndicator size="large" color="#0ea5e9" />
-        <Text style={styles.loadingText}>
-          {formData.date === '' ? '解析中...' : 'ログを保存中...'}
-        </Text>
-      </View>
-    );
+      const creaturesSnap = await getDocs(query(collection(db, 'creatures'), where('status', '==', 'approved')));
+      setMasterCreatures(creaturesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    } catch (e) {
+      console.error("Master data fetch error:", e);
+    }
   };
 
   const handleImportGarmin = async () => {
+    if (isLoading) return;
+    setIsLoading(true);
+    setSaveStatus('ファイルを選択してください...');
+
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/zip', 'text/csv', 'application/vnd.ms-excel', 'application/octet-stream'],
         copyToCacheDirectory: true,
       });
 
-      if (result.canceled) return;
+      if (result.canceled) {
+        setIsLoading(false);
+        setSaveStatus('');
+        return;
+      }
 
       const fileUri = result.assets[0].uri;
-      const fileName = result.assets[0].name.toLowerCase();
-      setIsLoading(true);
+      const fileName = result.assets[0].name;
+
+      setSaveStatus('ファイルを読み込み中...');
 
       let parsedResult;
-      if (fileName.endsWith('.csv')) {
-        const response = await fetch(fileUri);
-        const text = await response.text();
+      if (fileName.toLowerCase().endsWith('.csv')) {
+        const text = await FileSystem.readAsStringAsync(fileUri);
         parsedResult = await parseGarminCsv(text);
       } else {
-        // ZIP or octet-stream (often zip inside)
-        const response = await fetch(fileUri);
-        const arrayBuffer = await response.arrayBuffer();
-        parsedResult = await parseGarminZip(arrayBuffer);
+        // ZIPファイル：メモリ節約のためbase64で読み込み、そのままパーサーに渡す
+        setSaveStatus('データを解析中 (これには時間がかかる場合があります)...');
+        const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: 'base64' });
+
+        // 解析処理 (内部で Buffer/ArrayBuffer 変換を効率的に行う)
+        parsedResult = await parseGarminZip(base64 as any, {
+          onProgress: (msg) => setSaveStatus(msg)
+        });
       }
 
       const { logs } = parsedResult;
 
-      if (logs.length === 0) {
+      if (!logs || logs.length === 0) {
         Alert.alert('インポート失敗', '有効なダイブログが見つかりませんでした。ファイル形式を確認してください。');
+        setIsLoading(false);
+        setSaveStatus('');
         return;
       }
+
+      setIsLoading(false);
+      setSaveStatus('');
 
       if (logs.length === 1) {
         applyGarminLog(logs[0]);
       } else {
-        Alert.alert('複数ログ検出', `${logs.length}件のログが見つかりました。最新のものを読み込みます。`);
-        applyGarminLog(logs[0]);
+        Alert.alert(
+          '複数ログ検出',
+          `${logs.length}件のログが見つかりました。どうしますか？`,
+          [
+            { text: '最新の1件のみ反映', onPress: () => applyGarminLog(logs[0]) },
+            { text: `${logs.length}件すべて保存`, onPress: () => handleBulkImport(logs) },
+            { text: 'キャンセル', style: 'cancel' }
+          ]
+        );
       }
-    } catch (e) {
-      console.error('Garmin import failed', e);
-      Alert.alert('エラー', 'インポート中にエラーが発生しました。Garmin Connectからの正しい形式であることを確認してください。');
+    } catch (e: any) {
+      setIsLoading(false);
+      setSaveStatus('');
+      console.error('Garmin import failed:', e);
+      Alert.alert('エラー', `原因: ${e.message || '読み込み失敗'}\nファイルが大きすぎるか、形式が正しくない可能性があります。`);
+    }
+  };
+
+  const handleBulkImport = async (parsedLogs: any[]) => {
+    if (!user) return;
+    setIsLoading(true);
+    let successCount = 0;
+    const newLogIds: string[] = [];
+
+    try {
+      const existingActivityIds = new Set(logs.map(l => l.garminActivityId).filter(Boolean));
+
+      for (let i = 0; i < parsedLogs.length; i++) {
+        setSaveStatus(`一括保存中 (${i + 1}/${parsedLogs.length})...`);
+        const log = parsedLogs[i];
+
+        // 重複チェック
+        if (log.garminActivityId && existingActivityIds.has(log.garminActivityId)) {
+          console.log(`Skipping duplicate Activity ID: ${log.garminActivityId}`);
+          continue;
+        }
+
+        const logData = {
+          title: log.title || 'Garmin Dive',
+          date: log.date,
+          diveNumber: Number(log.diveNumber) || 0,
+          time: log.time,
+          location: log.location || { pointId: '', pointName: 'Garmin Dive', region: '' },
+          depth: log.depth || { max: 0, average: 0 },
+          condition: log.condition || {},
+          gear: log.gear || {},
+          profile: log.profile || [],
+          comment: log.comment || '',
+          garminActivityId: log.garminActivityId || '',
+          sightedCreatures: [],
+          photos: [],
+          likeCount: 0,
+          likedBy: [],
+          isPrivate: false,
+          spotId: '',
+          entryType: log.entryType || 'boat',
+        };
+
+        const logId = await LogService.addLog(user.id, logData as any, { skipUserUpdate: true });
+        newLogIds.push(logId);
+        successCount++;
+
+        if (i % 20 === 0) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+      }
+
+      // 最後の一回だけ、全ログIDをユーザーのリストに一括登録する（これで確実に反映される）
+      setSaveStatus('最終同期中...');
+      await LogService.updateUserLogList(user.id, newLogIds);
+
+      setSaveStatus('インポート完了！');
+      Alert.alert('成功', `${successCount}件のログを一括保存しました。`, [
+        { text: 'OK', onPress: () => router.push('/(tabs)/mypage') }
+      ]);
+    } catch (e: any) {
+      console.error("Bulk Import Error:", e);
+      Alert.alert('中断', `途中でエラーが発生しました (${successCount}件完了): ${e.message}`);
     } finally {
       setIsLoading(false);
+      setSaveStatus('');
     }
   };
 
@@ -259,9 +294,11 @@ export default function AddLogScreen() {
       pressureStart: log.gear?.tank?.pressureStart?.toString() || prev.pressureStart,
       pressureEnd: log.gear?.tank?.pressureEnd?.toString() || prev.pressureEnd,
       entryType: log.entryType || prev.entryType,
+      importProfile: log.profile || [],
+      garminActivityId: log.garminActivityId || '',
     }));
-    // インポート時は自動でセクションを開く
-    setOpenSections(prev => ({ ...prev, data: true, conditions: true }));
+    // インポート時は自動で主要セクションを開く
+    setOpenSections(prev => ({ ...prev, basic: true, data: true, conditions: true }));
     Alert.alert('成功', 'Garminデータを読み込みました。内容を確認して保存してください。');
   };
 
@@ -277,10 +314,13 @@ export default function AddLogScreen() {
     }
 
     setIsLoading(true);
-    console.log("Saving log starting...", { title: formData.title, date: formData.date });
+    setSaveStatus('保存の準備をしています...');
+
+    // 100ms待機してUI（くるくる）を確実に表示させる
+    await new Promise(resolve => setTimeout(resolve, 100));
+
     try {
       const selectedPoint = masterPoints.find(p => p.id === formData.pointId);
-      console.log("Selected Point:", selectedPoint?.name || "None (Manual Input)");
 
       const timeRegex = /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/;
       const entry = timeRegex.test(formData.entryTime) ? formData.entryTime.split(':').map(Number) : [0, 0];
@@ -291,7 +331,6 @@ export default function AddLogScreen() {
         duration = (exit[0] * 60 + exit[1]) - (entry[0] * 60 + entry[1]);
         if (duration < 0) duration += 1440; // Over midnight
       }
-      console.log("Calculated duration:", duration);
 
       const logData: Omit<DiveLog, 'id'> = {
         userId: user.id,
@@ -314,6 +353,7 @@ export default function AddLogScreen() {
           exit: formData.exitTime,
           duration: duration,
         },
+        profile: formData.importProfile,
         depth: {
           max: Number(formData.maxDepth) || 0,
           average: Number(formData.avgDepth) || 0,
@@ -350,20 +390,32 @@ export default function AddLogScreen() {
         likeCount: 0,
         likedBy: [],
         spotId: formData.pointId || '',
+        garminActivityId: formData.garminActivityId,
       };
 
-      console.log("Step 1: Attempting to save document via LogService...");
-      const logId = await LogService.addLog(user.id, logData);
-      console.log("Log saved successfully with ID:", logId);
+      setSaveStatus('サーバーに送信中...');
+
+      // 30秒でタイムアウトさせる
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('通信タイムアウト：電波の良い場所で再度お試しください')), 30000)
+      );
+
+      await Promise.race([
+        LogService.addLog(user.id, logData as any),
+        timeoutPromise
+      ]);
+
+      setSaveStatus('保存に成功しました！');
 
       Alert.alert('完了', 'ログを保存しました', [
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (e: any) {
-      console.error("Critical Save Error:", e);
+      console.error("Save Error:", e);
       Alert.alert('保存失敗', `エラーが発生しました: ${e.message || '不明'}`);
     } finally {
       setIsLoading(false);
+      setSaveStatus('');
     }
   };
 
@@ -381,7 +433,8 @@ export default function AddLogScreen() {
       const s = spotSearchTerm.toLowerCase();
       results = results.filter(p =>
         p.name.toLowerCase().includes(s) ||
-        p.area?.toLowerCase().includes(s)
+        p.area.toLowerCase().includes(s) ||
+        p.zone.toLowerCase().includes(s)
       );
     }
     return results.slice(0, 50);
@@ -423,14 +476,13 @@ export default function AddLogScreen() {
       }));
     } catch (e) {
       console.error("Upload failed", e);
-      Alert.alert('アップロード失敗', '画像のアップロードに失敗しました');
     } finally {
       setIsLoading(false);
     }
   };
 
   const filteredCreatures = useMemo(() => {
-    if (!creatureSearchTerm) return masterCreatures.slice(0, 50);
+    if (!creatureSearchTerm) return [];
     const s = creatureSearchTerm.toLowerCase();
     return masterCreatures.filter(c =>
       c.name.includes(s) ||
@@ -461,6 +513,7 @@ export default function AddLogScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <ChevronLeft size={24} color="#0f172a" />
@@ -495,47 +548,50 @@ export default function AddLogScreen() {
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>タイトル</Text>
                 <TextInput
-                  style={styles.textInput}
-                  placeholder="例: 大瀬崎でのんびりフォトダイブ"
+                  style={styles.input}
                   value={formData.title}
-                  onChangeText={v => updateField('title', v)}
+                  onChangeText={(val) => setFormData(p => ({ ...p, title: val }))}
+                  placeholder="例: 大瀬崎でのんびりフォトダイブ"
+                  placeholderTextColor="#94a3b8"
                 />
               </View>
               <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
+                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>日付</Text>
                   <TextInput
-                    style={styles.textInput}
+                    style={styles.input}
                     value={formData.date}
-                    onChangeText={v => updateField('date', v)}
+                    onChangeText={(val) => setFormData(p => ({ ...p, date: val }))}
                     placeholder="YYYY-MM-DD"
+                    placeholderTextColor="#94a3b8"
                   />
                 </View>
-                <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={styles.label}>Dive No.</Text>
                   <TextInput
-                    style={styles.textInput}
+                    style={styles.input}
                     value={formData.diveNumber}
-                    onChangeText={v => updateField('diveNumber', v)}
-                    keyboardType="numeric"
+                    onChangeText={(val) => setFormData(p => ({ ...p, diveNumber: val }))}
                     placeholder="100"
+                    keyboardType="numeric"
+                    placeholderTextColor="#94a3b8"
                   />
                 </View>
               </View>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>エントリー</Text>
-                <View style={styles.tabContainer}>
+                <View style={styles.segmentedControl}>
                   <TouchableOpacity
-                    style={[styles.tab, formData.entryType === 'boat' && styles.tabActive]}
-                    onPress={() => updateField('entryType', 'boat')}
+                    style={[styles.segment, formData.entryType === 'boat' && styles.segmentActive]}
+                    onPress={() => setFormData(p => ({ ...p, entryType: 'boat' }))}
                   >
-                    <Text style={[styles.tabText, formData.entryType === 'boat' && styles.tabTextActive]}>ボート</Text>
+                    <Text style={[styles.segmentText, formData.entryType === 'boat' && styles.segmentTextActive]}>ボート</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.tab, formData.entryType === 'beach' && styles.tabActive]}
-                    onPress={() => updateField('entryType', 'beach')}
+                    style={[styles.segment, formData.entryType === 'beach' && styles.segmentActive]}
+                    onPress={() => setFormData(p => ({ ...p, entryType: 'beach' }))}
                   >
-                    <Text style={[styles.tabText, formData.entryType === 'beach' && styles.tabTextActive]}>ビーチ</Text>
+                    <Text style={[styles.segmentText, formData.entryType === 'beach' && styles.segmentTextActive]}>ビーチ</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -545,47 +601,86 @@ export default function AddLogScreen() {
 
         {/* Location & Team */}
         <View style={styles.sectionCard}>
-          <SectionHeader title="場所・チーム" icon={MapPin} section="location" color="#8b5cf6" />
+          <SectionHeader title="場所・チーム" icon={MapPin} section="location" color="#ef4444" />
           {openSections.location && (
             <View style={styles.sectionBody}>
-              <TouchableOpacity
-                style={styles.selectorBtn}
-                onPress={() => setSpotModalVisible(true)}
-              >
-                <MapPin size={18} color={formData.pointId ? "#3b82f6" : "#94a3b8"} />
-                <Text style={[styles.selectorBtnText, !formData.pointId && styles.selectorBtnTextEmpty]}>
-                  {formData.pointId ? masterPoints.find(p => p.id === formData.pointId)?.name : "ポイントを選択"}
-                </Text>
-              </TouchableOpacity>
-
-              {!formData.pointId && (
-                <View style={styles.inputGroup}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>ポイントを選択</Text>
+                <View style={styles.searchWrapper}>
+                  <Search size={16} color="#94a3b8" style={styles.searchIcon} />
                   <TextInput
-                    style={[styles.textInput, { fontSize: 14 }]}
-                    placeholder="またはスポット名を手入力"
-                    value={formData.pointName}
-                    onChangeText={v => updateField('pointName', v)}
+                    style={styles.searchInput}
+                    placeholder="ポイント名で検索..."
+                    value={spotSearchTerm}
+                    onChangeText={setSpotSearchTerm}
                   />
                 </View>
-              )}
+                {spotSearchTerm.length > 0 && (
+                  <View style={styles.searchResults}>
+                    {filteredPoints.map(p => (
+                      <TouchableOpacity
+                        key={p.id}
+                        style={styles.searchResultItem}
+                        onPress={() => {
+                          setFormData(prev => ({ ...prev, pointId: p.id, pointName: p.name, region: p.region }));
+                          setSpotSearchTerm('');
+                        }}
+                      >
+                        <Text style={styles.searchResultName}>{p.name}</Text>
+                        <Text style={styles.searchResultSub}>{p.region} - {p.area}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                {formData.pointName ? (
+                  <View style={styles.selectedBadge}>
+                    <Text style={styles.selectedBadgeText}>{formData.pointName} ({formData.region})</Text>
+                    <TouchableOpacity onPress={() => setFormData(p => ({ ...p, pointId: '', pointName: '', region: '' }))}>
+                      <X size={14} color="#3b82f6" />
+                    </TouchableOpacity>
+                  </View>
+                ) : null}
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>またはスポット名を手入力</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.pointName}
+                  onChangeText={(val) => setFormData(p => ({ ...p, pointName: val }))}
+                  placeholder="ショップ名や独自の場所"
+                  placeholderTextColor="#94a3b8"
+                />
+              </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>ショップ名</Text>
                 <TextInput
-                  style={styles.textInput}
+                  style={styles.input}
                   value={formData.shopName}
-                  onChangeText={v => updateField('shopName', v)}
+                  onChangeText={(val) => setFormData(p => ({ ...p, shopName: val }))}
+                  placeholderTextColor="#94a3b8"
                 />
               </View>
 
               <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
+                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>ガイド</Text>
-                  <TextInput style={styles.textInput} value={formData.guide} onChangeText={v => updateField('guide', v)} />
+                  <TextInput
+                    style={styles.input}
+                    value={formData.guide}
+                    onChangeText={(val) => setFormData(p => ({ ...p, guide: val }))}
+                    placeholderTextColor="#94a3b8"
+                  />
                 </View>
-                <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={styles.label}>バディ</Text>
-                  <TextInput style={styles.textInput} value={formData.buddy} onChangeText={v => updateField('buddy', v)} />
+                  <TextInput
+                    style={styles.input}
+                    value={formData.buddy}
+                    onChangeText={(val) => setFormData(p => ({ ...p, buddy: val }))}
+                    placeholderTextColor="#94a3b8"
+                  />
                 </View>
               </View>
             </View>
@@ -594,36 +689,52 @@ export default function AddLogScreen() {
 
         {/* Dive Data */}
         <View style={styles.sectionCard}>
-          <SectionHeader title="ダイブデータ" icon={Clock} section="data" color="#10b981" />
+          <SectionHeader title="潜水データ" icon={Clock} section="data" color="#f59e0b" />
           {openSections.data && (
             <View style={styles.sectionBody}>
               <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
+                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>エントリー時間</Text>
-                  <TextInput style={styles.textInput} value={formData.entryTime} onChangeText={v => updateField('entryTime', v)} />
+                  <TextInput
+                    style={styles.input}
+                    value={formData.entryTime}
+                    onChangeText={(val) => setFormData(p => ({ ...p, entryTime: val }))}
+                    placeholder="10:00"
+                    placeholderTextColor="#94a3b8"
+                  />
                 </View>
-                <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={styles.label}>エキジット時間</Text>
-                  <TextInput style={styles.textInput} value={formData.exitTime} onChangeText={v => updateField('exitTime', v)} />
+                  <TextInput
+                    style={styles.input}
+                    value={formData.exitTime}
+                    onChangeText={(val) => setFormData(p => ({ ...p, exitTime: val }))}
+                    placeholder="10:45"
+                    placeholderTextColor="#94a3b8"
+                  />
                 </View>
               </View>
               <View style={styles.row}>
-                <View style={[styles.inputGroup, { flex: 1 }]}>
+                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
                   <Text style={styles.label}>最大水深 (m)</Text>
                   <TextInput
-                    style={styles.textInput}
-                    keyboardType="numeric"
+                    style={styles.input}
                     value={formData.maxDepth}
-                    onChangeText={v => updateField('maxDepth', v)}
+                    onChangeText={(val) => setFormData(p => ({ ...p, maxDepth: val }))}
+                    placeholder="20.5"
+                    keyboardType="numeric"
+                    placeholderTextColor="#94a3b8"
                   />
                 </View>
-                <View style={[styles.inputGroup, { flex: 1, marginLeft: 12 }]}>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
                   <Text style={styles.label}>平均水深 (m)</Text>
                   <TextInput
-                    style={styles.textInput}
-                    keyboardType="numeric"
+                    style={styles.input}
                     value={formData.avgDepth}
-                    onChangeText={v => updateField('avgDepth', v)}
+                    onChangeText={(val) => setFormData(p => ({ ...p, avgDepth: val }))}
+                    placeholder="12.0"
+                    keyboardType="numeric"
+                    placeholderTextColor="#94a3b8"
                   />
                 </View>
               </View>
@@ -631,270 +742,118 @@ export default function AddLogScreen() {
           )}
         </View>
 
-        {/* Content & Photos */}
+        {/* Conditions */}
         <View style={styles.sectionCard}>
-          <SectionHeader title="生物・コメント・写真" icon={Fish} section="content" color="#ef4444" />
-          {openSections.content && (
+          <SectionHeader title="コンディション" icon={Thermometer} section="conditions" color="#06b6d4" />
+          {openSections.conditions && (
             <View style={styles.sectionBody}>
-              <View style={styles.creatureSelectGroup}>
-                <Text style={styles.label}>見た生物（複数選択可）</Text>
-                <TouchableOpacity
-                  style={styles.selectorBtn}
-                  onPress={() => setCreatureModalVisible(true)}
-                >
-                  <Search size={18} color="#94a3b8" />
-                  <Text style={styles.selectorBtnTextEmpty}>生物を検索して追加...</Text>
-                </TouchableOpacity>
-
-                {formData.sightedCreatures.length > 0 && (
-                  <View style={styles.sightedList}>
-                    {formData.sightedCreatures.map(id => {
-                      const creature = masterCreatures.find(c => c.id === id);
-                      if (!creature) return null;
-                      return (
-                        <View key={id} style={styles.sightedTag}>
-                          <Text style={styles.sightedTagName}>{creature.name}</Text>
-                          <TouchableOpacity onPress={() => toggleSightedCreature(id)}>
-                            <X size={14} color="#64748b" />
-                          </TouchableOpacity>
-                        </View>
-                      );
-                    })}
-                  </View>
-                )}
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>主な生物（メイン）</Text>
-                <TouchableOpacity
-                  style={styles.selectorBtn}
-                  onPress={() => setCreatureModalVisible(true)}
-                >
-                  <Fish size={18} color={formData.creatureId ? "#ef4444" : "#94a3b8"} />
-                  <Text style={[styles.selectorBtnText, !formData.creatureId && styles.selectorBtnTextEmpty]}>
-                    {formData.creatureId ? masterCreatures.find(c => c.id === formData.creatureId)?.name : "未選択"}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>コメント・メモ</Text>
-                <TextInput
-                  style={styles.textArea}
-                  placeholder="ダイビングの感想などを自由に記入..."
-                  multiline
-                  numberOfLines={4}
-                  value={formData.comment}
-                  onChangeText={v => updateField('comment', v)}
-                />
-              </View>
-
-              <View style={styles.photoSection}>
-                <Text style={styles.label}>写真</Text>
-                <View style={styles.photoGrid}>
-                  {formData.photos.map((uri, index) => (
-                    <View key={index} style={styles.photoWrapper}>
-                      <Image source={{ uri }} style={styles.photoItem} />
-                      <TouchableOpacity
-                        style={styles.removePhotoBtn}
-                        onPress={() => removePhoto(index)}
-                      >
-                        <X size={12} color="#fff" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                  <TouchableOpacity style={styles.addPhotoBtn} onPress={handlePickImage} disabled={isLoading}>
-                    <Camera size={24} color="#94a3b8" />
-                    <Text style={styles.addPhotoText}>追加</Text>
-                  </TouchableOpacity>
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
+                  <Text style={styles.label}>水温 (水底 ℃)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData.waterTempBottom}
+                    onChangeText={(val) => setFormData(p => ({ ...p, waterTempBottom: val }))}
+                    placeholder="22"
+                    keyboardType="numeric"
+                    placeholderTextColor="#94a3b8"
+                  />
+                </View>
+                <View style={[styles.inputGroup, { flex: 1 }]}>
+                  <Text style={styles.label}>透明度 (m)</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={formData.transparency}
+                    onChangeText={(val) => setFormData(p => ({ ...p, transparency: val }))}
+                    placeholder="15"
+                    keyboardType="numeric"
+                    placeholderTextColor="#94a3b8"
+                  />
                 </View>
               </View>
-
-              <View style={styles.switchRow}>
-                <View>
-                  <Text style={styles.switchLabel}>非公開ログにする</Text>
-                  <Text style={styles.switchDesc}>自分だけに表示されます</Text>
-                </View>
-                <Switch
-                  value={formData.isPrivate}
-                  onValueChange={v => updateField('isPrivate', v)}
-                  trackColor={{ false: '#e2e8f0', true: '#3b82f6' }}
-                />
-              </View>
+              {/* More condition fields can be added here */}
             </View>
           )}
         </View>
 
+        {/* Comment Section */}
+        <View style={styles.sectionCard}>
+          <SectionHeader title="コメント・メモ" icon={Save} section="comment" color="#8b5cf6" />
+          {openSections.comment && (
+            <View style={styles.sectionBody}>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={formData.comment}
+                onChangeText={(val) => setFormData(p => ({ ...p, comment: val }))}
+                multiline
+                numberOfLines={4}
+                placeholder="今日のダイビングの思い出や、見つけた生き物へのメモ..."
+                placeholderTextColor="#94a3b8"
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Action Button at bottom */}
         <TouchableOpacity style={styles.submitBtn} onPress={handleSave} disabled={isLoading}>
           {isLoading ? <ActivityIndicator color="#fff" /> : <Text style={styles.submitBtnText}>ログを保存する</Text>}
         </TouchableOpacity>
 
+        <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* Spot Selector Modal */}
-      <Modal visible={spotModalVisible} animationType="slide">
-        <View style={styles.modalFull}>
-          <View style={styles.modalHeaderFull}>
-            <TouchableOpacity onPress={() => setSpotModalVisible(false)}>
-              <X size={24} color="#0f172a" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitleFull}>ポイント選択</Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <View style={styles.modalFilterRow}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterChipScroll}>
-              <TouchableOpacity
-                style={[styles.filterChip, !selectedRegion && styles.filterChipActive]}
-                onPress={() => setSelectedRegion('')}
-              >
-                <Text style={[styles.filterChipText, !selectedRegion && styles.filterChipTextActive]}>全て</Text>
-              </TouchableOpacity>
-              {regions.map(r => (
-                <TouchableOpacity
-                  key={r}
-                  style={[styles.filterChip, selectedRegion === r && styles.filterChipActive]}
-                  onPress={() => setSelectedRegion(r)}
-                >
-                  <Text style={[styles.filterChipText, selectedRegion === r && styles.filterChipTextActive]}>{r}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-
-          <View style={styles.modalSearchBox}>
-            <Search size={20} color="#94a3b8" />
-            <TextInput
-              style={styles.modalSearchInput}
-              placeholder="ポイント名やエリアで検索..."
-              value={spotSearchTerm}
-              onChangeText={setSpotSearchTerm}
-            />
-          </View>
-
-          <FlatList
-            data={filteredPoints}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.modalListItem}
-                onPress={() => {
-                  updateField('pointId', item.id);
-                  setSpotModalVisible(false);
-                }}
-              >
-                <View style={styles.modalListIcon}>
-                  <MapPin size={18} color="#64748b" />
-                </View>
-                <View>
-                  <Text style={styles.modalItemName}>{item.name}</Text>
-                  <Text style={styles.modalItemSub}>{item.region} • {item.area}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={{ padding: 16 }}
-          />
+      {/* Loading Overlay */}
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#3b82f6" />
+          <Text style={styles.loadingText}>
+            {saveStatus || '処理中...'}
+          </Text>
         </View>
-      </Modal>
-
-      {/* Creature Selector Modal */}
-      <Modal visible={creatureModalVisible} animationType="slide">
-        <View style={styles.modalFull}>
-          <View style={styles.modalHeaderFull}>
-            <TouchableOpacity onPress={() => setCreatureModalVisible(false)}>
-              <X size={24} color="#0f172a" />
-            </TouchableOpacity>
-            <Text style={styles.modalTitleFull}>生物選択</Text>
-            <View style={{ width: 24 }} />
-          </View>
-
-          <View style={styles.modalSearchBox}>
-            <Search size={20} color="#94a3b8" />
-            <TextInput
-              style={styles.modalSearchInput}
-              placeholder="生物名や種別で検索..."
-              value={creatureSearchTerm}
-              onChangeText={setCreatureSearchTerm}
-            />
-          </View>
-
-          <FlatList
-            data={filteredCreatures}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.modalListItem}
-                onPress={() => {
-                  toggleSightedCreature(item.id);
-                  if (!formData.creatureId) updateField('creatureId', item.id);
-                  setCreatureModalVisible(false);
-                }}
-              >
-                <View style={[styles.modalListIcon, { padding: 0, overflow: 'hidden' }]}>
-                  <ImageWithFallback
-                    source={item.imageUrl ? { uri: item.imageUrl } : null}
-                    fallbackSource={require('../../assets/images/no-image-creature.png')}
-                    style={{ width: '100%', height: '100%' }}
-                  />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.modalItemName}>{item.name}</Text>
-                  <Text style={styles.modalItemSub}>{item.category}</Text>
-                </View>
-                {formData.sightedCreatures.includes(item.id) && <Check size={20} color="#10b981" />}
-              </TouchableOpacity>
-            )}
-            contentContainerStyle={{ padding: 16 }}
-          />
-        </View>
-      </Modal>
+      )}
 
       {/* Garmin Help Modal */}
-      <Modal visible={helpModalVisible} animationType="fade" transparent>
+      {helpModalVisible && (
         <View style={styles.modalOverlay}>
-          <View style={styles.helpModalContent}>
-            <View style={styles.helpModalHeader}>
-              <Text style={styles.helpModalTitle}>Garminインポートについて</Text>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Garminインポートについて</Text>
               <TouchableOpacity onPress={() => setHelpModalVisible(false)}>
-                <X size={20} color="#64748b" />
+                <X size={24} color="#0f172a" />
               </TouchableOpacity>
             </View>
-            <ScrollView style={styles.helpModalBody}>
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.helpText}>
+                Garmin Connectから以下の形式でインポートできます：
+              </Text>
+
               <View style={styles.helpSection}>
-                <Text style={styles.helpSectionTitle}>1. ZIP形式（詳細インポート）</Text>
-                <Text style={styles.helpText}>
-                  Garmin Connectの「個人データの書き出し」から取得できるZIPファイルです。
+                <Text style={styles.helpSubTitle}>1. ZIP形式（全データ一括書き出し）</Text>
+                <Text style={styles.helpDesc}>
+                  Garminの「個人データのダウンロード」から取得できるZIPファイルです。
+                  潜水時間、最大/平均水深、水温、さらには潜水プロフィールデータが含まれます。
                 </Text>
-                <View style={styles.benefitBox}>
-                  <Text style={styles.benefitText}>• 潜水プロフィール（水深グラフ）</Text>
-                  <Text style={styles.benefitText}>• 水温の変化 / 心拍数</Text>
-                  <Text style={styles.benefitText}>• タンク情報 (Descent使用時)</Text>
-                </View>
-                <Text style={styles.helpSmall}>※DI_CONNECTフォルダを含むZIPを選択してください。</Text>
               </View>
 
               <View style={styles.helpSection}>
-                <Text style={styles.helpSectionTitle}>2. CSV形式（簡易インポート）</Text>
-                <Text style={styles.helpText}>
-                  アクティビティ一覧からダウンロードできるCSVファイルです。
+                <Text style={styles.helpSubTitle}>2. CSV形式（個別・リスト書き出し）</Text>
+                <Text style={styles.helpDesc}>
+                  Garmin Connectのアクティビティリストから出力できるCSVファイルです。
+                  タイトル、日付、時間、水深の基本情報を手軽に読み込めます。
                 </Text>
-                <View style={styles.benefitBox}>
-                  <Text style={styles.benefitText}>• 日付 / 潜水時間 / 最大水深</Text>
-                  <Text style={styles.benefitText}>• ポイント名（タイトル）</Text>
-                  <Text style={styles.benefitText}>• 最低水温</Text>
-                </View>
-                <Text style={styles.helpSmall}>※グラフデータは含まれません。</Text>
               </View>
+
+              <Text style={styles.helpNote}>
+                ※ZIPファイル内に複数のダイブログが見つかった場合は、最新のログを対象として読み込みます。
+              </Text>
             </ScrollView>
-            <TouchableOpacity style={styles.helpCloseBtn} onPress={() => setHelpModalVisible(false)}>
-              <Text style={styles.helpCloseBtnText}>閉じる</Text>
+            <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setHelpModalVisible(false)}>
+              <Text style={styles.modalCloseBtnText}>閉じる</Text>
             </TouchableOpacity>
           </View>
         </View>
-      </Modal>
-
-      {renderLoadingOverlay()}
-    </View >
+      )}
+    </View>
   );
 }
 
@@ -904,467 +863,322 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
   },
   header: {
+    height: 100,
+    backgroundColor: '#fff',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 50 : 20,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 40,
     borderBottomWidth: 1,
     borderBottomColor: '#f1f5f9',
   },
   backBtn: {
     padding: 8,
+    marginLeft: -8,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: '700',
     color: '#0f172a',
   },
   saveBtn: {
-    padding: 8,
+    backgroundColor: '#3b82f6',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  saveBtnDisabled: {
+    backgroundColor: '#94a3b8',
+  },
+  saveBtnText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
   },
   content: {
     flex: 1,
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 40,
   },
   sectionCard: {
     backgroundColor: '#fff',
-    borderRadius: 20,
+    borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
     borderWidth: 1,
+    borderBottomColor: '#f1f5f9',
     borderColor: '#f1f5f9',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
   },
   sectionHeader: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    backgroundColor: 'transparent',
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  importBtn: {
-    backgroundColor: '#3b82f6',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-  },
-  importBtnText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  importActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginRight: 12,
-  },
-  helpIconBtn: {
-    padding: 4,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  helpModalContent: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    width: '100%',
-    maxHeight: '80%',
-    padding: 24,
-  },
-  helpModalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  helpModalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#0f172a',
-  },
-  helpModalBody: {
-    marginBottom: 20,
-  },
-  helpSection: {
-    marginBottom: 24,
-  },
-  helpSectionTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#3b82f6',
-    marginBottom: 8,
-  },
-  helpText: {
-    fontSize: 14,
-    color: '#475569',
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  benefitBox: {
-    backgroundColor: '#f8fafc',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  benefitText: {
-    fontSize: 13,
-    color: '#334155',
-    marginBottom: 4,
-  },
-  helpSmall: {
-    fontSize: 11,
-    color: '#94a3b8',
-  },
-  helpCloseBtn: {
-    backgroundColor: '#f1f5f9',
-    height: 48,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  helpCloseBtnText: {
-    color: '#475569',
-    fontSize: 16,
-    fontWeight: '600',
+    padding: 16,
   },
   sectionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: 'transparent',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
   },
   sectionTitleText: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#334155',
+    fontWeight: '600',
+    color: '#1e293b',
+    marginLeft: 10,
   },
   sectionBody: {
     padding: 16,
     paddingTop: 0,
-    backgroundColor: 'transparent',
+    paddingBottom: 20,
   },
   inputGroup: {
     marginBottom: 16,
-    backgroundColor: 'transparent',
   },
   label: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#94a3b8',
-    marginBottom: 8,
-    marginLeft: 4,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#64748b',
+    marginBottom: 6,
+    marginLeft: 2,
   },
-  textInput: {
+  input: {
     backgroundColor: '#f8fafc',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#1e293b',
     borderWidth: 1,
-    borderColor: '#f1f5f9',
-  },
-  textArea: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 15,
-    color: '#1e293b',
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
-    minHeight: 100,
+    color: '#0f172a',
+  },
+  textArea: {
+    height: 120,
     textAlignVertical: 'top',
   },
   row: {
     flexDirection: 'row',
-    backgroundColor: 'transparent',
   },
-  tabContainer: {
+  segmentedControl: {
     flexDirection: 'row',
     backgroundColor: '#f1f5f9',
     borderRadius: 10,
     padding: 4,
   },
-  tab: {
+  segment: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 10,
     alignItems: 'center',
     borderRadius: 8,
   },
-  tabActive: {
+  segmentActive: {
     backgroundColor: '#fff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 2,
   },
-  tabText: {
+  segmentText: {
     fontSize: 14,
     fontWeight: '600',
     color: '#64748b',
   },
-  tabTextActive: {
-    color: '#0f172a',
+  segmentTextActive: {
+    color: '#3b82f6',
   },
-  selectorBtn: {
+  importActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#f8fafc',
-    padding: 16,
-    borderRadius: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#f1f5f9',
+    paddingRight: 10,
   },
-  selectorBtnText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1e293b',
-  },
-  selectorBtnTextEmpty: {
-    color: '#94a3b8',
-    fontWeight: '500',
-  },
-  creatureSelectGroup: {
-    marginBottom: 16,
-    backgroundColor: 'transparent',
-  },
-  sightedList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 4,
-    marginBottom: 12,
-    backgroundColor: 'transparent',
-  },
-  sightedTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#f1f5f9',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  sightedTagName: {
-    fontSize: 13,
-    color: '#334155',
-    fontWeight: '600',
-  },
-  photoSection: {
-    marginTop: 8,
-    backgroundColor: 'transparent',
-  },
-  photoGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginTop: 8,
-    backgroundColor: 'transparent',
-  },
-  photoWrapper: {
-    width: (width - 64 - 30) / 4,
-    height: (width - 64 - 30) / 4,
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  photoItem: {
-    width: '100%',
-    height: '100%',
-  },
-  removePhotoBtn: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 10,
-    width: 20,
-    height: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addPhotoBtn: {
-    width: (width - 64 - 30) / 4,
-    height: (width - 64 - 30) / 4,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#cbd5e1',
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  addPhotoText: {
-    fontSize: 10,
-    color: '#94a3b8',
-    marginTop: 4,
-    fontWeight: 'bold',
-  },
-  switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    marginTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f1f5f9',
-    backgroundColor: 'transparent',
-  },
-  switchLabel: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1e293b',
-  },
-  switchDesc: {
-    fontSize: 12,
-    color: '#94a3b8',
-  },
-  submitBtn: {
+  importBtn: {
     backgroundColor: '#3b82f6',
     flexDirection: 'row',
-    height: 60,
-    borderRadius: 20,
     alignItems: 'center',
-    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  importBtnText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  helpIconBtn: {
+    padding: 6,
+  },
+  searchWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 15,
+    color: '#0f172a',
+  },
+  selectedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
     marginTop: 8,
-    shadowColor: '#3b82f6',
+    borderWidth: 1,
+    borderColor: '#dbeafe',
+  },
+  selectedBadgeText: {
+    fontSize: 13,
+    color: '#3b82f6',
+    fontWeight: '600',
+    marginRight: 6,
+  },
+  searchResults: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 12,
+    marginTop: 4,
+    maxHeight: 200,
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 6,
+    elevation: 4,
+    zIndex: 10,
+  },
+  searchResultItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+  },
+  searchResultName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  searchResultSub: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  submitBtn: {
+    backgroundColor: '#0f172a',
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 30,
   },
   submitBtnText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  modalFull: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  modalHeaderFull: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: Platform.OS === 'ios' ? 50 : 10,
-    paddingHorizontal: 16,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    backgroundColor: 'transparent',
-  },
-  modalTitleFull: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#0f172a',
-  },
-  modalFilterRow: {
-    backgroundColor: '#fff',
-    paddingBottom: 12,
-  },
-  filterChipScroll: {
-    paddingHorizontal: 16,
-    gap: 8,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f1f5f9',
-  },
-  filterChipActive: {
-    backgroundColor: '#3b82f6',
-  },
-  filterChipText: {
-    fontSize: 13,
-    color: '#64748b',
-    fontWeight: '600',
-  },
-  filterChipTextActive: {
-    color: '#fff',
-  },
-  modalSearchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f1f5f9',
-    margin: 16,
-    marginTop: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 16,
-    gap: 12,
-  },
-  modalSearchInput: {
-    flex: 1,
     fontSize: 16,
-    color: '#1e293b',
-  },
-  modalListItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-    backgroundColor: 'transparent',
-  },
-  modalListIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#f1f5f9',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalItemName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1e293b',
-  },
-  modalItemSub: {
-    fontSize: 13,
-    color: '#64748b',
-    marginTop: 2,
+    fontWeight: '700',
   },
   loadingOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(255,255,255,0.8)',
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 1000,
   },
   loadingText: {
-    marginTop: 16,
-    fontSize: 16,
+    marginTop: 12,
+    fontSize: 15,
+    color: '#334155',
     fontWeight: '600',
-    color: '#0ea5e9',
   },
-  saveBtnDisabled: {
-    opacity: 0.5,
+  modalOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    zIndex: 2000,
   },
-  saveBtnText: {
-    color: '#0ea5e9',
+  modalContent: {
+    backgroundColor: '#fff',
+    width: '100%',
+    maxHeight: '80%',
+    borderRadius: 24,
+    padding: 24,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  modalBody: {
+    marginBottom: 20,
+  },
+  helpText: {
+    fontSize: 15,
+    color: '#475569',
+    lineHeight: 22,
+    marginBottom: 16,
+  },
+  helpSection: {
+    marginBottom: 20,
+    backgroundColor: '#f8fafc',
+    padding: 16,
+    borderRadius: 16,
+  },
+  helpSubTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  helpDesc: {
+    fontSize: 14,
+    color: '#64748b',
+    lineHeight: 20,
+  },
+  helpNote: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontStyle: 'italic',
+  },
+  modalCloseBtn: {
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#475569',
   },
 });

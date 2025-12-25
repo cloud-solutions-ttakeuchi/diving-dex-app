@@ -41,17 +41,27 @@ export { auth };
 export const googleProvider = new GoogleAuthProvider();
 
 // 3. Firestore
-// React Native does not support multiple tab manager (it is single process mostly)
 let db: Firestore;
-try {
-  db = initializeFirestore(app, {
-    localCache: persistentLocalCache({
-      tabManager: persistentSingleTabManager(undefined)
-    })
-  });
-} catch (e: any) {
-  // hot-reload 等で既に初期化済みの場合は既存インスタンスを取得
-  db = getFirestore(app);
+if (Platform.OS === 'web') {
+  try {
+    db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentSingleTabManager(undefined)
+      })
+    });
+  } catch (e) {
+    db = getFirestore(app);
+  }
+} else {
+  // Native環境では標準の getFirestore が最も安定しますが、
+  // 通信が不安定な場合は initializeFirestore で設定を上書きすることも可能です。
+  try {
+    db = initializeFirestore(app, {
+      experimentalForceLongPolling: true, // Websocketより安定する通信方式を試す
+    });
+  } catch (e) {
+    db = getFirestore(app);
+  }
 }
 export { db };
 

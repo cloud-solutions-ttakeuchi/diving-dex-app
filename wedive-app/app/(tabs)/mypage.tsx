@@ -57,7 +57,7 @@ export default function MyPageScreen() {
               <Text style={styles.cardTitle}>Diving Stats</Text>
               <View style={styles.statsGrid}>
                 <View style={styles.statItem}>
-                  <Text style={styles.statNumber}>{user.logs?.length || 0}</Text>
+                  <Text style={styles.statNumber}>{logs.length || 0}</Text>
                   <Text style={styles.statLabel}>Total Dives</Text>
                 </View>
                 <View style={styles.statItem}>
@@ -98,7 +98,7 @@ export default function MyPageScreen() {
                         <Text style={styles.logTitle}>{log.title}</Text>
                       </View>
                       <View style={styles.diveNumBadge}>
-                        <Text style={styles.diveNumText}>#{log.diveNumber}</Text>
+                        <Text style={styles.diveNumText}>#{log.diveNumber || '-'}</Text>
                       </View>
                     </View>
                     <View style={styles.logCardFooter}>
@@ -113,12 +113,6 @@ export default function MyPageScreen() {
                     </View>
                   </TouchableOpacity>
                 ))}
-                <TouchableOpacity
-                  style={styles.addLogBtnFab}
-                  onPress={() => router.push('/log/add')}
-                >
-                  <Plus size={24} color="#fff" />
-                </TouchableOpacity>
               </View>
             ) : (
               <View style={styles.emptyState}>
@@ -157,92 +151,109 @@ export default function MyPageScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
-      <View style={styles.header}>
-        <View style={styles.profileRow}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: user.profileImage || 'https://via.placeholder.com/150' }}
-              style={styles.avatar}
-            />
-          </View>
-          <View style={styles.profileInfo}>
-            <Text style={styles.name}>{user.name || 'Diver'}</Text>
-            <Text style={styles.role}>{user.role === 'admin' ? 'Admin' : 'Diver'}</Text>
-            <View style={styles.rankBadge}>
-              <Star size={10} color="#0ea5e9" fill="#0ea5e9" />
-              <Text style={styles.rankText}>Explorer Rank</Text>
+    <View style={styles.container}>
+      <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+        <View style={styles.header}>
+          <View style={styles.profileRow}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={{ uri: user.profileImage || 'https://via.placeholder.com/150' }}
+                style={styles.avatar}
+              />
             </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.name}>{user.name || 'Diver'}</Text>
+              <Text style={styles.role}>{user.role === 'admin' ? 'Admin' : 'Diver'}</Text>
+              <View style={styles.rankBadge}>
+                <Star size={10} color="#0ea5e9" fill="#0ea5e9" />
+                <Text style={styles.rankText}>Explorer Rank</Text>
+              </View>
+            </View>
+            <TouchableOpacity
+              style={[styles.settingsBtn, { marginRight: 8 }]}
+              onPress={() => router.push('/log/add')}
+            >
+              <Plus size={20} color="#0ea5e9" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.settingsBtn}>
+              <Settings size={20} color="#64748b" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={styles.settingsBtn}>
-            <Settings size={20} color="#64748b" />
-          </TouchableOpacity>
         </View>
-      </View>
 
-      <View style={styles.tabBar}>
-        {[
-          { id: 'dashboard', icon: Activity, label: '概況' },
-          { id: 'logbook', icon: BookOpen, label: 'ログ' },
-          { id: 'collection', icon: Grid, label: '図鑑' },
-          { id: 'favorites', icon: Heart, label: '推し' },
-        ].map((tab) => (
-          <TouchableOpacity
-            key={tab.id}
-            style={[styles.tabItem, activeTab === tab.id && styles.activeTabItem]}
-            onPress={() => setActiveTab(tab.id as TabType)}
+        <View style={styles.tabBar}>
+          {[
+            { id: 'dashboard', icon: Activity, label: '概況' },
+            { id: 'logbook', icon: BookOpen, label: 'ログ' },
+            { id: 'collection', icon: Grid, label: '図鑑' },
+            { id: 'favorites', icon: Heart, label: '推し' },
+          ].map((tab) => (
+            <TouchableOpacity
+              key={tab.id}
+              style={[styles.tabItem, activeTab === tab.id && styles.activeTabItem]}
+              onPress={() => setActiveTab(tab.id as TabType)}
+            >
+              <tab.icon size={20} color={activeTab === tab.id ? '#0ea5e9' : '#94a3b8'} />
+              <Text style={[styles.tabLabel, activeTab === tab.id && styles.activeTabLabel]}>{tab.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {renderContent()}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>ACTIVITY</Text>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => router.push('/(tabs)/search?tab=spots')}
           >
-            <tab.icon size={20} color={activeTab === tab.id ? '#0ea5e9' : '#94a3b8'} />
-            <Text style={[styles.tabLabel, activeTab === tab.id && styles.activeTabLabel]}>{tab.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            <View style={styles.menuLeft}>
+              <Bookmark size={20} color="#0ea5e9" />
+              <Text style={styles.menuLabel}>Bookmarked Spots</Text>
+            </View>
+            <ChevronRight size={20} color="#cbd5e1" />
+          </Pressable>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => router.push('/(tabs)/search?tab=creatures')}
+          >
+            <View style={styles.menuLeft}>
+              <Heart size={20} color="#ef4444" />
+              <Text style={styles.menuLabel}>Favorite Creatures</Text>
+            </View>
+            <ChevronRight size={20} color="#cbd5e1" />
+          </Pressable>
+        </View>
 
-      {renderContent()}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>ACCOUNT</Text>
+          <Pressable style={styles.menuItem}>
+            <View style={styles.menuLeft}>
+              <Settings size={20} color="#64748b" />
+              <Text style={styles.menuLabel}>Account Settings</Text>
+            </View>
+            <ChevronRight size={20} color="#cbd5e1" />
+          </Pressable>
+          <Pressable style={[styles.menuItem, styles.lastItem]} onPress={handleSignOut}>
+            <View style={styles.menuLeft}>
+              <LogOut size={20} color="#94a3b8" />
+              <Text style={styles.menuLabel}>Log Out</Text>
+            </View>
+          </Pressable>
+        </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>ACTIVITY</Text>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/(tabs)/search?tab=spots')}
+        <Text style={styles.footerText}>WeDive Mobile v1.0.0</Text>
+      </ScrollView>
+
+      {activeTab === 'logbook' && logs.length > 0 && (
+        <TouchableOpacity
+          style={styles.addLogBtnFab}
+          onPress={() => router.push('/log/add')}
         >
-          <View style={styles.menuLeft}>
-            <Bookmark size={20} color="#0ea5e9" />
-            <Text style={styles.menuLabel}>Bookmarked Spots</Text>
-          </View>
-          <ChevronRight size={20} color="#cbd5e1" />
-        </Pressable>
-        <Pressable
-          style={styles.menuItem}
-          onPress={() => router.push('/(tabs)/search?tab=creatures')}
-        >
-          <View style={styles.menuLeft}>
-            <Heart size={20} color="#ef4444" />
-            <Text style={styles.menuLabel}>Favorite Creatures</Text>
-          </View>
-          <ChevronRight size={20} color="#cbd5e1" />
-        </Pressable>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>ACCOUNT</Text>
-        <Pressable style={styles.menuItem}>
-          <View style={styles.menuLeft}>
-            <Settings size={20} color="#64748b" />
-            <Text style={styles.menuLabel}>Account Settings</Text>
-          </View>
-          <ChevronRight size={20} color="#cbd5e1" />
-        </Pressable>
-        <Pressable style={[styles.menuItem, styles.lastItem]} onPress={handleSignOut}>
-          <View style={styles.menuLeft}>
-            <LogOut size={20} color="#94a3b8" />
-            <Text style={styles.menuLabel}>Log Out</Text>
-          </View>
-        </Pressable>
-      </View>
-
-      <Text style={styles.footerText}>WeDive Mobile v1.0.0</Text>
-    </ScrollView>
+          <Plus size={24} color="#fff" />
+        </TouchableOpacity>
+      )}
+    </View>
   );
 }
 
