@@ -175,13 +175,23 @@ export default function SearchScreen() {
       </View>
 
       <FlatList
-        data={mode === 'spots' ? filteredSpots : mode === 'creatures' ? filteredCreatures : []}
-        renderItem={mode === 'spots' ? renderSpotItem : mode === 'creatures' ? renderCreatureItem : renderLogItem}
+        data={(mode === 'spots' ? filteredSpots : mode === 'creatures' ? filteredCreatures : []) as any[]}
+        renderItem={(mode === 'spots' ? renderSpotItem : mode === 'creatures' ? renderCreatureItem : renderLogItem) as any}
         keyExtractor={item => item.id || Math.random().toString()}
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyText}>見つかりませんでした</Text>
+            {mode !== 'logs' && (
+              <TouchableOpacity
+                style={styles.addProposalBtn}
+                onPress={() => router.push(mode === 'spots' ? '/details/spot/add' : '/details/creature/add')}
+              >
+                <Text style={styles.addProposalText}>
+                  新しい{mode === 'spots' ? 'スポット' : '生物'}を登録する
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         }
       />
@@ -463,8 +473,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   logComment: {
-    fontSize: 13,
     color: '#475569',
     fontStyle: 'italic',
+  },
+  addProposalBtn: {
+    marginTop: 16,
+    backgroundColor: '#0ea5e9',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  addProposalText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });

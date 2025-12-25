@@ -66,6 +66,13 @@ function RootLayoutNav() {
               headerBackTitle: '戻る'
             }}
           />
+          <Stack.Screen
+            name="log/edit/[id]"
+            options={{
+              headerShown: false,
+              title: 'ログ編集',
+            }}
+          />
           <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
         </Stack>
       </AuthProvider>

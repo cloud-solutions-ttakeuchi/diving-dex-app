@@ -252,7 +252,7 @@ export default function LogDetailScreen() {
         <View style={styles.fabContainer}>
           <TouchableOpacity
             style={[styles.fab, styles.editFab]}
-            onPress={() => Alert.alert('Coming Soon', '編集機能は現在開発中です')}
+            onPress={() => router.push(`/log/edit/${id}`)}
           >
             <Edit3 size={24} color="#fff" />
           </TouchableOpacity>

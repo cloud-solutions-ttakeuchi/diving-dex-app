@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, Star, Heart, Bookmark, Share2, Info } from 'lucide-react-native';
+import { ChevronLeft, Star, Heart, Bookmark, Share2, Info, Edit3 } from 'lucide-react-native';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../src/firebase';
 import { Creature } from '../../../src/types';
@@ -74,6 +74,12 @@ export default function CreatureDetailScreen() {
           <ChevronLeft size={24} color="#fff" />
         </TouchableOpacity>
         <View style={styles.actionBtns}>
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => router.push({ pathname: '/details/creature/edit', params: { id: creature.id } })}
+          >
+            <Edit3 size={20} color="#fff" />
+          </TouchableOpacity>
           <TouchableOpacity style={styles.actionBtn}>
             <Heart size={20} color="#fff" />
           </TouchableOpacity>

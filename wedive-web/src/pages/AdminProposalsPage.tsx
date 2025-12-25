@@ -77,7 +77,7 @@ export const AdminProposalsPage = () => {
   };
 
   const handleApprove = async (type: 'creature' | 'point', item: any) => {
-    const action = item.proposalType === 'update' ? '変更を承認' : '新規登録を承認';
+    const action = item.proposalType === 'delete' ? '削除を承認' : item.proposalType === 'update' ? '変更を承認' : '新規登録を承認';
     if (!window.confirm(`${action}してもよろしいですか？`)) return;
     setProcessingId(item.id);
     await approveProposal(type, item.id, item);
@@ -135,13 +135,28 @@ export const AdminProposalsPage = () => {
 
     const diff = proposal.diffData || {};
 
+    const isDelete = proposal.proposalType === 'delete' || proposal.diffData?.requestedDeletion || (proposal as any).isDeletionRequest;
+    if (isDelete) {
+      const original = list.find((i: any) => i.id === proposal.targetId || i.id.replace(/_/g, '') === proposal.targetId?.replace(/_/g, ''));
+      return (
+        <div className="mt-3 bg-red-50 rounded-lg border border-red-200 p-3 text-sm">
+          <div className="font-bold text-red-800 mb-2 flex items-center gap-1">
+            🚨 削除申請理由 (対象: {original?.name || proposal.name})
+          </div>
+          <div className="p-3 bg-white rounded border border-red-100 italic text-gray-700">
+            "{diff.reason || proposal.reason || '理由の入力はありません'}"
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="mt-3 bg-yellow-50 rounded-lg border border-yellow-200 p-3 text-sm">
         <div className="font-bold text-yellow-800 mb-2 flex items-center gap-1">
           ⚠️ 変更内容 (対象: {original.name})
         </div>
         <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-          {Object.keys(diff).map(key => {
+          {Object.keys(diff).filter(k => k !== 'reason' && k !== 'requestedDeletion').map(key => {
             const oldValue = (original as any)[key];
             const newValue = diff[key];
 
@@ -176,7 +191,7 @@ export const AdminProposalsPage = () => {
   return (
     <div className="min-h-screen bg-gray-50 p-8 pb-32">
       <div className="flex justify-between items-center max-w-5xl mx-auto mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">提案管理ダッシュボード</h1>
+        <h1 className="text-2xl font-bold text-gray-800">提案管理ダッシュボード <span className="text-blue-500 text-sm font-mono">[PROPOSAL FIXING ACTIVE]</span></h1>
 
         {/* Admin Utils */}
         <div className="flex gap-2">
@@ -209,7 +224,14 @@ export const AdminProposalsPage = () => {
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><Fish className="text-blue-500" /> 生物提案 ({proposalCreatures.length})</h2>
             <div className="grid gap-4">
               {proposalCreatures.map(c => {
-                const isUpdate = c.proposalType === 'update';
+                const title = (c as any).proposalTitle || '';
+                const type = c.proposalType || (c as any).type || '';
+                const isDelete = type === 'delete' || c.diffData?.requestedDeletion || !!c.diffData?.reason || !!c.reason || (c as any).isDeletionRequest || title.includes('削除');
+                const hasTargetId = !!c.targetId && c.targetId !== '';
+                const isUpdate = (type === 'update' || hasTargetId) && !isDelete;
+
+                // Debug log for admins to see raw values in console
+                if (import.meta.env.DEV) console.log(`[AdminProposal] Creature ${c.id}: type=${type}, hasTargetId=${hasTargetId}, isDelete=${isDelete}, isUpdate=${isUpdate}`);
                 return (
                   <div key={c.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-6">
                     <div className="w-32 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden border border-gray-100">
@@ -218,16 +240,16 @@ export const AdminProposalsPage = () => {
                     <div className="flex-1 py-1">
                       <div className="flex justify-between items-start">
                         <h3 className="text-lg font-bold text-gray-900">
-                          {isUpdate ? (creatures.find(x => x.id === c.targetId)?.name || 'Unknown') : c.name}
-                          {isUpdate && <span className="text-sm font-normal text-gray-500 ml-2">(ID: {c.targetId})</span>}
-                          {!isUpdate && <span className="text-sm font-normal text-gray-500 ml-2">({c.scientificName})</span>}
+                          {(isUpdate || isDelete) ? (creatures.find(x => x.id === c.targetId)?.name || c.name || 'Unknown') : c.name}
+                          {(isUpdate || isDelete) && <span className="text-sm font-normal text-gray-500 ml-2">(ID: {c.targetId})</span>}
+                          {(!isUpdate && !isDelete) && <span className="text-sm font-normal text-gray-500 ml-2">({c.scientificName})</span>}
                         </h3>
-                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${isUpdate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
-                          {isUpdate ? '変更提案' : '新規登録'}
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${isDelete ? 'bg-red-100 text-red-800' : isUpdate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
+                          {isDelete ? '削除提案' : isUpdate ? '変更提案' : '新規登録'}
                         </span>
                       </div>
 
-                      {isUpdate ? (
+                      {(isUpdate || c.proposalType === 'delete') ? (
                         renderDiff(c, 'creature')
                       ) : (
                         <p className="text-sm text-gray-600 mt-2 line-clamp-2">{c.description}</p>
@@ -388,58 +410,92 @@ export const AdminProposalsPage = () => {
               <h2 className="text-xl font-bold mb-4 flex items-center gap-2"><MapPin className="text-green-500" /> ポイント提案 ({proposalPoints.length})</h2>
               <div className="grid gap-4">
                 {proposalPoints.map(p => {
-                  const isUpdate = p.proposalType === 'update';
+                  const title = (p as any).proposalTitle || '';
+                  const tid = (p as any).targetId || (p.id && !p.id.startsWith('prop') ? p.id : '');
+                  const hasTargetId = tid !== '';
+                  const rawType = String(p.proposalType || '').toLowerCase();
+
+                  // Priority: Explicit proposalType
+                  const isDelete = rawType === 'delete' || (p as any).isDeletionRequest === true;
+                  const isUpdate = (rawType === 'update' || hasTargetId) && !isDelete;
+                  const isCreate = !hasTargetId && !isDelete;
+
+                  const isDuplicate = isCreate && points.some(existing => existing.name === p.name);
+
                   return (
-                    <div key={p.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col md:flex-row gap-6">
-                      <div className="w-32 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden border border-gray-100">
-                        <img src={isUpdate && p.diffData?.imageUrl ? p.diffData.imageUrl : p.imageUrl} className="w-full h-full object-cover" alt={p.name} />
-                      </div>
-                      <div className="flex-1 py-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-lg font-bold text-gray-900">
-                            {isUpdate ? (points.find(x => x.id === p.targetId)?.name || 'Unknown') : p.name}
-                            {isUpdate && <span className="text-sm font-normal text-gray-500 ml-2">(ID: {p.targetId})</span>}
-                            {!isUpdate && <span className="text-sm font-normal text-gray-500 ml-2">in {p.area}, {p.zone}</span>}
-                          </h3>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${isUpdate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
-                            {isUpdate ? '変更提案' : '新規登録'}
-                          </span>
+                    <div key={p.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col gap-4">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <div className="w-32 h-32 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden border border-gray-100">
+                          <img src={isUpdate && p.diffData?.imageUrl ? p.diffData.imageUrl : p.imageUrl} className="w-full h-full object-cover" alt={p.name} />
                         </div>
-
-                        {isUpdate ? (
-                          renderDiff(p, 'point')
-                        ) : (
-                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">{p.description}</p>
-                        )}
-
-                        {/* Submitter Info Highlight */}
-                        {getSubmitterInfo(p.submitterId)}
-
-                        {!isUpdate && (
-                          <div className="mt-3 flex gap-2 text-xs text-gray-500">
-                            <span className="bg-gray-100 px-2 py-1 rounded border border-gray-200">Level: {p.level}</span>
-                            <span className="bg-gray-100 px-2 py-1 rounded border border-gray-200">Depth: {p.maxDepth}m</span>
+                        <div className="flex-1 py-1">
+                          <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-bold text-gray-900">
+                              {(isUpdate || isDelete) ? (points.find(x => x.id === tid || x.id.replace(/_/g, '') === tid.replace(/_/g, ''))?.name || p.name || 'Unknown') : p.name}
+                              {hasTargetId && <span className="text-xs font-mono text-gray-400 ml-2">[{tid}]</span>}
+                              {isCreate && <span className="text-sm font-normal text-gray-500 ml-2">in {p.area}, {p.zone}</span>}
+                            </h3>
+                            <span className={`text-xs px-2 py-1 rounded-full font-medium ${isDelete ? 'bg-red-100 text-red-800' : isUpdate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
+                              {isDelete ? '削除提案' : isUpdate ? '変更提案' : '新規登録'}
+                            </span>
                           </div>
-                        )}
+
+                          {isDuplicate && (
+                            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs font-bold flex items-center gap-1">
+                              ⚠️ 同名のポイントが既に存在します。重複登録の可能性があります！
+                            </div>
+                          )}
+
+                          {(isUpdate || isDelete) ? (
+                            renderDiff(p, 'point')
+                          ) : (
+                            <p className="text-sm text-gray-600 mt-2 line-clamp-2">{p.description}</p>
+                          )}
+
+                          {/* Submitter Info Highlight */}
+                          {getSubmitterInfo(p.submitterId)}
+
+                          {!isUpdate && (
+                            <div className="mt-3 flex gap-2 text-xs text-gray-500">
+                              <span className="bg-gray-100 px-2 py-1 rounded border border-gray-200">Level: {p.level}</span>
+                              <span className="bg-gray-100 px-2 py-1 rounded border border-gray-200">Depth: {p.maxDepth}m</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-2 justify-center min-w-[140px]">
+                          <button
+                            onClick={() => handleApprove('point', p)}
+                            disabled={processingId === p.id}
+                            className="flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-green-600 transition-colors disabled:opacity-50 shadow-sm"
+                          >
+                            <Check size={16} /> 承認 <span className="text-xs opacity-90">(+5 TP)</span>
+                          </button>
+                          <button
+                            onClick={() => handleReject('point', p.id)}
+                            disabled={processingId === p.id}
+                            className="flex items-center justify-center gap-2 bg-white text-red-600 border border-red-200 px-4 py-2.5 rounded-lg font-bold hover:bg-red-50 transition-colors disabled:opacity-50 shadow-sm"
+                          >
+                            <X size={16} /> 却下
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex flex-col gap-2 justify-center min-w-[140px]">
-                        <button
-                          onClick={() => handleApprove('point', p)}
-                          disabled={processingId === p.id}
-                          className="flex items-center justify-center gap-2 bg-green-500 text-white px-4 py-2.5 rounded-lg font-bold hover:bg-green-600 transition-colors disabled:opacity-50 shadow-sm"
-                        >
-                          <Check size={16} /> 承認 <span className="text-xs opacity-90">(+5 TP)</span>
-                        </button>
-                        <button
-                          onClick={() => handleReject('point', p.id)}
-                          disabled={processingId === p.id}
-                          className="flex items-center justify-center gap-2 bg-white text-red-600 border border-red-200 px-4 py-2.5 rounded-lg font-bold hover:bg-red-50 transition-colors disabled:opacity-50 shadow-sm"
-                        >
-                          <X size={16} /> 却下
-                        </button>
-                      </div>
+
+                      {/* DEBUG DATA DISPLAY */}
+                      {import.meta.env.DEV && (
+                        <details className="mt-4 p-4 bg-gray-900 text-green-400 rounded-lg text-xs overflow-auto">
+                          <summary className="cursor-pointer font-mono hover:text-green-300">Raw Data Debug (Firestore Fields)</summary>
+                          <pre className="mt-2">{JSON.stringify({
+                            proposalType: (p as any).proposalType,
+                            type: (p as any).type,
+                            targetId: (p as any).targetId,
+                            isDeletionRequest: (p as any).isDeletionRequest,
+                            diffData: p.diffData,
+                            title: (p as any).proposalTitle
+                          }, null, 2)}</pre>
+                        </details>
+                      )}
                     </div>
-                  )
+                  );
                 })}
               </div>
             </section>

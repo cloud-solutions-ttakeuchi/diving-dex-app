@@ -454,20 +454,34 @@ export default function AddLogScreen() {
     });
 
     if (!result.canceled && result.assets && result.assets[0].uri) {
-      const uri = result.assets[0].uri;
-      uploadImage(uri);
+      uploadImage(result.assets[0].uri);
     }
+  };
+
+  const uriToBlob = (uri: string): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.onload = function () {
+        resolve(xhr.response);
+      };
+      xhr.onerror = function (e) {
+        reject(new TypeError("Network request failed"));
+      };
+      xhr.responseType = "blob";
+      xhr.open("GET", uri, true);
+      xhr.send(null);
+    });
   };
 
   const uploadImage = async (uri: string) => {
     setIsLoading(true);
     try {
-      const response = await fetch(uri);
-      const blob = await response.blob();
+      const blob = await uriToBlob(uri);
       const filename = `logs/${user?.id || 'unknown'}_${Date.now()}.jpg`;
       const storageRef = ref(storage, filename);
 
-      await uploadBytes(storageRef, blob);
+      const metadata = { contentType: 'image/jpeg' };
+      await uploadBytes(storageRef, blob, metadata);
       const downloadURL = await getDownloadURL(storageRef);
 
       setFormData(prev => ({

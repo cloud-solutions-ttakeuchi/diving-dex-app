@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, MapPin, Droplets, Wind, Mountain, Bookmark, Share } from 'lucide-react-native';
+import { ChevronLeft, MapPin, Droplets, Wind, Mountain, Bookmark, Share, Edit3 } from 'lucide-react-native';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../src/firebase';
 import { Point } from '../../../src/types';
@@ -74,6 +74,12 @@ export default function SpotDetailScreen() {
         <TouchableOpacity style={styles.shareBtn}>
           <Share size={20} color="#fff" />
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.editBtn}
+          onPress={() => router.push({ pathname: '/details/spot/edit', params: { id: point.id } })}
+        >
+          <Edit3 size={20} color="#fff" />
+        </TouchableOpacity>
         <View style={styles.levelBadge}>
           <Text style={styles.levelText}>{point.level}</Text>
         </View>
@@ -81,12 +87,12 @@ export default function SpotDetailScreen() {
 
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.category}>{point.category || 'Diving Spot'}</Text>
+          <Text style={styles.category}>{point.region || 'Diving Spot'}</Text>
           <Text style={styles.name}>{point.name}</Text>
           <View style={styles.locationRow}>
             <MapPin size={16} color="#64748b" />
             <Text style={styles.locationText}>
-              {point.region} {point.area ? `• ${point.area}` : ''} {point.place ? `(${point.place})` : ''}
+              {point.region} {point.area ? `• ${point.area}` : ''}
             </Text>
           </View>
         </View>
@@ -109,7 +115,7 @@ export default function SpotDetailScreen() {
           <View style={styles.divider} />
           <View style={styles.statItem}>
             <Text style={styles.statLabel}>Terrain</Text>
-            <Text style={styles.statValue}>{point.terrain || '-'}</Text>
+            <Text style={styles.statValue}>{point.topography?.[0] || '-'}</Text>
           </View>
         </View>
 
@@ -181,6 +187,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 50,
     right: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 10,
+  },
+  editBtn: {
+    position: 'absolute',
+    top: 50,
+    right: 76,
     width: 44,
     height: 44,
     borderRadius: 22,

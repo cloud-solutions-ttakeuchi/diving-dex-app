@@ -68,6 +68,7 @@ export { db };
 // 4. Storage
 import { getStorage } from "firebase/storage";
 export const storage = getStorage(app);
+console.log("[Firebase] Storage initialized with bucket:", storage.app.options.storageBucket);
 
 // 5. Functions
 export const functions = getFunctions(app, "asia-northeast1");

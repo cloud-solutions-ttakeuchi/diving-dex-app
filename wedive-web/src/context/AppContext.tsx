@@ -71,8 +71,8 @@ interface AppContextType {
   pointCreatures: PointCreature[];
   logs: Log[];
   recentLogs: Log[];
-  proposalCreatures: (Creature & { proposalType?: string, diffData?: any, targetId?: string })[];
-  proposalPoints: (Point & { proposalType?: string, diffData?: any, targetId?: string })[];
+  proposalCreatures: (Creature & { proposalType?: string, diffData?: any, targetId?: string, reason?: string })[];
+  proposalPoints: (Point & { proposalType?: string, diffData?: any, targetId?: string, reason?: string })[];
   regions: typeof INITIAL_DATA.regions;
   zones: typeof INITIAL_DATA.zones;
 
@@ -426,23 +426,43 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   const approveProposal = async (type: 'creature' | 'point', id: string, data: any) => {
     const targetCol = type === 'creature' ? 'creatures' : 'points';
-    const isUpdate = data.proposalType === 'update' || !!data.targetId;
-    const realId = data.targetId || (data.id && !data.id.startsWith('prop') ? data.id : `${type === 'creature' ? 'c' : 'p'}${Date.now()}`);
+    const list = type === 'creature' ? creatures : points;
 
-    if (isUpdate) {
-      // For updates, we MUST only update changed fields (diffData)
-      const updatePayload = { ...data.diffData, status: 'approved' };
-      await updateDoc(doc(firestore, targetCol, realId), sanitizePayload(updatePayload));
-    } else {
-      // For new entries
-      const finalData = { ...data, id: realId, status: 'approved' };
-      delete finalData.targetId;
-      delete finalData.proposalType;
-      await setDoc(doc(firestore, targetCol, realId), sanitizePayload(finalData));
+    // Use targetId from proposal data, fall back to ID if it's not a 'prop_' ID
+    const tid = data.targetId || (id.startsWith('prop') ? null : id);
+    if (!tid && data.proposalType !== 'create') {
+      alert('エラー: 更新対象のIDが見つかりません');
+      return;
     }
 
-    // Update the proposal document itself
-    await updateDoc(doc(firestore, type === 'creature' ? 'creature_proposals' : 'point_proposals', id), { status: 'approved' });
+    const existing = list.find(x => x.id === tid || x.id.replace(/_/g, '') === tid?.replace(/_/g, ''));
+    const realId = existing ? existing.id : tid;
+
+    const isUpdate = (data.proposalType === 'update' || !!data.targetId) && data.proposalType !== 'delete';
+
+    try {
+      if (data.proposalType === 'delete') {
+        await updateDoc(doc(firestore, targetCol, realId), { status: 'rejected' });
+      } else if (isUpdate && realId) {
+        const payload = { ...data.diffData, status: 'approved' };
+        await updateDoc(doc(firestore, targetCol, realId), sanitizePayload(payload));
+      } else {
+        const finalData = { ...data, id: realId || `p${Date.now()}`, status: 'approved' };
+        delete finalData.targetId;
+        delete finalData.proposalType;
+        delete finalData.diffData;
+        await setDoc(doc(firestore, targetCol, finalData.id), sanitizePayload(finalData));
+      }
+
+      // Mark the proposal itself as approved
+      const propCol = type === 'creature' ? 'creature_proposals' : 'point_proposals';
+      await updateDoc(doc(firestore, propCol, id), { status: 'approved', processedAt: new Date().toISOString() });
+
+      alert(`承認完了: ${targetCol}/${realId} を更新しました。`);
+    } catch (e: any) {
+      console.error(e);
+      alert(`承認エラー: ${e.message}`);
+    }
   };
 
   const rejectProposal = async (type: 'creature' | 'point', id: string) => {

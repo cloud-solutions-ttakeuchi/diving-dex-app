@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { doc, setDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, arrayUnion, deleteDoc } from 'firebase/firestore';
 import { DiveLog } from '../types';
 
 /**
@@ -74,5 +74,19 @@ export class LogService {
     await updateDoc(userRef, {
       logs: arrayUnion(...logIds)
     });
+  }
+
+  static async updateLog(userId: string, logId: string, logData: Partial<DiveLog>): Promise<void> {
+    const logRef = doc(db, 'users', userId, 'logs', logId);
+    const sanitizedData = sanitizePayload({
+      ...logData,
+      updatedAt: new Date().toISOString(),
+    });
+    await updateDoc(logRef, sanitizedData);
+  }
+
+  static async deleteLog(userId: string, logId: string): Promise<void> {
+    const logRef = doc(db, 'users', userId, 'logs', logId);
+    await deleteDoc(logRef);
   }
 }
