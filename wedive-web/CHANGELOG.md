@@ -2,6 +2,25 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [2.3.1] - 2025-12-25
+### Improved
+- **Point Detail Page Overhaul (Web)**:
+    - **Premium UI/UX**: ガラスモフィズム、ダイナミックなグラデーション、洗練されたタイポグラフィを採用し、全体的な美観を劇的に向上。
+    - **Hero Section**: 巨大なメイン写真とオーバーレイ、流れるようなグラデーションによるヒーローセクション。
+    - **Spec Cards**: アイコン付きのスペック表示をモダンなカードスタイルに刷新。
+    - **Creature Cards**: 出没生物のリストを、ホバーエフェクトとバッジ表示を備えたリッチなカードデザインに変更。
+    - **Sidebar Access**: 地図とアクセス情報をサイドバーに整理し、情報の視認性と操作性を向上。
+    - **Animations**: スムーズな遷移とマイクロインタラクションを追加。
+- **Point Detail Page Overhaul (Mobile App)**:
+    - **Immersive Design**: 詳細ページからあえてタブバー（下のメニュー）を排除し、コンテンツに集中できる没入型レイアウトを採用。
+    - **Floating Header**: ノッチ（SafeArea）を考慮した透明感のあるフローティングヘッダーボタン。
+    - **Breadcrumb Navigation**: 画面上部に「🏠 Home / 地域 / エリア」のパンくずリストを追加し、迷子にならない操作性を実現。
+    - **Modern Stats Grid**: 4列のアイコン付きスペックグリッドを導入。
+
+### Fixed
+- **Mobile Map Error**: iOS環境での `PROVIDER_GOOGLE` 強制指定による表示エラーを解消。OS標準の地図（Apple Maps）を利用する安定した実装に修正。
+- **Navigation Path**: モバイルアプリ版の「ログを書く」ボタンのパスを `/logs/add` から正しい `/log/add` に修正。
+
 ## [2.3.0] - 2025-12-23
 ### Added
 - **Mobile App Initial Feature Set (Expo/React Native)**:
