@@ -19,13 +19,15 @@ export const Pokedex = () => {
   const filteredCreatures = allCreatures.filter(creature => {
     const term = searchTerm.toLowerCase();
 
+    if (!term) return true;
+
     // 1. Direct Text Properties
     const matchesProperty =
-      creature.name.toLowerCase().includes(term) ||
+      (creature.name && creature.name.toLowerCase().includes(term)) ||
       (creature.scientificName && creature.scientificName.toLowerCase().includes(term)) ||
       (creature.family && creature.family.toLowerCase().includes(term)) ||
-      creature.tags.some(tag => tag.toLowerCase().includes(term)) ||
-      creature.specialAttributes?.some(attr => attr.toLowerCase().includes(term));
+      (creature.tags && creature.tags.some(tag => tag.toLowerCase().includes(term))) ||
+      (creature.specialAttributes && creature.specialAttributes.some(attr => attr.toLowerCase().includes(term)));
 
     if (matchesProperty) return true;
 
@@ -33,10 +35,10 @@ export const Pokedex = () => {
     // Find points that match the search term (Area, Zone, Region, Name)
     const matchedPointIds = points
       .filter(p =>
-        p.name.includes(term) ||
-        p.area.includes(term) ||
-        p.zone.includes(term) ||
-        p.region.includes(term)
+        (p.name && p.name.toLowerCase().includes(term)) ||
+        (p.area && p.area.toLowerCase().includes(term)) ||
+        (p.zone && p.zone.toLowerCase().includes(term)) ||
+        (p.region && p.region.toLowerCase().includes(term))
       )
       .map(p => p.id);
 
@@ -45,7 +47,6 @@ export const Pokedex = () => {
       // Find entries in pointCreatures matching this creature AND one of the matched points
       const isLinkedToArea = pointCreatures.some(pc =>
         pc.creatureId === creature.id && matchedPointIds.includes(pc.pointId)
-        // Note: You might want to filter by pc.status === 'approved' if strictly validation needed
       );
       if (isLinkedToArea) return true;
     }

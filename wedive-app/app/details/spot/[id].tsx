@@ -1,47 +1,71 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator, Platform, Share as RNShare, View, Text, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ChevronLeft, MapPin, Droplets, Wind, Mountain, Bookmark, Share, Edit3, Anchor, Home } from 'lucide-react-native';
-import { doc, getDoc } from 'firebase/firestore';
+import { ChevronLeft, MapPin, Droplets, Wind, Mountain, Bookmark, Share, Edit3, Anchor, Home, Star } from 'lucide-react-native';
+import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
 import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../../src/firebase';
-import { Point } from '../../../src/types';
+import { Point, Creature, PointCreature } from '../../../src/types';
 
 import { ImageWithFallback } from '../../../src/components/ImageWithFallback';
 
 const { width } = Dimensions.get('window');
 
 const NO_IMAGE_POINT = require('../../../assets/images/no-image-point.png');
+const NO_IMAGE_CREATURE = require('../../../assets/images/no-image-creature.png');
 
 export default function SpotDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [point, setPoint] = useState<Point | null>(null);
+  const [creatures, setCreatures] = useState<Creature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   useEffect(() => {
-    const fetchPoint = async () => {
+    const fetchData = async () => {
       if (!id || typeof id !== 'string') return;
       try {
+        // 1. Fetch Point
         const docRef = doc(db, 'points', id);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {
-          setPoint({ id: docSnap.id, ...docSnap.data() } as Point);
+          const pointData = { id: docSnap.id, ...docSnap.data() } as Point;
+          setPoint(pointData);
+
+          // 2. Fetch Related Creatures
+          const pcQuery = query(
+            collection(db, 'point_creatures'),
+            where('pointId', '==', id),
+            where('status', '==', 'approved'),
+            limit(10)
+          );
+          const pcSnap = await getDocs(pcQuery);
+          const creatureIds = pcSnap.docs.map(doc => (doc.data() as PointCreature).creatureId);
+
+          if (creatureIds.length > 0) {
+            // Firestore 'in' query has a limit of 10 items
+            const cQuery = query(
+              collection(db, 'creatures'),
+              where('id', 'in', creatureIds.slice(0, 10))
+            );
+            const cSnap = await getDocs(cQuery);
+            setCreatures(cSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature)));
+          }
         } else {
           setPoint(null);
         }
       } catch (error) {
-        console.error("Error fetching point:", error);
+        console.error("Error fetching spot detail data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchPoint();
+    fetchData();
   }, [id]);
 
   const handleShare = async () => {
@@ -79,7 +103,7 @@ export default function SpotDetailScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      {/* 1. 上部のヘッダーボタン */}
+      {/* 1. Header Buttons */}
       <View style={[styles.floatingHeader, { top: insets.top || 40 }]}>
         <TouchableOpacity
           style={styles.glassCircle}
@@ -118,7 +142,7 @@ export default function SpotDetailScreen() {
         contentContainerStyle={styles.scrollContent}
         bounces={false}
       >
-        {/* 2. ヒーローセクション */}
+        {/* 2. Hero Section */}
         <View style={styles.heroContainer}>
           <ImageWithFallback
             source={point.imageUrl ? { uri: point.imageUrl } : null}
@@ -128,7 +152,7 @@ export default function SpotDetailScreen() {
           <View style={styles.heroOverlay} />
 
           <View style={styles.heroBottom}>
-            {/* ナビゲーション（パンくずリスト）を強化 */}
+            {/* Breadcrumbs */}
             <View style={styles.breadcrumb}>
               <TouchableOpacity onPress={() => router.replace('/(tabs)')} style={styles.breadcrumbItem}>
                 <Home size={14} color="#fff" />
@@ -150,7 +174,7 @@ export default function SpotDetailScreen() {
           </View>
         </View>
 
-        {/* 3. メインコンテンツ */}
+        {/* 3. Main Content */}
         <View style={styles.mainCard}>
           <View style={styles.statsGrid}>
             <StatItem icon={<Droplets size={20} color="#0ea5e9" />} label="DEPTH" value={`${point.maxDepth || '-'}m`} color="#e0f2fe" />
@@ -165,6 +189,45 @@ export default function SpotDetailScreen() {
               {point.description || 'スポットの詳細情報はまだ登録されていません。'}
             </Text>
           </View>
+
+          {/* Confirmed Creatures List */}
+          {creatures.length > 0 && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Confirmed Species</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.creatureScroll}
+              >
+                {creatures.map(creature => (
+                  <TouchableOpacity
+                    key={creature.id}
+                    style={styles.creatureCard}
+                    onPress={() => router.push(`/details/creature/${creature.id}`)}
+                  >
+                    <ImageWithFallback
+                      source={creature.imageUrl ? { uri: creature.imageUrl } : null}
+                      fallbackSource={NO_IMAGE_CREATURE}
+                      style={styles.creatureThumb}
+                    />
+                    <View style={styles.creatureInfo}>
+                      <Text style={styles.creatureName} numberOfLines={1}>{creature.name}</Text>
+                      <View style={styles.rarityStars}>
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            size={10}
+                            color={i < (creature.rarity === 'Legendary' ? 4 : creature.rarity === 'Epic' ? 3 : creature.rarity === 'Rare' ? 2 : 1) ? "#fbbf24" : "#e2e8f0"}
+                            fill={i < (creature.rarity === 'Legendary' ? 4 : creature.rarity === 'Epic' ? 3 : creature.rarity === 'Rare' ? 2 : 1) ? "#fbbf24" : "transparent"}
+                          />
+                        ))}
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
 
           {point.features && point.features.length > 0 && (
             <View style={styles.section}>
@@ -222,7 +285,7 @@ export default function SpotDetailScreen() {
         </View>
       </ScrollView>
 
-      {/* 4. 下部のフッターアクション */}
+      {/* 4. Footer Action */}
       <View style={[styles.footerAction, { paddingBottom: Math.max(insets.bottom, 12) }]}>
         <TouchableOpacity
           style={styles.primaryBtn}
@@ -313,7 +376,7 @@ const styles = StyleSheet.create({
   breadcrumbItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
@@ -414,6 +477,36 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     color: '#475569',
     fontWeight: '500',
+  },
+  creatureScroll: {
+    paddingRight: 24,
+    gap: 12,
+  },
+  creatureCard: {
+    width: 140,
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  creatureThumb: {
+    width: '100%',
+    height: 100,
+    backgroundColor: '#e2e8f0',
+  },
+  creatureInfo: {
+    padding: 10,
+  },
+  creatureName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  rarityStars: {
+    flexDirection: 'row',
+    gap: 2,
   },
   tagsContainer: {
     flexDirection: 'row',
