@@ -438,10 +438,13 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     const existing = list.find(x => x.id === tid || x.id.replace(/_/g, '') === tid?.replace(/_/g, ''));
     const realId = existing ? existing.id : tid;
 
-    const isUpdate = (data.proposalType === 'update' || !!data.targetId) && data.proposalType !== 'delete';
+    const propType = (data.proposalType || data.type || '').toLowerCase();
+    const isDelete = propType === 'delete' || data.isDeletionRequest === true;
+    const isUpdate = (propType === 'update' || (!!data.targetId && propType !== 'delete')) && !isDelete;
 
     try {
-      if (data.proposalType === 'delete') {
+      if (isDelete) {
+        // Physical delete vs logical delete. Keeping logical delete (rejected status) for safety.
         await updateDoc(doc(firestore, targetCol, realId), { status: 'rejected' });
       } else if (isUpdate && realId) {
         const payload = { ...data.diffData, status: 'approved' };
@@ -450,6 +453,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
         const finalData = { ...data, id: realId || `p${Date.now()}`, status: 'approved' };
         delete finalData.targetId;
         delete finalData.proposalType;
+        delete finalData.type;
         delete finalData.diffData;
         await setDoc(doc(firestore, targetCol, finalData.id), sanitizePayload(finalData));
       }
