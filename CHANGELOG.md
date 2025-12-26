@@ -2,6 +2,27 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [3.1.0] - 2025-12-26
+### Added
+- **Native Build Support (App)**: 
+    - iOS ネイティブビルドファイルの生成（Prebuild）とビルド環境の構成。
+- **Environment Optimization**:
+    - プロジェクトルートの `.gitignore` を強化し、`.expo`, `ios`, `android` などの自動生成ディレクトリを適切に除外。
+    - リポジトリに誤って混入したキャッシュファイルおよびネイティブバイナリのクリーニングを行い、セキュリティとレポジトリの健全性を向上。
+
+## [3.0.1] - 2025-12-26
+### Added
+- **Cross-Linking Proposals (App)**:
+    - **Discovery Report**: 生物詳細ページから目撃スポットを検索して報告できる機能を追加。
+    - **Add Species**: スポット詳細ページから確認された生物を追加できる機能を追加。
+    - **Pending Visibility**: 自分が提案した未承認のデータも詳細画面に「提案中」バッジ付きで表示されるように対応。
+
+### Improved
+- **Stability & Policy**:
+    - Wikipedia画像取得ロジックの安定化。
+    - プロジェクト開発ルール `.agent/rules.md` の導入と適用。
+    - アプリ内機能フラグ (`FeatureFlags.ENABLE_CROSS_LINKING_PROPOSALS`) による制御を導入。
+
 ## [3.0.0] - 2025-12-26
 ### Added
 - **Cross-Linking (App)**:
