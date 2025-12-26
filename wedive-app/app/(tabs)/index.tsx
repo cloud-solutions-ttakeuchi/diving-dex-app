@@ -24,13 +24,13 @@ export default function TabOneScreen() {
       try {
         // Fetch Featured Points (Top 5 recently added or by some criteria)
         // For now, simple limit 5
-        const pointsQuery = query(collection(db, 'points'), limit(5));
+        const pointsQuery = query(collection(db, 'points'), where('status', '==', 'approved'), limit(5));
         const pointsSnapshot = await getDocs(pointsQuery);
         const pointsData = pointsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point));
 
         // Fetch Popular Creatures (Top 10)
         // Ideally should be sorted by popularity or similar
-        const creaturesQuery = query(collection(db, 'creatures'), limit(10));
+        const creaturesQuery = query(collection(db, 'creatures'), where('status', '==', 'approved'), limit(10));
         const creaturesSnapshot = await getDocs(creaturesQuery);
         const creaturesData = creaturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature));
 

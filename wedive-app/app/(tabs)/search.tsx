@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { StyleSheet, TextInput, TouchableOpacity, FlatList, Dimensions, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { Search as SearchIcon, MapPin, Star, ChevronRight, Anchor, BookOpen, Clock, Droplets } from 'lucide-react-native';
+import { Search as SearchIcon, MapPin, Star, ChevronRight, Anchor, BookOpen, Clock, Droplets, Plus as PlusIcon } from 'lucide-react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { collection, query, getDocs } from 'firebase/firestore';
+import { collection, query, getDocs, where } from 'firebase/firestore';
 import { db } from '../../src/firebase';
 import { Point, Creature } from '../../src/types';
 import { ImageWithFallback } from '../../src/components/ImageWithFallback';
@@ -34,12 +34,12 @@ export default function SearchScreen() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const pointsQuery = query(collection(db, 'points'));
+        const pointsQuery = query(collection(db, 'points'), where('status', 'in', ['approved', 'pending']));
         const pointsSnapshot = await getDocs(pointsQuery);
         const pointsData = pointsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point));
         setPoints(pointsData);
 
-        const creaturesQuery = query(collection(db, 'creatures'));
+        const creaturesQuery = query(collection(db, 'creatures'), where('status', 'in', ['approved', 'pending']));
         const creaturesSnapshot = await getDocs(creaturesQuery);
         const creaturesData = creaturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature));
         setCreatures(creaturesData);
@@ -69,16 +69,24 @@ export default function SearchScreen() {
       style={styles.spotCard}
       onPress={() => router.push(`/details/spot/${item.id}`)}
     >
-      <ImageWithFallback
-        source={item.imageUrl ? { uri: item.imageUrl } : null}
-        fallbackSource={NO_IMAGE_POINT}
-        style={styles.spotImage}
-      />
+      <View style={{ position: 'relative' }}>
+        <ImageWithFallback
+          source={item.imageUrl ? { uri: item.imageUrl } : null}
+          fallbackSource={NO_IMAGE_POINT}
+          style={styles.spotImage}
+        />
+        {item.status === 'pending' && (
+          <View style={styles.pendingBadge}>
+            <Clock size={10} color="#fff" />
+            <Text style={styles.pendingText}>提案中</Text>
+          </View>
+        )}
+      </View>
       <View style={styles.spotInfo}>
         <View style={styles.row}>
           <Text style={styles.spotName}>{item.name}</Text>
           <View style={styles.levelBadge}>
-            <Text style={styles.levelText}>{item.level}</Text>
+            <Text style={styles.levelText}>{item.level || 'Unknown'}</Text>
           </View>
         </View>
         <View style={styles.locationRow}>
@@ -101,11 +109,19 @@ export default function SearchScreen() {
       style={styles.creatureCard}
       onPress={() => router.push(`/details/creature/${item.id}`)}
     >
-      <ImageWithFallback
-        source={item.imageUrl ? { uri: item.imageUrl } : null}
-        fallbackSource={NO_IMAGE_CREATURE}
-        style={styles.creatureImage}
-      />
+      <View style={{ position: 'relative' }}>
+        <ImageWithFallback
+          source={item.imageUrl ? { uri: item.imageUrl } : null}
+          fallbackSource={NO_IMAGE_CREATURE}
+          style={styles.creatureImage}
+        />
+        {item.status === 'pending' && (
+          <View style={styles.pendingBadge}>
+            <Clock size={10} color="#fff" />
+            <Text style={styles.pendingText}>提案中</Text>
+          </View>
+        )}
+      </View>
       <View style={styles.creatureContent}>
         <View style={styles.creatureInfo}>
           <Text style={styles.creatureCategory}>{item.category}</Text>
@@ -138,7 +154,18 @@ export default function SearchScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>探す</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.title}>探す</Text>
+          {mode !== 'logs' && (
+            <TouchableOpacity
+              style={styles.headerAddBtn}
+              onPress={() => router.push(mode === 'spots' ? '/details/spot/add' : '/details/creature/add')}
+            >
+              <PlusIcon size={20} color="#0ea5e9" />
+              <Text style={styles.headerAddText}>{mode === 'spots' ? 'スポット登録' : '生物登録'}</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.searchBox}>
           <SearchIcon size={20} color="#94a3b8" />
           <TextInput
@@ -215,7 +242,27 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#0f172a',
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
+    backgroundColor: 'transparent',
+  },
+  headerAddBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  headerAddText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#0ea5e9',
   },
   searchBox: {
     flexDirection: 'row',
@@ -487,5 +534,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  pendingBadge: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    zIndex: 10,
+  },
+  pendingText: {
+    color: '#fff',
+    fontSize: 9,
+    fontWeight: '900',
   },
 });

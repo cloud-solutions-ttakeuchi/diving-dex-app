@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Pressable, ScrollView, Image, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Text, View } from '@/components/Themed';
-import { LogOut, ChevronRight, Bookmark, Heart, Settings, Activity, BookOpen, Grid, User as UserIcon, Award, Star, MapPin, Plus, Clock } from 'lucide-react-native';
+import { LogOut, ChevronRight, Bookmark, Heart, Settings, Activity, BookOpen, Grid, User as UserIcon, Award, Star, MapPin, Plus, Clock, Sparkles } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
 import { DiveLog } from '../../src/types';
@@ -200,6 +200,30 @@ export default function MyPageScreen() {
         </View>
 
         {renderContent()}
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>CONTRIBUTION</Text>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => router.push('/details/spot/add')}
+          >
+            <View style={styles.menuLeft}>
+              <MapPin size={20} color="#0ea5e9" />
+              <Text style={styles.menuLabel}>Propose a Spot</Text>
+            </View>
+            <ChevronRight size={20} color="#cbd5e1" />
+          </Pressable>
+          <Pressable
+            style={styles.menuItem}
+            onPress={() => router.push('/details/creature/add')}
+          >
+            <View style={styles.menuLeft}>
+              <Sparkles size={20} color="#8b5cf6" />
+              <Text style={styles.menuLabel}>Propose a Creature</Text>
+            </View>
+            <ChevronRight size={20} color="#cbd5e1" />
+          </Pressable>
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>ACTIVITY</Text>
