@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../../src/firebase';
 import { Point, Creature, PointCreature, Rarity } from '../../../src/types';
 import { useAuth } from '../../../src/context/AuthContext';
+import { FeatureFlags } from '../../../src/constants';
 import { CreatureSelectorModal } from '../../../src/components/CreatureSelectorModal';
 import { RaritySelectorModal } from '../../../src/components/RaritySelectorModal';
 import { Alert } from 'react-native';
@@ -251,7 +252,7 @@ export default function SpotDetailScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeaderBetween}>
               <Text style={styles.sectionTitle}>Confirmed Species</Text>
-              {isAuthenticated && (
+              {isAuthenticated && FeatureFlags.ENABLE_CROSS_LINKING_PROPOSALS && (
                 <TouchableOpacity
                   style={styles.addLinkBtn}
                   onPress={() => setShowCreatureModal(true)}
@@ -302,7 +303,7 @@ export default function SpotDetailScreen() {
             ) : (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateText}>まだ登録された生物がいません。</Text>
-                {isAuthenticated && (
+                {isAuthenticated && FeatureFlags.ENABLE_CROSS_LINKING_PROPOSALS && (
                   <TouchableOpacity
                     style={styles.emptyAddBtn}
                     onPress={() => setShowCreatureModal(true)}

@@ -37,6 +37,11 @@ Firebase コンソールから取得した設定値を入力してください�
 `app.config.ts` で使用される制御変数です。
 - `APP_VARIANT`: アプリのバリアント指定 (`development` | `staging` | `production`)。未指定時は `development`。
 - `EAS_PROJECT_ID`: Expo Application Services (EAS) のプロジェクト ID。
+- `LOG_LEVEL`: ログ出力レベル (`debug` | `info` | `warn` | `error`)。
+
+### Feature Flags (機能フラグ)
+`src/constants/index.ts` にある `FeatureFlags` オブジェクトで機能の有効化を制御できます。
+- `ENABLE_CROSS_LINKING_PROPOSALS`: モバイル版での相互リンク提案機能（発見報告・生物追加）を有効にするか (Default: `true`)。
 
 ---
 

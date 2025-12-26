@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../../src/firebase';
 import { Creature, Rarity, Point, PointCreature } from '../../../src/types';
 import { useAuth } from '../../../src/context/AuthContext';
+import { FeatureFlags } from '../../../src/constants';
 import { PointSelectorModal } from '../../../src/components/PointSelectorModal';
 import { RaritySelectorModal } from '../../../src/components/RaritySelectorModal';
 import { Alert } from 'react-native';
@@ -292,7 +293,7 @@ export default function CreatureDetailScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeaderBetween}>
               <Text style={styles.sectionTitle}>Spotted at</Text>
-              {isAuthenticated && (
+              {isAuthenticated && FeatureFlags.ENABLE_CROSS_LINKING_PROPOSALS && (
                 <TouchableOpacity
                   style={styles.addLinkBtn}
                   onPress={() => setShowPointModal(true)}
@@ -337,7 +338,7 @@ export default function CreatureDetailScreen() {
             ) : (
               <View style={styles.emptyState}>
                 <Text style={styles.emptyStateText}>まだ発見報告がありません。</Text>
-                {isAuthenticated && (
+                {isAuthenticated && FeatureFlags.ENABLE_CROSS_LINKING_PROPOSALS && (
                   <TouchableOpacity
                     style={styles.emptyAddBtn}
                     onPress={() => setShowPointModal(true)}
