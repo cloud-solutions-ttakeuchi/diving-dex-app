@@ -156,3 +156,12 @@ temp_garmin_analysis/
 __pycache__/
 *.py[cod]
 *$py.class
+
+# Expo & Mobile
+.expo/
+wedive-app/.expo/
+wedive-app/ios/
+wedive-app/android/
+wedive-app/expo-env.d.ts
+wedive-app/web-build/
+wedive-app/dist/
