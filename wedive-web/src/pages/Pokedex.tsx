@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useLanguage } from '../context/LanguageContext';
 import { ImageWithFallback } from '../components/common/ImageWithFallback'; // Import
-import { Search, Filter, Star, CheckCircle } from 'lucide-react';
+import { Search, Filter, Star, CheckCircle, Clock } from 'lucide-react';
 import clsx from 'clsx';
 
 export const Pokedex = () => {
@@ -117,7 +117,12 @@ export const Pokedex = () => {
                 <div className="absolute inset-0 bg-gradient-to-t from-deepBlue-900 via-transparent to-transparent opacity-90" />
 
                 {/* Status Badge */}
-                {isDiscovered ? (
+                {creature.status === 'pending' ? (
+                  <div className="absolute top-2 left-2 bg-amber-500 text-white px-2 py-1 rounded-lg shadow-lg z-10 flex items-center gap-1">
+                    <Clock size={12} className="animate-pulse" />
+                    <span className="text-[10px] font-black tracking-tight uppercase">提案中</span>
+                  </div>
+                ) : isDiscovered ? (
                   <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-lg shadow-green-500/30 z-10 animate-in zoom-in duration-300">
                     <CheckCircle size={16} strokeWidth={3} />
                   </div>

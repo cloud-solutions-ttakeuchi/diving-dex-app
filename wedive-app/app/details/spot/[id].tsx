@@ -2,11 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator, Platform, Share as RNShare, View, Text, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, MapPin, Droplets, Wind, Mountain, Bookmark, Share, Edit3, Anchor, Home, Star } from 'lucide-react-native';
-import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit, setDoc } from 'firebase/firestore';
 import MapView, { Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../../src/firebase';
-import { Point, Creature, PointCreature } from '../../../src/types';
+import { Point, Creature, PointCreature, Rarity } from '../../../src/types';
+import { useAuth } from '../../../src/context/AuthContext';
+import { CreatureSelectorModal } from '../../../src/components/CreatureSelectorModal';
+import { RaritySelectorModal } from '../../../src/components/RaritySelectorModal';
+import { Alert } from 'react-native';
 
 import { ImageWithFallback } from '../../../src/components/ImageWithFallback';
 
@@ -23,6 +27,11 @@ export default function SpotDetailScreen() {
   const [creatures, setCreatures] = useState<Creature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const [showCreatureModal, setShowCreatureModal] = useState(false);
+  const [showRarityModal, setShowRarityModal] = useState(false);
+  const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,20 +49,31 @@ export default function SpotDetailScreen() {
           const pcQuery = query(
             collection(db, 'point_creatures'),
             where('pointId', '==', id),
-            where('status', '==', 'approved'),
-            limit(10)
+            where('status', 'in', ['approved', 'pending']),
+            limit(20)
           );
           const pcSnap = await getDocs(pcQuery);
-          const creatureIds = pcSnap.docs.map(doc => (doc.data() as PointCreature).creatureId);
+          const creatureLinks = pcSnap.docs.map(doc => doc.data() as PointCreature);
+          const creatureIds = creatureLinks.map(link => link.creatureId);
 
           if (creatureIds.length > 0) {
-            // Firestore 'in' query has a limit of 10 items
+            // Firestore 'in' query has a limit of 10-30 items depending on SDK version
             const cQuery = query(
               collection(db, 'creatures'),
               where('id', 'in', creatureIds.slice(0, 10))
             );
             const cSnap = await getDocs(cQuery);
-            setCreatures(cSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature)));
+            const creatureDocs = cSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature));
+
+            // Map back to include the point_creature status
+            const data = creatureLinks
+              .map(link => {
+                const doc = creatureDocs.find(c => c.id === link.creatureId);
+                return doc ? { ...doc, _linkStatus: link.status } : null;
+              })
+              .filter((c): c is Creature & { _linkStatus: PointCreature['status'] } => c !== null);
+
+            setCreatures(data as any);
           }
         } else {
           setPoint(null);
@@ -77,6 +97,43 @@ export default function SpotDetailScreen() {
       });
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handleCreatureSelect = (creature: Creature) => {
+    setSelectedCreature(creature);
+    setShowCreatureModal(false);
+    setShowRarityModal(true);
+  };
+
+  const handleSubmitDiscovery = async (rarity: Rarity) => {
+    if (!selectedCreature || !point || !user) return;
+    setIsSubmitting(true);
+    setShowRarityModal(false);
+
+    try {
+      const relId = `${point.id}_${selectedCreature.id}`;
+      const pointCreatureData: PointCreature = {
+        id: relId,
+        pointId: point.id,
+        creatureId: selectedCreature.id,
+        localRarity: rarity,
+        status: (user.role === 'admin' || user.role === 'moderator') ? 'approved' : 'pending',
+      };
+
+      await setDoc(doc(db, 'point_creatures', relId), pointCreatureData);
+
+      Alert.alert(
+        'ありがとうございます！',
+        user.role === 'admin' ? '生物情報を登録しました。' : '生物発見情報を送信しました。管理者の承認をお待ちください。',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Error submitting discovery:', error);
+      Alert.alert('エラー', '失敗しました。');
+    } finally {
+      setIsSubmitting(false);
+      setSelectedCreature(null);
     }
   };
 
@@ -168,7 +225,7 @@ export default function SpotDetailScreen() {
             </View>
 
             <View style={styles.levelBadge}>
-              <Text style={styles.levelText}>{point.level.toUpperCase()}</Text>
+              <Text style={styles.levelText}>{(point.level || 'Unknown').toUpperCase()}</Text>
             </View>
             <Text style={styles.heroTitle} numberOfLines={2}>{point.name}</Text>
           </View>
@@ -191,9 +248,20 @@ export default function SpotDetailScreen() {
           </View>
 
           {/* Confirmed Creatures List */}
-          {creatures.length > 0 && (
-            <View style={styles.section}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderBetween}>
               <Text style={styles.sectionTitle}>Confirmed Species</Text>
+              {isAuthenticated && (
+                <TouchableOpacity
+                  style={styles.addLinkBtn}
+                  onPress={() => setShowCreatureModal(true)}
+                >
+                  <Star size={14} color="#0ea5e9" />
+                  <Text style={styles.addLinkBtnText}>生物を追加</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {creatures.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -206,10 +274,15 @@ export default function SpotDetailScreen() {
                     onPress={() => router.push(`/details/creature/${creature.id}`)}
                   >
                     <ImageWithFallback
-                      source={creature.imageUrl ? { uri: creature.imageUrl } : null}
+                      source={(creature as any).imageUrl ? { uri: (creature as any).imageUrl } : null}
                       fallbackSource={NO_IMAGE_CREATURE}
                       style={styles.creatureThumb}
                     />
+                    {(creature as any)._linkStatus === 'pending' && (
+                      <View style={styles.pendingBadgeMini}>
+                        <Text style={styles.pendingBadgeTextMini}>提案中</Text>
+                      </View>
+                    )}
                     <View style={styles.creatureInfo}>
                       <Text style={styles.creatureName} numberOfLines={1}>{creature.name}</Text>
                       <View style={styles.rarityStars}>
@@ -226,8 +299,20 @@ export default function SpotDetailScreen() {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            </View>
-          )}
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>まだ登録された生物がいません。</Text>
+                {isAuthenticated && (
+                  <TouchableOpacity
+                    style={styles.emptyAddBtn}
+                    onPress={() => setShowCreatureModal(true)}
+                  >
+                    <Text style={styles.emptyAddBtnText}>あなたが見つけた生物を追加する</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
 
           {point.features && point.features.length > 0 && (
             <View style={styles.section}>
@@ -294,6 +379,25 @@ export default function SpotDetailScreen() {
           <Text style={styles.primaryBtnText}>このポイントでログを書く</Text>
         </TouchableOpacity>
       </View>
+
+      <CreatureSelectorModal
+        isVisible={showCreatureModal}
+        onClose={() => setShowCreatureModal(false)}
+        onSelect={handleCreatureSelect}
+      />
+
+      <RaritySelectorModal
+        isVisible={showRarityModal}
+        onClose={() => setShowRarityModal(false)}
+        onSelect={handleSubmitDiscovery}
+        title={selectedCreature?.name || '発見報告'}
+      />
+
+      {isSubmitting && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      )}
     </View>
   );
 }
@@ -615,5 +719,76 @@ const styles = StyleSheet.create({
   backBtnText: {
     color: '#0ea5e9',
     fontWeight: '800',
+  },
+  sectionHeaderBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  addLinkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e0f2fe',
+  },
+  addLinkBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0ea5e9',
+  },
+  emptyState: {
+    padding: 30,
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    borderStyle: 'dashed',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  emptyAddBtn: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  emptyAddBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0ea5e9',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+  },
+  pendingBadgeMini: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  pendingBadgeTextMini: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '900',
   },
 });

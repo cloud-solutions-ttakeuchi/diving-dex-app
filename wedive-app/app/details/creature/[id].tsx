@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, Image, TouchableOpacity, Dimensions, ActivityIndicator, Platform, Share as RNShare, View, Text, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ChevronLeft, Star, Heart, Share2, Info, Edit3, Home, BookOpen, Droplets, Thermometer, Ruler, Zap, MapPin } from 'lucide-react-native';
-import { doc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, limit, setDoc } from 'firebase/firestore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { db } from '../../../src/firebase';
 import { Creature, Rarity, Point, PointCreature } from '../../../src/types';
+import { useAuth } from '../../../src/context/AuthContext';
+import { PointSelectorModal } from '../../../src/components/PointSelectorModal';
+import { RaritySelectorModal } from '../../../src/components/RaritySelectorModal';
+import { Alert } from 'react-native';
 
 import { ImageWithFallback } from '../../../src/components/ImageWithFallback';
 
@@ -22,6 +26,11 @@ export default function CreatureDetailScreen() {
   const [points, setPoints] = useState<Point[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const [showPointModal, setShowPointModal] = useState(false);
+  const [showRarityModal, setShowRarityModal] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,11 +47,12 @@ export default function CreatureDetailScreen() {
           const pcQuery = query(
             collection(db, 'point_creatures'),
             where('creatureId', '==', id),
-            where('status', '==', 'approved'),
-            limit(10)
+            where('status', 'in', ['approved', 'pending']),
+            limit(20)
           );
           const pcSnap = await getDocs(pcQuery);
-          const pointIds = pcSnap.docs.map(doc => (doc.data() as PointCreature).pointId);
+          const pointLinks = pcSnap.docs.map(doc => doc.data() as PointCreature);
+          const pointIds = pointLinks.map(link => link.pointId);
 
           if (pointIds.length > 0) {
             const pQuery = query(
@@ -50,7 +60,18 @@ export default function CreatureDetailScreen() {
               where('id', 'in', pointIds.slice(0, 10))
             );
             const pSnap = await getDocs(pQuery);
-            setPoints(pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point)));
+            const pointDocs = pSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point));
+
+            // Map back to include the point_creature status
+            const data = pointLinks
+              .map(link => {
+                const doc = pointDocs.find(p => p.id === link.pointId);
+                if (!doc) return null;
+                return { ...doc, _linkStatus: link.status };
+              })
+              .filter((p): p is Point & { _linkStatus: PointCreature['status'] } => p !== null);
+
+            setPoints(data as any);
           }
         } else {
           setCreature(null);
@@ -74,6 +95,43 @@ export default function CreatureDetailScreen() {
       });
     } catch (error) {
       console.error(error);
+    }
+  };
+
+  const handlePointSelect = (point: Point) => {
+    setSelectedPoint(point);
+    setShowPointModal(false);
+    setShowRarityModal(true);
+  };
+
+  const handleSubmitDiscovery = async (rarity: Rarity) => {
+    if (!selectedPoint || !creature || !user) return;
+    setIsSubmitting(true);
+    setShowRarityModal(false);
+
+    try {
+      const relId = `${selectedPoint.id}_${creature.id}`;
+      const pointCreatureData: PointCreature = {
+        id: relId,
+        pointId: selectedPoint.id,
+        creatureId: creature.id,
+        localRarity: rarity,
+        status: (user.role === 'admin' || user.role === 'moderator') ? 'approved' : 'pending',
+      };
+
+      await setDoc(doc(db, 'point_creatures', relId), pointCreatureData);
+
+      Alert.alert(
+        'ありがとうございます！',
+        user.role === 'admin' ? '発見報告を登録しました。' : '発見報告を送信しました。管理者の承認をお待ちください。',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('Error submitting discovery:', error);
+      Alert.alert('エラー', '報告の送信に失敗しました。');
+    } finally {
+      setIsSubmitting(false);
+      setSelectedPoint(null);
     }
   };
 
@@ -231,9 +289,20 @@ export default function CreatureDetailScreen() {
           </View>
 
           {/* Sighted Points List */}
-          {points.length > 0 && (
-            <View style={styles.section}>
+          <View style={styles.section}>
+            <View style={styles.sectionHeaderBetween}>
               <Text style={styles.sectionTitle}>Spotted at</Text>
+              {isAuthenticated && (
+                <TouchableOpacity
+                  style={styles.addLinkBtn}
+                  onPress={() => setShowPointModal(true)}
+                >
+                  <MapPin size={14} color="#0ea5e9" />
+                  <Text style={styles.addLinkBtnText}>発見報告</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+            {points.length > 0 ? (
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -246,10 +315,15 @@ export default function CreatureDetailScreen() {
                     onPress={() => router.push(`/details/spot/${point.id}`)}
                   >
                     <ImageWithFallback
-                      source={point.imageUrl ? { uri: point.imageUrl } : null}
+                      source={(point as any).imageUrl ? { uri: (point as any).imageUrl } : null}
                       fallbackSource={NO_IMAGE_POINT}
                       style={styles.pointThumb}
                     />
+                    {(point as any)._linkStatus === 'pending' && (
+                      <View style={styles.pendingBadgeMini}>
+                        <Text style={styles.pendingBadgeTextMini}>提案中</Text>
+                      </View>
+                    )}
                     <View style={styles.pointInfo}>
                       <Text style={styles.pointName} numberOfLines={1}>{point.name}</Text>
                       <View style={styles.pointLocation}>
@@ -260,8 +334,20 @@ export default function CreatureDetailScreen() {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-            </View>
-          )}
+            ) : (
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyStateText}>まだ発見報告がありません。</Text>
+                {isAuthenticated && (
+                  <TouchableOpacity
+                    style={styles.emptyAddBtn}
+                    onPress={() => setShowPointModal(true)}
+                  >
+                    <Text style={styles.emptyAddBtnText}>あなたが最初の発見を報告する</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+          </View>
 
           {/* Taxonomy / Detailed Info */}
           <View style={styles.section}>
@@ -321,6 +407,25 @@ export default function CreatureDetailScreen() {
           <Text style={styles.primaryBtnText}>この生物の目撃ログを書く</Text>
         </TouchableOpacity>
       </View>
+
+      <PointSelectorModal
+        isVisible={showPointModal}
+        onClose={() => setShowPointModal(false)}
+        onSelect={handlePointSelect}
+      />
+
+      <RaritySelectorModal
+        isVisible={showRarityModal}
+        onClose={() => setShowRarityModal(false)}
+        onSelect={handleSubmitDiscovery}
+        title={selectedPoint?.name || '発見報告'}
+      />
+
+      {isSubmitting && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      )}
     </View>
   );
 }
@@ -696,5 +801,76 @@ const styles = StyleSheet.create({
   backBtnText: {
     color: '#0ea5e9',
     fontWeight: '800',
+  },
+  sectionHeaderBetween: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 14,
+  },
+  addLinkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0f9ff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#e0f2fe',
+  },
+  addLinkBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0ea5e9',
+  },
+  emptyState: {
+    padding: 30,
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    borderStyle: 'dashed',
+  },
+  emptyStateText: {
+    fontSize: 14,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  emptyAddBtn: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  emptyAddBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0ea5e9',
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 2000,
+  },
+  pendingBadgeMini: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    backgroundColor: '#f59e0b',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  pendingBadgeTextMini: {
+    color: '#fff',
+    fontSize: 8,
+    fontWeight: '900',
   },
 });

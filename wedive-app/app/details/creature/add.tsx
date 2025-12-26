@@ -11,9 +11,15 @@ import {
   Platform,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ChevronLeft, Info, Camera } from 'lucide-react-native';
+import { ChevronLeft, Info, Camera, Sparkles, X } from 'lucide-react-native';
 import { useAuth } from '../../../src/context/AuthContext';
 import { ProposalService } from '../../../src/services/ProposalService';
+import { functions } from '../../../src/firebase';
+import { httpsCallable } from 'firebase/functions';
+import * as ImagePicker from 'expo-image-picker';
+import { ImageWithFallback } from '../../../src/components/ImageWithFallback';
+
+const NO_IMAGE_CREATURE = require('../../../assets/images/no-image-creature.png');
 
 const CATEGORIES = ['魚類', '軟骨魚類', '爬虫類', '甲殻類', '軟体動物', '刺胞動物', '哺乳類', 'その他'];
 const RARITIES = [
@@ -50,6 +56,9 @@ export default function AddCreatureProposalScreen() {
     season: [] as string[],
     specialAttributes: [] as string[],
     tags: '',
+    imageUrl: '',
+    imageCredit: '',
+    imageLicense: '',
   });
 
   const handleSubmit = async () => {
@@ -81,8 +90,10 @@ export default function AddCreatureProposalScreen() {
           status: 'pending',
           submitterId: user.id,
           createdAt: new Date().toISOString(),
-          images: [],
-          imageUrl: '',
+          images: formData.imageUrl ? [formData.imageUrl] : [],
+          imageUrl: formData.imageUrl || '',
+          imageCredit: formData.imageCredit || '',
+          imageLicense: formData.imageLicense || '',
         } as any,
         'create'
       );
@@ -91,9 +102,60 @@ export default function AddCreatureProposalScreen() {
         { text: 'OK', onPress: () => router.back() }
       ]);
     } catch (e) {
+      console.error(e);
       Alert.alert('エラー', '申請に失敗しました');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleAutoFillImage = async () => {
+    if (!formData.name && !formData.scientificName) {
+      Alert.alert('入力エラー', '生物名または学名を入力してください。');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const searchFn = httpsCallable(functions, 'searchCreatureImage');
+      const query = formData.scientificName || formData.name;
+      const result = await searchFn({ query, lang: 'ja' });
+      const data = result.data as any;
+
+      if (data.imageUrl) {
+        setFormData(prev => ({
+          ...prev,
+          imageUrl: data.imageUrl,
+          imageCredit: data.imageCredit,
+          imageLicense: data.imageLicense
+        }));
+      } else {
+        Alert.alert('検索結果', 'Wikipediaで画像が見つかりませんでした。');
+      }
+    } catch (error: any) {
+      console.error('Search failed:', error);
+      Alert.alert('エラー', '検索に失敗しました。時間をおいて再度お試しください。');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 0.8,
+      base64: true,
+    });
+
+    if (!result.canceled && result.assets[0].base64) {
+      setFormData(p => ({
+        ...p,
+        imageUrl: `data:image/jpeg;base64,${result.assets[0].base64}`,
+        imageCredit: 'User Upload',
+        imageLicense: 'Self'
+      }));
     }
   };
 
@@ -131,7 +193,68 @@ export default function AddCreatureProposalScreen() {
             style={styles.input}
             value={formData.scientificName}
             onChangeText={(val) => setFormData(p => ({ ...p, scientificName: val }))}
+            placeholder="例: Amphiprion ocellaris"
           />
+        </View>
+
+        <TouchableOpacity
+          style={styles.wikiBtn}
+          onPress={handleAutoFillImage}
+          disabled={submitting}
+        >
+          <Sparkles size={18} color="#fff" />
+          <Text style={styles.wikiBtnText}>Wikipediaから画像を探す</Text>
+        </TouchableOpacity>
+
+        <View style={styles.inputGroup}>
+          <Text style={styles.label}>写真</Text>
+          <View style={styles.imageSection}>
+            <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+              {formData.imageUrl ? (
+                <View style={{ position: 'relative', width: '100%', height: '100%' }}>
+                  <ImageWithFallback
+                    source={{ uri: formData.imageUrl }}
+                    fallbackSource={NO_IMAGE_CREATURE}
+                    style={styles.previewImage}
+                  />
+                  <TouchableOpacity
+                    style={styles.removeImageBtn}
+                    onPress={() => setFormData(p => ({ ...p, imageUrl: '', imageCredit: '', imageLicense: '' }))}
+                  >
+                    <X size={16} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Camera size={32} color="#94a3b8" />
+                  <Text style={styles.imagePlaceholderText}>タップしてアップロード</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {formData.imageUrl ? (
+              <View style={styles.imageMeta}>
+                <View style={styles.metaInputGroup}>
+                  <Text style={styles.metaLabel}>画像クレジット</Text>
+                  <TextInput
+                    style={styles.metaInput}
+                    value={formData.imageCredit}
+                    onChangeText={(val) => setFormData(p => ({ ...p, imageCredit: val }))}
+                    placeholder="例: Wikipedia"
+                  />
+                </View>
+                <View style={styles.metaInputGroup}>
+                  <Text style={styles.metaLabel}>ライセンス</Text>
+                  <TextInput
+                    style={styles.metaInput}
+                    value={formData.imageLicense}
+                    onChangeText={(val) => setFormData(p => ({ ...p, imageLicense: val }))}
+                    placeholder="例: CC BY-SA"
+                  />
+                </View>
+              </View>
+            ) : null}
+          </View>
         </View>
 
         <View style={styles.inputGroup}>
@@ -313,4 +436,55 @@ const styles = StyleSheet.create({
   optionBtnActive: { backgroundColor: '#0ea5e9', borderColor: '#0ea5e9' },
   optionText: { fontSize: 13, color: '#64748b' },
   optionTextActive: { color: '#fff', fontWeight: 'bold' },
+  wikiBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#8b5cf6',
+    paddingVertical: 12,
+    borderRadius: 14,
+    marginBottom: 24,
+    gap: 8,
+    shadowColor: '#8b5cf6',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  wikiBtnText: { color: '#fff', fontWeight: 'bold', fontSize: 14 },
+  imageSection: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  imagePicker: {
+    width: '100%',
+    height: 200,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderStyle: 'dashed',
+  },
+  imagePlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  imagePlaceholderText: { marginTop: 8, fontSize: 12, color: '#94a3b8', fontWeight: 'bold' },
+  previewImage: { width: '100%', height: '100%', resizeMode: 'cover' },
+  removeImageBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imageMeta: { marginTop: 16, gap: 12 },
+  metaInputGroup: { gap: 4 },
+  metaLabel: { fontSize: 11, fontWeight: 'bold', color: '#94a3b8' },
+  metaInput: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6, fontSize: 13, color: '#1e293b' },
 });

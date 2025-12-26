@@ -142,12 +142,14 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   // 2. Core Data Sync (Creatures, Points, PointCreatures)
   useEffect(() => {
-    const unsubCreatures = onSnapshot(collection(firestore, 'creatures'), (snapshot) => {
+    const creaturesQuery = query(collection(firestore, 'creatures'), where('status', 'in', ['approved', 'pending']));
+    const unsubCreatures = onSnapshot(creaturesQuery, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Creature));
       setCreatures(data);
     });
 
-    const unsubPoints = onSnapshot(collection(firestore, 'points'), (snapshot) => {
+    const pointsQuery = query(collection(firestore, 'points'), where('status', 'in', ['approved', 'pending']));
+    const unsubPoints = onSnapshot(pointsQuery, (snapshot) => {
       const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Point));
       setPoints(data);
     });

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { ImageWithFallback } from '../components/common/ImageWithFallback'; // Import
 import { LogDetailModal } from '../components/LogDetailModal';
-import { ChevronRight, ChevronLeft, Star, Heart, Bookmark, Calendar, MapPin, Bot, Sparkles } from 'lucide-react';
+import { ChevronRight, ChevronLeft, Star, Heart, Bookmark, Calendar, MapPin, Bot, Sparkles, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import type { Log } from '../types';
@@ -335,6 +335,11 @@ export const Home = () => {
                     type="creature"
                     className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
                   />
+                  {creature.status === 'pending' && (
+                    <div className="absolute top-2 left-2 bg-amber-500 text-white px-2 py-0.5 rounded text-[10px] font-black flex items-center gap-1 z-10 shadow-sm">
+                      <Clock size={10} /> 提案中
+                    </div>
+                  )}
                 </div>
                 <div className="p-3 bg-gray-50/50 border-t border-gray-100">
                   <div className="text-xs text-gray-500 font-bold mb-0.5">{creature.category}</div>

@@ -19,6 +19,10 @@ exports.onPointUpdateTranslate = (0, firestore_1.onDocumentUpdated)({
     if (!newData || !oldData || newData.description === oldData.description) {
         return;
     }
+    if (!process.env.GCLOUD_PROJECT) {
+        logger.error("GCLOUD_PROJECT environment variable is not set. Translation failed.");
+        return;
+    }
     const vertexAI = new vertexai_1.VertexAI({
         project: process.env.GCLOUD_PROJECT,
         location: "asia-northeast1"

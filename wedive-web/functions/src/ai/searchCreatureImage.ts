@@ -6,7 +6,7 @@ import * as logger from "firebase-functions/logger";
  */
 export const searchCreatureImage = onCall({
   region: "asia-northeast1",
-  cors: ["https://wedive.app", "https://we-dive.web.app", "http://localhost:5173"]
+  cors: true
 }, async (request) => {
   const { auth, data } = request;
   if (!auth) throw new Error("unauthenticated");

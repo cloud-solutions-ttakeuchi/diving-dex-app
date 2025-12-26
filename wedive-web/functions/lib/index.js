@@ -19,6 +19,7 @@ const app_1 = require("firebase-admin/app");
 // Export AI Draft Functions
 __exportStar(require("./ai/generateAIDrafts"), exports);
 __exportStar(require("./ai/concierge"), exports);
+__exportStar(require("./ai/searchCreatureImage"), exports);
 // Export Firestore Triggers
 __exportStar(require("./triggers/translateTriggers"), exports);
 // Export Management APIs

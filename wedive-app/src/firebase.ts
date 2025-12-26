@@ -71,7 +71,14 @@ export const storage = getStorage(app);
 console.log("[Firebase] Storage initialized with bucket:", storage.app.options.storageBucket);
 
 // 5. Functions
-export const functions = getFunctions(app, "asia-northeast1");
+const functions = getFunctions(app, "asia-northeast1");
+(functions as any)._region = "asia-northeast1";
+export { functions };
 
-// エミュレータ接続などは必要に応じて追加してくだい。
-// React Nativeの場合、localhost ではなくPCのIPアドレスを指定する必要がある場合があります。
+// エミュレータ接続などは必要に応じて追加してください。
+// React Nativeの場合、localhost ではなくPCのIPアドレスを指定する必要があります。
+// if (__DEV__) {
+//   const { connectFunctionsEmulator } = require('firebase/functions');
+//   // 192.168.0.35 は PC の IP アドレス（ログに出ているもの等）に書き換えてください
+//   // connectFunctionsEmulator(functions, '192.168.0.35', 5001);
+// }
