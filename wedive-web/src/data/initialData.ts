@@ -244,7 +244,7 @@ const LOGS: Log[] = rawLogs.map(log => {
 
 const USERS: User[] = [
   {
-    id: 'u1', name: 'System Admin', role: 'admin', trustScore: 1000, profileImage: undefined, logs: LOGS.map(l => l.id),
+    id: 'u1', name: 'System Admin', role: 'admin', trustScore: 1000, profileImage: undefined,
     favoriteCreatureIds: [],
     favorites: {
       points: [],

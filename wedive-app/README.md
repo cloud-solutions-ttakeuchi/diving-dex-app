@@ -2,6 +2,17 @@
 
 WeDive のモバイルアプリケーションプロジェクトです。Expo (React Native) を使用して構築されています。
 
+## Technical Documentation
+
+プロジェクトの技術仕様および運用ルールに関するドキュメントは、プロジェクトルートで一元管理されています。
+
+- **[DATABASE_DESIGN.md](../DATABASE_DESIGN.md)**: Firestoreデータ構造・ID命名規則
+- **[INFRASTRUCTURE.md](../INFRASTRUCTURE.md)**: システム構成・インフラ・CI/CD
+- **[FUNCTIONALITY.md](../FUNCTIONALITY.md)**: 主要機能一覧
+- **[DESIGN_AND_SPECS.md](../DESIGN_AND_SPECS.md)**: UI/UX設計仕様書
+- **[CHANGELOG.md](../CHANGELOG.md)**: 変更履歴
+- **[SCREENS.md](./SCREENS.md)**: アプリ版画面構成一覧
+
 ## 環境設定 (Environment Variables)
 
 プロジェクトの動作には環境変数の設定が必要です。`.env.local` ファイルを作成し、以下の項目を設定してください。

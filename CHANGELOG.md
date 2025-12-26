@@ -2,7 +2,26 @@
 
 プロジェクトの変更履歴を記録します。
 
-## [2.3.1] - 2025-12-25
+## [3.0.0] - 2025-12-26
+### Added
+- **Cross-Linking (App)**:
+    - **Confirmed Species**: スポット詳細ページから、その場所で目撃された生物の一覧を表示し、図鑑へ直接遷移可能に。
+    - **Spotted at**: 生物詳細ページから、その生物が目撃されたスポットの一覧を表示し、スポット詳細へ直接遷移可能に。
+
+### Improved
+- **Documentation Centralization**:
+    - `DATABASE_DESIGN.md`, `INFRASTRUCTURE.md`, `DESIGN_AND_SPECS.md`, `FUNCTIONALITY.md`, `CHANGELOG.md` をプロジェクトルートに集約。
+    - Web版とアプリ版で共通の正本として管理し、仕様の不一致を防止。
+- **Admin & Proposal Logic (Web)**:
+    - 提案承認時のID正規化（アンダースコア対応）を強化。
+    - 削除提案の判定ロジックを改善し、`proposalType` だけでなく `type` フィールドも考慮するように修正。
+- **Pokedex Search (Web)**:
+    - 検索フィルタリング時の `TypeError` を修正。未定義プロパティへのアクセスを安全に処理。
+
+### Fixed
+- **Creature Deletion**: 生物の削除提案が正しく反映されない、または一覧に表示されない問題を修正。
+
+## [3.0.0] - 2025-12-25
 ### Improved
 - **Point Detail Page Overhaul (Web)**:
     - **Premium UI/UX**: ガラスモフィズム、ダイナミックなグラデーション、洗練されたタイポグラフィを採用し、全体的な美観を劇的に向上。
@@ -21,7 +40,7 @@
 - **Mobile Map Error**: iOS環境での `PROVIDER_GOOGLE` 強制指定による表示エラーを解消。OS標準の地図（Apple Maps）を利用する安定した実装に修正。
 - **Navigation Path**: モバイルアプリ版の「ログを書く」ボタンのパスを `/logs/add` から正しい `/log/add` に修正。
 
-## [2.3.0] - 2025-12-23
+## [3.0.0] - 2025-12-23
 ### Added
 - **Mobile App Initial Feature Set (Expo/React Native)**:
     - **Home Screen**: Web版と共通のデザインシステムを採用。AIコンシェルジュへの誘導、注目スポット、人気生物のカルーセル表示を実装。

@@ -248,7 +248,7 @@ export default function AddLogScreen() {
           entryType: log.entryType || 'boat',
         };
 
-        const logId = await LogService.addLog(user.id, logData as any, { skipUserUpdate: true });
+        const logId = await LogService.addLog(user.id, logData as any);
         newLogIds.push(logId);
         successCount++;
 
@@ -257,9 +257,7 @@ export default function AddLogScreen() {
         }
       }
 
-      // 最後の一回だけ、全ログIDをユーザーのリストに一括登録する（これで確実に反映される）
-      setSaveStatus('最終同期中...');
-      await LogService.updateUserLogList(user.id, newLogIds);
+      // ユーザーのリスト登録は不要になったため削除
 
       setSaveStatus('インポート完了！');
       Alert.alert('成功', `${successCount}件のログを一括保存しました。`, [

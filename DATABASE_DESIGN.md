@@ -131,7 +131,6 @@ erDiagram
 | `role` | string | user, moderator, admin |
 | `trustScore` | number | トラストスコア |
 | `profileImage` | string | プロフィール画像URL |
-| `logs` | array(string) | ログIDのリスト |
 | `favorites` | map | ポイント、エリア、ショップ、器材のお気に入り |
 | `favoriteCreatureIds`| array(string) | お気に入り生物IDリスト |
 | `wanted` | array(string) | 会いたい生物IDリスト |
@@ -144,7 +143,8 @@ erDiagram
 | `createdAt` | string | アカウント作成日 |
 | `status` | string | provisional, active, suspended, withdrawn |
 
-### 3.6 `users/{uid}/logs` (ダイビングログ)
+### 3.6 `users/{uid}/logs` (ダイビングログ - サブコレクション)
+WeDive では、スケーラビリティとクエリ効率を考慮し、ユーザーのダイビングログをルートの `logs` コレクションではなく、各ユーザーの **サブコレクション** として配置します。
 | フィールド | 型 | 説明 |
 | :--- | :--- | :--- |
 | `id` | string | `l` + タイムスタンプ |

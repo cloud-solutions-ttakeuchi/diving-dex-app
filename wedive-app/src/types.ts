@@ -120,7 +120,6 @@ export interface User {
   role: 'user' | 'moderator' | 'admin';
   trustScore: number;
   profileImage?: string; // Data URL or path
-  logs: string[]; // IDs of logs
   favorites: {
     points: { id: string; isPrimary: boolean }[];
     areas: { id: string; isPrimary: boolean }[];

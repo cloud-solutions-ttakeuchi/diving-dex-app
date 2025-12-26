@@ -7,11 +7,11 @@ React (Vite) + Firebase を用いたモダンなシングルページアプリ�
 
 プロジェクトの技術仕様および運用ルールに関するドキュメントです。開発・修正前に必ず一読してください。
 
-- **[DATABASE_DESIGN.md](./DATABASE_DESIGN.md)**: Firestoreデータ構造・ID命名規則（**最重要**）
-- **[INFRASTRUCTURE.md](./INFRASTRUCTURE.md)**: システム構成・インフラ・CI/CD
-- **[FUNCTIONALITY.md](./FUNCTIONALITY.md)**: 主要機能一覧・ユーザー体験・AIフロー
+- **[DATABASE_DESIGN.md](../DATABASE_DESIGN.md)**: Firestoreデータ構造・ID命名規則（**最重要**）
+- **[INFRASTRUCTURE.md](../INFRASTRUCTURE.md)**: システム構成・インフラ・CI/CD
+- **[FUNCTIONALITY.md](../FUNCTIONALITY.md)**: 主要機能一覧・ユーザー体験・AIフロー
 - **[admin_manual.md](./admin_manual.md)**: 管理者向け操作マニュアル（AIパイプライン詳細）
-- **[design_and_specs.md](./design_and_specs.md)**: 全体設計書・UI/UX仕様
+- **[DESIGN_AND_SPECS.md](../DESIGN_AND_SPECS.md)**: 全体設計書・UI/UX仕様
 - **[VERTEX_AI_SETUP_GUIDE.md](./VERTEX_AI_SETUP_GUIDE.md)**: Vertex AI Search (Managed RAG) の詳細設定・複数DSの連携ガイド
 
 ## 1. Architecture & Tech Stack

@@ -6,7 +6,6 @@ import { DiveLog } from '../types';
  * WeDive Database Rules (from DATABASE_DESIGN.md):
  * 1. Log ID format: 'l' + timestamp (e.g., l1734963000000)
  * 2. Path: users/{userId}/logs/{logId}
- * 3. Log ID must also be added to user's 'logs' array in users/{userId}
  */
 
 /**
@@ -36,9 +35,9 @@ export class LogService {
   }
 
   /**
-   * Saves a new dive log following the sub-collection schema and updating the user array.
+   * Saves a new dive log following the sub-collection schema.
    */
-  static async addLog(userId: string, logData: Omit<DiveLog, 'id' | 'userId'>, options?: { skipUserUpdate?: boolean }): Promise<string> {
+  static async addLog(userId: string, logData: Omit<DiveLog, 'id' | 'userId'>): Promise<string> {
     const logId = this.generateLogId();
     const now = new Date().toISOString();
 
@@ -52,29 +51,13 @@ export class LogService {
 
     const sanitizedData = sanitizePayload(finalLogData);
 
-    // 1. Save to sub-collection: users/{userId}/logs/{logId}
+    // Save to sub-collection: users/{userId}/logs/{logId}
     const logRef = doc(db, 'users', userId, 'logs', logId);
     await setDoc(logRef, sanitizedData);
-
-    // 2. Update user's logs array (Skip if in bulk mode)
-    if (!options?.skipUserUpdate) {
-      const userRef = doc(db, 'users', userId);
-      updateDoc(userRef, {
-        logs: arrayUnion(logId)
-      }).catch(e => {
-        console.warn("Non-critical: User array update failed:", e);
-      });
-    }
 
     return logId;
   }
 
-  static async updateUserLogList(userId: string, logIds: string[]): Promise<void> {
-    const userRef = doc(db, 'users', userId);
-    await updateDoc(userRef, {
-      logs: arrayUnion(...logIds)
-    });
-  }
 
   static async updateLog(userId: string, logId: string, logData: Partial<DiveLog>): Promise<void> {
     const logRef = doc(db, 'users', userId, 'logs', logId);

@@ -53,7 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               name: fbUser.displayName || 'Guest',
               role: 'user',
               trustScore: 0,
-              logs: [],
               favorites: { points: [], areas: [], shops: [], gear: { tanks: [] } },
               favoriteCreatureIds: [],
               wanted: [],
