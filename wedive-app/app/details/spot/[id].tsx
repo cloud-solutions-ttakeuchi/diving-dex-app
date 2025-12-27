@@ -27,11 +27,17 @@ export default function SpotDetailScreen() {
   const [creatures, setCreatures] = useState<Creature[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const [showCreatureModal, setShowCreatureModal] = useState(false);
   const [showRarityModal, setShowRarityModal] = useState(false);
   const [selectedCreature, setSelectedCreature] = useState<Creature | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user && point) {
+      setIsBookmarked(user.bookmarkedPointIds?.includes(point.id) || false);
+    }
+  }, [user, point]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -137,13 +143,25 @@ export default function SpotDetailScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#0ea5e9" />
-      </View>
-    );
-  }
+  const handleToggleBookmark = async () => {
+    if (!isAuthenticated || !user || !point) {
+      Alert.alert('ログインが必要です', 'ブックマークするにはログインしてください。');
+      return;
+    }
+
+    const currentIds = user.bookmarkedPointIds || [];
+    const isCurrentlyBookmarked = currentIds.includes(point.id);
+    const newIds = isCurrentlyBookmarked
+      ? currentIds.filter(pid => pid !== point.id)
+      : [...currentIds, point.id];
+
+    try {
+      await updateUser({ bookmarkedPointIds: newIds });
+    } catch (error) {
+      console.error('Error toggling bookmark:', error);
+      Alert.alert('エラー', 'ブックマークの更新に失敗しました。');
+    }
+  };
 
   if (!point) {
     return (
@@ -172,7 +190,7 @@ export default function SpotDetailScreen() {
         <View style={styles.rightButtons}>
           <TouchableOpacity
             style={styles.glassCircle}
-            onPress={() => setIsBookmarked(!isBookmarked)}
+            onPress={handleToggleBookmark}
           >
             <Bookmark size={22} color={isBookmarked ? "#f59e0b" : "#fff"} fill={isBookmarked ? "#f59e0b" : "transparent"} />
           </TouchableOpacity>

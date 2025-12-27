@@ -45,37 +45,52 @@ export default function RootLayout() {
   return <RootLayoutNav />;
 }
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '../src/context/AuthContext';
+import { AppProvider } from '../src/context/AppContext';
 import { TermsAgreementModal } from '../components/TermsAgreementModal';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AuthProvider>
-        <TermsAgreementModal />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen
-            name="log/[id]"
-            options={{
-              headerShown: true,
-              title: 'ログ詳細',
-              headerBackTitle: '戻る'
-            }}
-          />
-          <Stack.Screen
-            name="log/edit/[id]"
-            options={{
-              headerShown: false,
-              title: 'ログ編集',
-            }}
-          />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </AuthProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <AuthProvider>
+          <AppProvider>
+            <TermsAgreementModal />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen
+                name="log/[id]"
+                options={{
+                  headerShown: true,
+                  title: 'ログ詳細',
+                  headerBackTitle: '戻る'
+                }}
+              />
+              <Stack.Screen
+                name="log/edit/[id]"
+                options={{
+                  headerShown: false,
+                  title: 'ログ編集',
+                }}
+              />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+            </Stack>
+          </AppProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

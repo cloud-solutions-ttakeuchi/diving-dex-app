@@ -5,6 +5,7 @@ type ImageWithFallbackProps = {
   source: { uri: string } | null;
   style: StyleProp<ImageStyle>;
   fallbackSource: any; // require('...') returns a number or object
+  resizeMode?: 'cover' | 'contain' | 'stretch' | 'repeat' | 'center';
 };
 
 const normalizeUri = (uri: string | undefined): any => {
@@ -15,7 +16,7 @@ const normalizeUri = (uri: string | undefined): any => {
   return { uri };
 };
 
-export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ source, style, fallbackSource }) => {
+export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ source, style, fallbackSource, resizeMode = 'cover' }) => {
   const [imgSource, setImgSource] = useState<any>(source && source.uri ? normalizeUri(source.uri) : fallbackSource);
   const [hasError, setHasError] = useState(false);
 
@@ -39,6 +40,7 @@ export const ImageWithFallback: React.FC<ImageWithFallbackProps> = ({ source, st
       source={imgSource}
       style={style}
       onError={handleError}
+      resizeMode={resizeMode}
     />
   );
 };

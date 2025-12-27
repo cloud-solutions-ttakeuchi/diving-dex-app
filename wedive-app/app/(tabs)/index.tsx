@@ -7,6 +7,8 @@ import { Point, Creature } from '../../src/types';
 import { Star, MapPin, Sparkles, Plus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { ImageWithFallback } from '../../src/components/ImageWithFallback';
+import { usePoints } from '../../src/hooks/usePoints';
+import { useCreatures } from '../../src/hooks/useCreatures';
 
 const { width } = Dimensions.get('window');
 
@@ -15,36 +17,18 @@ const NO_IMAGE_CREATURE = require('../../assets/images/no-image-creature.png');
 
 export default function TabOneScreen() {
   const router = useRouter();
-  const [points, setPoints] = useState<Point[]>([]);
-  const [creatures, setCreatures] = useState<Creature[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: allPoints = [], isLoading: pLoading } = usePoints();
+  const { data: allCreatures = [], isLoading: cLoading } = useCreatures();
+  const isLoading = pLoading || cLoading;
 
+  const points = allPoints.filter(p => p.status === 'approved').slice(0, 5);
+  const creatures = allCreatures.filter(c => c.status === 'approved').slice(0, 10);
+
+  /*
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Fetch Featured Points (Top 5 recently added or by some criteria)
-        // For now, simple limit 5
-        const pointsQuery = query(collection(db, 'points'), where('status', '==', 'approved'), limit(5));
-        const pointsSnapshot = await getDocs(pointsQuery);
-        const pointsData = pointsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Point));
-
-        // Fetch Popular Creatures (Top 10)
-        // Ideally should be sorted by popularity or similar
-        const creaturesQuery = query(collection(db, 'creatures'), where('status', '==', 'approved'), limit(10));
-        const creaturesSnapshot = await getDocs(creaturesQuery);
-        const creaturesData = creaturesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Creature));
-
-        setPoints(pointsData);
-        setCreatures(creaturesData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchData();
+    // Legacy fetching logic removed
   }, []);
+  */
 
   if (isLoading) {
     return (

@@ -26,11 +26,17 @@ export default function CreatureDetailScreen() {
   const [points, setPoints] = useState<Point[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLiked, setIsLiked] = useState(false);
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, updateUser } = useAuth();
   const [showPointModal, setShowPointModal] = useState(false);
   const [showRarityModal, setShowRarityModal] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<Point | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user && creature) {
+      setIsLiked(user.favoriteCreatureIds?.includes(creature.id) || false);
+    }
+  }, [user, creature]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -135,13 +141,25 @@ export default function CreatureDetailScreen() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <View style={[styles.container, styles.center]}>
-        <ActivityIndicator size="large" color="#0ea5e9" />
-      </View>
-    );
-  }
+  const handleToggleLike = async () => {
+    if (!isAuthenticated || !user || !creature) {
+      Alert.alert('ログインが必要です', 'お気に入り登録するにはログインしてください。');
+      return;
+    }
+
+    const currentIds = user.favoriteCreatureIds || [];
+    const isCurrentlyLiked = currentIds.includes(creature.id);
+    const newIds = isCurrentlyLiked
+      ? currentIds.filter(cid => cid !== creature.id)
+      : [...currentIds, creature.id];
+
+    try {
+      await updateUser({ favoriteCreatureIds: newIds });
+    } catch (error) {
+      console.error('Error toggling like:', error);
+      Alert.alert('エラー', 'お気に入りの更新に失敗しました。');
+    }
+  };
 
   if (!creature) {
     return (
@@ -173,7 +191,7 @@ export default function CreatureDetailScreen() {
         <View style={styles.rightButtons}>
           <TouchableOpacity
             style={styles.glassCircle}
-            onPress={() => setIsLiked(!isLiked)}
+            onPress={handleToggleLike}
           >
             <Heart size={22} color={isLiked ? "#ef4444" : "#fff"} fill={isLiked ? "#ef4444" : "transparent"} />
           </TouchableOpacity>
