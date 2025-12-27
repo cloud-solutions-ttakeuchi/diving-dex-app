@@ -41,6 +41,7 @@ import {
   Lock
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Network from 'expo-network';
 import { Image } from 'react-native';
 import { ImageWithFallback } from '../../../src/components/ImageWithFallback';
 import { useAuth } from '../../../src/context/AuthContext';
@@ -132,8 +133,9 @@ export default function EditLogScreen() {
 
   const fetchMasterData = async () => {
     try {
+      // オフラインを考慮してタイムアウトを30秒に延長
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+        setTimeout(() => reject(new Error('TIMEOUT')), 30000)
       );
 
       const pointsPromise = getDocs(query(collection(db, 'points'), where('status', '==', 'approved')));
@@ -150,6 +152,7 @@ export default function EditLogScreen() {
       setPointCreatures(pointCreaturesSnap.docs.map((doc: any) => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
       console.error("Master data fetch error:", e);
+      // オフライン時はキャッシュから読める可能性があるため、エラーでも続行可能にする
     }
   };
 
@@ -159,13 +162,12 @@ export default function EditLogScreen() {
     try {
       const logRef = doc(db, 'users', user.id, 'logs', id as string);
 
-      // 10秒のタイムアウトを設定
-      const fetchPromise = getDoc(logRef);
+      // キャッシュからの取得を優先的に試みる
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+        setTimeout(() => reject(new Error('TIMEOUT')), 30000)
       );
 
-      const snap = await Promise.race([fetchPromise, timeoutPromise]) as any;
+      const snap = await Promise.race([getDoc(logRef), timeoutPromise]) as any;
 
       if (snap && snap.exists()) {
         const data = snap.data() as DiveLog;
@@ -341,10 +343,6 @@ export default function EditLogScreen() {
     setSaveStatus('更新中...');
 
     try {
-      const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('タイムアウトが発生しました')), 10000)
-      );
-
       const updatePromise = (async () => {
         const selectedPoint = masterPoints.find(p => p.id === formData.pointId);
 
@@ -420,12 +418,41 @@ export default function EditLogScreen() {
         return true;
       })();
 
-      await Promise.race([updatePromise, timeoutPromise]);
+      const networkState = await Network.getNetworkStateAsync();
+      const isActuallyOffline = networkState.isConnected === false || networkState.isInternetReachable === false;
 
-      Alert.alert('完了', 'ログを更新しました', [{ text: 'OK', onPress: () => router.back() }]);
+      // どんな状況でも30秒でタイムアウトさせる（フリーズ防止）
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('TIMEOUT')), 30000)
+      );
+
+      setSaveStatus(isActuallyOffline ? '端末に保存中...' : 'サーバーに送信中...');
+
+      try {
+        await Promise.race([updatePromise, timeoutPromise]);
+      } catch (raceError: any) {
+        if (raceError.message === 'TIMEOUT' && isActuallyOffline) {
+          // オフライン時はタイムアウトしても、Firestoreがバックグラウンドで処理するため「成功」扱いにする
+          console.log("Offline save timeout - continuing as background sync");
+        } else {
+          throw raceError;
+        }
+      }
+
+      if (isActuallyOffline) {
+        Alert.alert('オフライン保存', '現在オフラインのため、ログを端末に保存しました。次にオンラインになった時に自動的にサーバーと同期されます。', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        setSaveStatus('保存に成功しました！');
+        Alert.alert('完了', 'ログを更新しました', [{ text: 'OK', onPress: () => router.back() }]);
+      }
     } catch (e: any) {
       console.error("Update Error:", e);
-      Alert.alert('更新失敗', `エラーが発生しました: ${e.message || '不明'}`);
+      const msg = e.message === 'TIMEOUT'
+        ? '通信タイムアウト：電波の良い場所で再度お試しください。'
+        : `エラーが発生しました: ${e.message || '不明'}`;
+      Alert.alert('更新失敗', msg);
     } finally {
       setIsLoading(false);
       setSaveStatus('');

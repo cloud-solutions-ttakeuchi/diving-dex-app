@@ -53,15 +53,11 @@ if (Platform.OS === 'web') {
     db = getFirestore(app);
   }
 } else {
-  // Native環境では標準の getFirestore が最も安定しますが、
-  // 通信が不安定な場合は initializeFirestore で設定を上書きすることも可能です。
-  try {
-    db = initializeFirestore(app, {
-      experimentalForceLongPolling: true, // Websocketより安定する通信方式を試す
-    });
-  } catch (e) {
-    db = getFirestore(app);
-  }
+  // Native環境での永続的キャッシュを有効化
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({}),
+    experimentalForceLongPolling: true,
+  });
 }
 export { db };
 
