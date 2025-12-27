@@ -66,6 +66,7 @@ export default function AddLogScreen() {
   const [saveStatus, setSaveStatus] = useState('');
   const [masterPoints, setMasterPoints] = useState<Point[]>([]);
   const [masterCreatures, setMasterCreatures] = useState<any[]>([]);
+  const [pointCreatures, setPointCreatures] = useState<any[]>([]);
   const [spotSearchTerm, setSpotSearchTerm] = useState('');
   const [creatureSearchTerm, setCreatureSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('');
@@ -139,6 +140,9 @@ export default function AddLogScreen() {
 
       const creaturesSnap = await getDocs(query(collection(db, 'creatures'), where('status', '==', 'approved')));
       setMasterCreatures(creaturesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+      const pointCreaturesSnap = await getDocs(collection(db, 'point_creatures'));
+      setPointCreatures(pointCreaturesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     } catch (e) {
       console.error("Master data fetch error:", e);
     }
@@ -503,10 +507,18 @@ export default function AddLogScreen() {
     if (!creatureSearchTerm) return [];
     const s = creatureSearchTerm.toLowerCase();
     return masterCreatures.filter(c =>
-      c.name.includes(s) ||
-      c.category?.includes(s)
+      (c.name && c.name.toLowerCase().includes(s)) ||
+      (c.category && c.category.toLowerCase().includes(s))
     ).slice(0, 50);
   }, [masterCreatures, creatureSearchTerm]);
+
+  const pointSpecificCreatures = useMemo(() => {
+    if (!formData.pointId || !pointCreatures.length) return [];
+    const relatedIds = pointCreatures
+      .filter(pc => pc.pointId === formData.pointId)
+      .map(pc => pc.creatureId);
+    return masterCreatures.filter(c => relatedIds.includes(c.id));
+  }, [formData.pointId, pointCreatures, masterCreatures]);
 
   const removePhoto = (index: number) => {
     setFormData(prev => ({
@@ -873,6 +885,32 @@ export default function AddLogScreen() {
                           <Text style={styles.searchResultSub}>{c.category}</Text>
                         </TouchableOpacity>
                       ))}
+                    </View>
+                  )}
+
+                  {pointSpecificCreatures.length > 0 && !creatureSearchTerm && (
+                    <View style={styles.pointCreaturesSection}>
+                      <Text style={styles.subLabel}>このポイントの生物</Text>
+                      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalTags}>
+                        {pointSpecificCreatures.map(c => {
+                          const isSelected = formData.sightedCreatures.includes(c.id);
+                          return (
+                            <TouchableOpacity
+                              key={c.id}
+                              style={[styles.pointCreatureTag, isSelected && styles.pointCreatureTagActive]}
+                              onPress={() => {
+                                if (isSelected) {
+                                  setFormData(p => ({ ...p, sightedCreatures: p.sightedCreatures.filter(id => id !== c.id) }));
+                                } else {
+                                  setFormData(p => ({ ...p, sightedCreatures: [...p.sightedCreatures, c.id] }));
+                                }
+                              }}
+                            >
+                              <Text style={[styles.pointCreatureText, isSelected && styles.pointCreatureTextActive]}>{c.name}</Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </ScrollView>
                     </View>
                   )}
 
@@ -1400,4 +1438,40 @@ const styles = StyleSheet.create({
   removePhotoBtn: { position: 'absolute', top: 4, right: 4, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 10, width: 20, height: 20, justifyContent: 'center', alignItems: 'center' },
   addPhotoBtn: { width: (width - 64 - 24) / 3, aspectRatio: 1, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8fafc' },
   addPhotoText: { fontSize: 12, color: '#94a3b8', marginTop: 4, fontWeight: '500' },
+  pointCreaturesSection: {
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  subLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    fontWeight: '700',
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  horizontalTags: {
+    flexDirection: 'row',
+  },
+  pointCreatureTag: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginRight: 8,
+    marginBottom: 4,
+  },
+  pointCreatureTagActive: {
+    backgroundColor: '#eff6ff',
+    borderColor: '#3b82f6',
+  },
+  pointCreatureText: {
+    fontSize: 12,
+    color: '#64748b',
+  },
+  pointCreatureTextActive: {
+    color: '#3b82f6',
+    fontWeight: '700',
+  },
 });

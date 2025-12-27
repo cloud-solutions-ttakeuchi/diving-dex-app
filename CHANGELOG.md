@@ -2,6 +2,20 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [3.1.1] - 2025-12-27
+### Added
+- **Point-Based Creature Selection (App)**:
+    - ログの登録・編集時に、選択したダイビングポイントで過去に目撃された生物を「このポイントの生物」として優先表示。タップするだけで「目撃した生物」に素早く追加可能。Web版の入力体験をモバイルにも統合。
+
+### Improved
+- **Log Detail Page Design Overhaul (App)**:
+    - **Visual Clarity**: タイトルとポイント名を分離し、アイコンとラベル（Point: xxx）付きで明示的に表示。どらちの情報か一目でわかるように。
+    - **Readability**: テキストの行間（`lineHeight`）と余白を全面的に調整し、垂直方向の詰まり感を解消。
+    - **Layout Consistency**: 生物カードのグリッドを修正。画像のアスペクト比を1:1（正方形）に固定し、不自然な引き伸ばしを防止。
+    - **Header Integration**: 重複していたシステムヘッダーを非表示にし、WeDiveオリジナルのカスタムヘッダーに一本化。
+    - **Intelligent Formatting**: 器材セクションの単位（mm, L, bar等）を、値が存在する場合のみ表示するように論理を強化し、未設定時のノイズを削除。
+    - **Navigation Info**: ダイブ番号を強調するバッジを追加。
+
 ## [3.1.0] - 2025-12-26
 ### Added
 - **Native Build Support (App)**: 
