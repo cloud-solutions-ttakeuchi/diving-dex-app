@@ -24,8 +24,10 @@ graph TD
         subgraph "API / Service Layer (Firebase Functions v2 / Cloud Run based)"
             AuthFunc[basicAuth<br/>基本認証 & SPA配信]
             AI_API[getConciergeResponse<br/>AIコンシェルジュAPI]
+            SearchAPI[searchCreatureImage<br/>生物画像検索API]
             DraftAPI[generateDraftAPI<br/>スポット・生物下書き生成]
             JobTrigger[runDataCleansing<br/>ジョブ実行トリガー]
+            MasteryTrigger[onLogWriteCalcMastery<br/>ポイント攻略率計算]
         end
 
         subgraph "Batch Layer (Cloud Run Jobs)"
@@ -58,7 +60,10 @@ graph TD
     CRJ -->|Read/Write| Firestore
     CRJ -->|Grounding Search| Gemini
     
-    AI_API & DraftAPI -->|Inference| Gemini
+    MasteryTrigger -->|Read Logs & Calc| Firestore
+    MasteryTrigger -->|Update Mastery| Firestore
+    
+    AI_API & DraftAPI & SearchAPI -->|Inference/Search| Gemini & GoogleSearch
     Gemini -->|Optimization| Cache
     Gemini -->|Fetch Grounding| ManagedRAG & GoogleSearch
     ManagedRAG -->|Read| DataStores
@@ -79,8 +84,10 @@ graph TD
 | `getConciergeResponse` | 自然言語によるスポット・生物の質問回答 | Vertex AI Search (Concierge DS) |
 | `generateSpotDraft` | ダイビングスポット情報の AI 自動生成（要グラウンディング） | Vertex AI Search (Draft DS) / Google Search |
 | `generateCreatureDraft` | 海洋生物情報の AI 自動生成 | Vertex AI Search (Draft DS) / Google Search |
+| `searchCreatureImage` | 生物名に基づき Wikipedia から画像を自動検索 | Wikipedia API |
 | `runDataCleansing` | データクレンジングバッチの起動命令 | Cloud Run Jobs |
 | `onPointUpdateTranslate` | 指定ドキュメント更新時の自動多言語翻訳（トリガー） | Firestore / Vertex AI |
+| `onLogWriteCalcMastery` | ログ登録・更新時にユーザーのポイント攻略率を自動計算（トリガー） | Firestore |
 
 ### 2.2 バッチ処理 (Cloud Run Jobs)
 API タイムアウト（60秒）を超える重い処理や、定期的な一括処理を担当します。

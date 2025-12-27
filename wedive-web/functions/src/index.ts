@@ -9,6 +9,7 @@ export * from "./ai/searchCreatureImage";
 
 // Export Firestore Triggers
 export * from "./triggers/translateTriggers";
+export * from "./triggers/userStatsTriggers";
 
 // Export Management APIs
 export * from "./api/cleansing";
