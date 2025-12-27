@@ -59,6 +59,8 @@ const queryClient = new QueryClient({
   },
 });
 
+import { NetworkStatusIndicator } from '../src/components/NetworkStatusIndicator';
+
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
@@ -67,6 +69,7 @@ function RootLayoutNav() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AuthProvider>
           <AppProvider>
+            <NetworkStatusIndicator />
             <TermsAgreementModal />
             <Stack screenOptions={{ headerShown: false }}>
               <Stack.Screen name="(tabs)" />

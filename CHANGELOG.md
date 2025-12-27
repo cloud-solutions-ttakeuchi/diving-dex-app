@@ -2,6 +2,17 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [4.0.0] - 2025-12-27
+### Added
+- **Offline First Support (App)**:
+    - **Persistent Local Cache**: Firestore の永続的キャッシュを有効化。一度読み込んだログやスポット情報は、電波のない場所でも閲覧可能。
+    - **Offline Log Sync**: 圏外でのログ登録・編集に対応。データはローカルに即時保存され、次にオンラインになった際に自動的にサーバーへ同期される。
+    - **Network Status Indicator**: オフライン時に画面上部に「オフラインモード」バッジを表示。状況を把握しやすいUIを提供。
+- **Auto-dependency Management**: 欠落していた `@tanstack/react-query` などの依存関係を自動修復。
+
+### Improved
+- **Save Reliability**: 通信が不安定な場所でのログ保存時に発生していたタイムアウトエラーを、オフライン時には「端末保存成功」として扱うことでユーザー体験を向上。
+
 ## [3.1.1] - 2025-12-27
 ### Added
 - **Point-Based Creature Selection (App)**:

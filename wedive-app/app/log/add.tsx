@@ -42,6 +42,7 @@ import {
   Lock
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as Network from 'expo-network';
 import { useAuth } from '../../src/context/AuthContext';
 import { db, storage } from '../../src/firebase';
 import { LogService } from '../../src/services/LogService';
@@ -131,7 +132,16 @@ export default function AddLogScreen() {
 
   useEffect(() => {
     fetchMasterData();
+    checkNetwork();
   }, []);
+
+  const checkNetwork = async () => {
+    const state = await Network.getNetworkStateAsync();
+    // 接続されていない、またはインターネットが利用不可の場合をオフラインとみなす
+    if (state.isConnected === false || state.isInternetReachable === false) {
+      // オフライン時の処理（必要に応じてフラグを立てる等）
+    }
+  };
 
   const fetchMasterData = async () => {
     try {
@@ -400,27 +410,45 @@ export default function AddLogScreen() {
         spotId: formData.pointId || '',
         garminActivityId: formData.garminActivityId,
       };
+      const networkState = await Network.getNetworkStateAsync();
+      const isActuallyOffline = networkState.isConnected === false || networkState.isInternetReachable === false;
 
-      setSaveStatus('サーバーに送信中...');
-
-      // 30秒でタイムアウトさせる
+      // セーフティタイムアウト（フリーズ防止のため30秒）
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('通信タイムアウト：電波の良い場所で再度お試しください')), 30000)
+        setTimeout(() => reject(new Error('TIMEOUT')), 30000)
       );
 
-      await Promise.race([
-        LogService.addLog(user.id, logData as any),
-        timeoutPromise
-      ]);
+      setSaveStatus(isActuallyOffline ? '端末に保存中...' : 'サーバーに送信中...');
 
-      setSaveStatus('保存に成功しました！');
+      const savePromise = LogService.addLog(user.id, logData as any);
 
-      Alert.alert('完了', 'ログを保存しました', [
-        { text: 'OK', onPress: () => router.back() }
-      ]);
+      try {
+        await Promise.race([savePromise, timeoutPromise]);
+      } catch (raceError: any) {
+        if (raceError.message === 'TIMEOUT' && isActuallyOffline) {
+          // オフライン時はタイムアウトしても、Firestoreがバックグラウンドで同期するため成功扱いとする
+          console.log("Offline save timeout - background sync taking over");
+        } else {
+          throw raceError;
+        }
+      }
+
+      if (isActuallyOffline) {
+        Alert.alert('オフライン保存', '現在オフラインのため、ログを端末に保存しました。次にオンラインになった時に自動的にサーバーと同期されます。', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      } else {
+        setSaveStatus('保存に成功しました！');
+        Alert.alert('完了', 'ログを保存しました', [
+          { text: 'OK', onPress: () => router.back() }
+        ]);
+      }
     } catch (e: any) {
       console.error("Save Error:", e);
-      Alert.alert('保存失敗', `エラーが発生しました: ${e.message || '不明'}`);
+      const msg = e.message === 'TIMEOUT'
+        ? '通信タイムアウト：電波の良い場所で再度お試しください。'
+        : `エラーが発生しました: ${e.message || '不明'}`;
+      Alert.alert('保存失敗', msg);
     } finally {
       setIsLoading(false);
       setSaveStatus('');
