@@ -5,11 +5,11 @@ Expo Development Build（EAS Build）を導入し、開発者の実機（iPhone�
 
 ## 2. 実装フェーズ
 
-### フェーズ 1: EAS 環境構築
+### フェーズ 1: EAS 環境構築 [完了]
 - **内容**: 
   - `eas-cli` の整合性確認。
-  - `eas.json` を作成し、開発用 (development) と本番用 (production) のプロファイルを定義。
-  - `app.json` (Expo Config) にネイティブビルド用の識別子（Bundle Identifier等）を設定。
+  - `eas.json` を作成し、開発用 (development) と本番用 (production) のプロファイルを定義。[済]
+  - `app.json` / `app.config.ts` にネイティブビルド用の識別子を設定。[済]
 - **目標**: `eas build` コマンドがエラーなく受け付けられる状態にする。
 
 ### フェーズ 2: Apple Developer 連携 (ユーザー主導)

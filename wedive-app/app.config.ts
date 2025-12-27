@@ -34,8 +34,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: getName(),
     slug: "wedive-app",
-    owner: "t.takeuchi",
+    owner: "wedive",
     version: "1.0.0",
+    runtimeVersion: {
+      policy: "appVersion"
+    },
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: getScheme(),
@@ -49,6 +52,9 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ios: {
       supportsTablet: true,
       bundleIdentifier: getIdentifier(),
+      config: {
+        usesNonExemptEncryption: false
+      }
     },
     android: {
       package: getIdentifier(),
@@ -79,10 +85,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       typedRoutes: true
     },
     extra: {
+      ...config.extra,
       variant: APP_VARIANT,
-      // EASプロジェクトID等が必要な場合は環境変数から読み込む
       eas: {
-        projectId: process.env.EAS_PROJECT_ID || undefined
+        ...config.extra?.eas,
+        projectId: process.env.EAS_PROJECT_ID || config.extra?.eas?.projectId || "dfe6116c-6a22-409a-8701-2b041a6e7310"
       }
     }
   };

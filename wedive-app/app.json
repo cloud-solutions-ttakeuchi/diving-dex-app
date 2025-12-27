@@ -2,6 +2,11 @@
   "expo": {
     "name": "wedive-app",
     "slug": "wedive-app",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "extra": {
+      "eas": {
+        "projectId": "dfe6116c-6a22-409a-8701-2b041a6e7310"
+      }
+    }
   }
 }
