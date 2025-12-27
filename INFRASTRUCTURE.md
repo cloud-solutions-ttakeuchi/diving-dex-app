@@ -106,11 +106,22 @@ API タイムアウト（60秒）を超える重い処理や、定期的な一�
 
 ## 4. デプロイメント・パイプライン
 
+### 4.1 Web / Backend (GitHub Actions)
 GitHub Actions を通じて、以下の 3 段階でデプロイが実行されます。
 
 1.  **Frontend Build**: Vite によるビルドと Firebase Hosting へのデプロイ。
 2.  **Functions Deploy**: TypeScript コンパイルと Firebase Functions (v2) へのデプロイ。
 3.  **Batch Build & Update**: Docker イメージのビルド、Push、および Cloud Run Jobs の定義更新。
+
+### 4.2 Mobile App (wedive-app / EAS)
+モバイルアプリのビルドおよび配布には、**Expo Application Services (EAS)** を採用しています。
+
+1.  **Development Build**: `eas build --profile development`
+    - `expo-dev-client` を含むビルド。開発者の実機でデバッグが可能。
+2.  **Production Build**: `eas build --profile production`
+    - ストア申請可能な最適化済みバイナリ。Apple App Store / Google Play Store への配布用。
+3.  **OTA Updates**: `eas update`
+    - ネイティブコードの変更がない修正（JavaScriptレベルの修正）を、ストアを通さず即時にユーザーへ配布。
 
 ---
 

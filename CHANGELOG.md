@@ -2,6 +2,13 @@
 
 プロジェクトの変更履歴を記録します。
 
+## [5.0.0] - 2025-12-27
+### Added
+- **Native Development Build (EAS)**:
+    - 実機検証（iPhone）に向けたビルド環境の構築。
+    - `eas.json` による開発・本番プロファイルの定義。
+    - `INFRASTRUCTURE.md` および `IMPLEMENTATION_PLAN_V5_NATIVE_BUILD.md` の整備。
+
 ## [4.0.0] - 2025-12-27
 ### Added
 - **Offline First Support (App)**:
